@@ -1,8 +1,12 @@
-import Link from "next/link";
-import { BellRing, Check, Eye, History, type LucideIcon } from "lucide-react";
-import { Card, PageHead, Section, SectionHead } from "@/components/marketing/section";
+import { ArrowRight, BellRing, Check, Eye, History, Target, TriangleAlert, type LucideIcon } from "lucide-react";
+import {
+  Card, GradientText, PageHead, Panel, Section, SectionHead,
+} from "@/components/marketing/section";
+import { BandPrimaryAction, BandSecondaryAction, CtaBand } from "@/components/marketing/cta";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
+import { ACCENT_TILE, type Accent } from "@/lib/accents";
+import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
   title: "About Us",
@@ -11,21 +15,24 @@ export const metadata = pageMetadata({
   path: "/about-us",
 });
 
-const GOALS: { icon: LucideIcon; title: string; body: string }[] = [
+const GOALS: { icon: LucideIcon; title: string; body: string; accent: Accent }[] = [
   {
     icon: History,
     title: "Complete policy history",
     body: "Every customer's policies, across insurers and years, in one place.",
+    accent: "blue",
   },
   {
     icon: BellRing,
     title: "Reliable renewal workflow",
     body: "Upcoming expiries surfaced early, from the date on the policy itself.",
+    accent: "orange",
   },
   {
     icon: Eye,
     title: "Honest automation",
     body: "Clear flags when a document is unclear, never a silent guess.",
+    accent: "green",
   },
 ];
 
@@ -50,15 +57,30 @@ export default function AboutPage() {
 
       <PageHead
         trail={[{ name: "About Us", href: "/about-us" }]}
-        title="We're building the simplest way for insurance agents to keep policies in order."
+        accent="purple"
+        badge="Built in Godhra, Gujarat"
+        title={
+          <>
+            We&apos;re building the simplest way for insurance agents to keep policies{" "}
+            <GradientText>in order.</GradientText>
+          </>
+        }
         lede="Insoora reads insurance policy PDFs, organizes them by customer and year, and keeps upcoming renewals in view. Built in Godhra, Gujarat, for the Indian insurance market."
       />
 
       {/* ── Problem and mission, side by side: they are a pair, and reading
-             one without the other loses the point. ── */}
+             one without the other loses the point.
+
+             Each card now leads with its own accent tile — red for the thing
+             that is wrong, blue for what we intend to do about it — so the
+             pair reads as a contrast at a glance rather than as two
+             identically-dressed boxes. ── */}
       <Section>
         <div className="grid gap-5 rail:grid-cols-2 rail:gap-6">
-          <Card className="flex flex-col gap-3">
+          <Card className="card-hover flex flex-col gap-3">
+            <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.red)}>
+              <TriangleAlert className="size-5" />
+            </span>
             <h2 className="text-xl font-bold tracking-[-0.02em] text-foreground">The problem</h2>
             <p className="text-[15px] leading-relaxed text-muted">
               An agent&apos;s day is full of documents. Every policy PDF already holds the policy number,
@@ -70,7 +92,10 @@ export default function AboutPage() {
               without cover.
             </p>
           </Card>
-          <Card className="flex flex-col gap-3 border-primary/25 bg-primary-soft/40">
+          <Card className="card-hover flex flex-col gap-3 border-primary/25 bg-primary-soft/40">
+            <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.blue)}>
+              <Target className="size-5" />
+            </span>
             <h2 className="text-xl font-bold tracking-[-0.02em] text-foreground">Our mission</h2>
             <p className="text-[15px] leading-relaxed text-foreground/80">
               Remove repetitive data entry from insurance work, so agents spend their time advising
@@ -84,33 +109,47 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      {/* ── Roadmap ── */}
-      <Section tone="surface">
-        <SectionHead title="What we're working towards" />
-        <div className="mt-8 grid gap-4 rail:grid-cols-3">
-          {GOALS.map((g) => (
-            <Card key={g.title} className="flex flex-col gap-3">
-              <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
-                <g.icon className="size-5" />
-              </span>
-              <p className="text-[15px] font-semibold text-foreground">{g.title}</p>
-              <p className="text-sm leading-relaxed text-muted">{g.body}</p>
-            </Card>
-          ))}
-        </div>
+      {/* ── Roadmap ──
+             A tinted panel rather than a full-width `tone="surface"` band: the
+             home page groups a self-contained set of steps this way, and it
+             gives the page the raised/recessed rhythm the inner pages had
+             none of. ── */}
+      <Section className="!pt-0">
+        <Panel className="gap-8">
+          <SectionHead
+            eyebrow="Roadmap"
+            accent="purple"
+            title="What we're working towards"
+          />
+          <div className="grid gap-4 rail:grid-cols-3">
+            {GOALS.map((g) => (
+              <Card key={g.title} className="card-hover flex flex-col gap-3">
+                <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE[g.accent])}>
+                  <g.icon className="size-5" />
+                </span>
+                <h3 className="text-[15px] font-semibold text-foreground">{g.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{g.body}</p>
+              </Card>
+            ))}
+          </div>
+        </Panel>
       </Section>
 
       {/* ── Who we build for ── */}
-      <Section>
-        <SectionHead title="Who we build for" />
+      <Section className="!pt-0">
+        <SectionHead
+          eyebrow="Who it's for"
+          accent="teal"
+          title="Who we build for"
+        />
         <ul className="mt-8 flex flex-col gap-3">
           {AUDIENCE.map((a) => (
             <li
               key={a.lead}
-              className="flex items-start gap-3 rounded-2xl border border-border bg-background p-4 shadow-card sm:items-center sm:p-5"
+              className="card-hover flex items-start gap-3 rounded-2xl border border-border bg-background p-4 shadow-card sm:items-center sm:p-5"
             >
-              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-success-soft text-success">
-                <Check className="size-4" />
+              <span aria-hidden className={cn("grid size-8 shrink-0 place-items-center rounded-full", ACCENT_TILE.green)}>
+                <Check className="size-4" strokeWidth={3} />
               </span>
               <p className="text-[15px] leading-relaxed text-muted">
                 <span className="font-semibold text-foreground">{a.lead}</span> {a.rest}
@@ -120,33 +159,21 @@ export default function AboutPage() {
         </ul>
       </Section>
 
-      {/* ── CTA ── */}
-      <Section tone="dark">
-        <div className="flex flex-col items-start gap-5 rail:flex-row rail:items-center rail:justify-between">
-          <div>
-            <h2 className="text-balance text-2xl font-bold tracking-[-0.025em] sm:text-3xl">
-              See how it fits your workflow.
-            </h2>
-            <p className="mt-2 max-w-xl text-pretty text-[15px] leading-relaxed text-sidebar-text">
-              Explore the features, or tell us how you manage policies today.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/features"
-              className="inline-flex h-11 items-center rounded-md bg-background px-5 text-sm font-semibold text-primary transition-transform hover:-translate-y-px"
-            >
+      {/* ── Conversion: the same band that closes the home page. ── */}
+      <CtaBand
+        eyebrow="See it for yourself"
+        title={<>See how it fits your workflow.</>}
+        lede="Explore the features, or tell us how you manage policies today."
+        actions={
+          <>
+            <BandPrimaryAction href="/features">
               Explore Features
-            </Link>
-            <Link
-              href="/contact-us"
-              className="inline-flex h-11 items-center rounded-md border border-white/30 bg-white/10 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </Section>
+              <ArrowRight aria-hidden className="size-4" />
+            </BandPrimaryAction>
+            <BandSecondaryAction href="/contact-us">Contact Us</BandSecondaryAction>
+          </>
+        }
+      />
     </>
   );
 }

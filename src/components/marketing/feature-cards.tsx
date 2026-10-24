@@ -130,7 +130,7 @@ export function FeatureCards() {
             </span>
             <p className="text-sm leading-relaxed text-muted">{f.d}</p>
             {f.status && (
-              <span className="mt-0.5 self-start rounded-full bg-secondary-soft px-2 py-0.5 text-[11px] font-semibold text-secondary">
+              <span className="mt-0.5 self-start rounded-full bg-secondary-soft px-2 py-0.5 text-[11px] font-semibold text-[#075985]">
                 {f.status}
               </span>
             )}

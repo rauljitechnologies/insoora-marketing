@@ -800,6 +800,33 @@ html {
   --accent-green: #16a34a;
   --accent-pink: #db2777;
 
+  /* ── The same six hues, in their TEXT-SAFE shades ──
+     The values above are for FILLS: icon tiles, chip grounds, bars, rings,
+     the footer stripe. Contrast is not a text question there.
+
+     As TEXT they are a different matter. A section eyebrow is 13px bold,
+     which WCAG does not count as large text, so it needs 4.5:1 — and on
+     white, orange (3.56:1), teal (3.68:1), green (3.30:1) and pink (4.60:1,
+     but 4.35:1 on the #F5F9FF panel ground) do not clear it. Three of those
+     were already shipping on the home page's own eyebrows.
+
+     Each `-ink` below clears 4.5:1 against all three grounds the site uses —
+     #ffffff, --surface and the panel's #F5F9FF — and is the same shade the
+     matching chip already uses for its label, so an eyebrow and its chip are
+     finally the same colour. Red, blue and violet already passed and are
+     unchanged, which is why the home page's red, blue and violet sections
+     look exactly as they did.
+
+     This mirrors the `--secondary` / `--accent-secondary` split at the top of
+     this file: one readable, one bright, never interchangeable. */
+  --accent-blue-ink: #2563eb;   /* = --primary; 5.17:1 on white */
+  --accent-purple-ink: #7c3aed; /* unchanged; 5.70:1 */
+  --accent-red-ink: #dc2626;    /* unchanged; 4.83:1 */
+  --accent-orange-ink: #c2410c; /* was #ea580c at 3.56:1 */
+  --accent-teal-ink: #0e7490;   /* was #0891b2 at 3.68:1 */
+  --accent-green-ink: #15803d;  /* was #16a34a at 3.30:1 */
+  --accent-pink-ink: #be185d;   /* was #db2777 at 4.35:1 on the panel */
+
   /* The footer's own ground — deeper and bluer than the portal sidebar. */
   --footer: #0b1431;
 }
@@ -893,6 +920,16 @@ html {
   --color-accent-teal: var(--accent-teal);
   --color-accent-green: var(--accent-green);
   --color-accent-pink: var(--accent-pink);
+  /* The text-safe partners — see the note beside the `-ink` tokens above.
+     `text-accent-*-ink` is the only thing an eyebrow or a small label should
+     ever use; `text-accent-*` stays for fills and large display type. */
+  --color-accent-blue-ink: var(--accent-blue-ink);
+  --color-accent-purple-ink: var(--accent-purple-ink);
+  --color-accent-red-ink: var(--accent-red-ink);
+  --color-accent-orange-ink: var(--accent-orange-ink);
+  --color-accent-teal-ink: var(--accent-teal-ink);
+  --color-accent-green-ink: var(--accent-green-ink);
+  --color-accent-pink-ink: var(--accent-pink-ink);
   --color-footer: var(--footer);
 }
 

@@ -3,7 +3,13 @@ import {
   ArrowRight, Calendar, Check, Eye, FolderOpen, Keyboard, Lock,
   Search, ShieldCheck, Upload, Users, type LucideIcon,
 } from "lucide-react";
-import { Container, Section } from "@/components/marketing/section";
+import {
+  Container, Eyebrow, GradientText, H2, Panel, Section, SectionHead,
+} from "@/components/marketing/section";
+import {
+  BandPrimaryAction, BandSecondaryAction, ChipLink, CtaBand, PrimaryAction, SecondaryAction,
+} from "@/components/marketing/cta";
+import { ACCENT_TILE } from "@/lib/accents";
 import { ExtractionPreview } from "@/components/marketing/extraction-preview";
 import { AccessScene, MessyScene } from "@/components/marketing/scene-visuals";
 import { FeatureCards } from "@/components/marketing/feature-cards";
@@ -47,10 +53,10 @@ const HERO_CHECKS = [
 ];
 
 const PROBLEMS: { icon: LucideIcon; t: string; d: string; tile: string }[] = [
-  { icon: Keyboard, t: "Manual data entry", d: "Re-entering policy details from PDFs takes time and can lead to errors.", tile: "bg-[#FEE2E2] text-[#DC2626]" },
-  { icon: Search, t: "Hard to search", d: "Finding a specific policy means opening multiple PDF files manually.", tile: "bg-[#E8F0FE] text-[#2563EB]" },
-  { icon: FolderOpen, t: "Scattered records", d: "Customer policies are often stored in different folders and devices.", tile: "bg-[#FFEDD5] text-[#EA580C]" },
-  { icon: Calendar, t: "Missing renewals", d: "Tracking expiry dates in spreadsheets is difficult and risky.", tile: "bg-[#DCFCE7] text-[#16A34A]" },
+  { icon: Keyboard, t: "Manual data entry", d: "Re-entering policy details from PDFs takes time and can lead to errors.", tile: ACCENT_TILE.red },
+  { icon: Search, t: "Hard to search", d: "Finding a specific policy means opening multiple PDF files manually.", tile: ACCENT_TILE.blue },
+  { icon: FolderOpen, t: "Scattered records", d: "Customer policies are often stored in different folders and devices.", tile: ACCENT_TILE.orange },
+  { icon: Calendar, t: "Missing renewals", d: "Tracking expiry dates in spreadsheets is difficult and risky.", tile: ACCENT_TILE.green },
 ];
 
 const STEPS: { n: string; t: string; d: string; dot: string }[] = [
@@ -73,34 +79,11 @@ const MINI_POLICIES = [
 ];
 
 const SECURITY: { icon: LucideIcon; t: string; d: string; tile: string }[] = [
-  { icon: Lock, t: "Private file storage", d: "Policy PDFs are stored privately, have no public URL, and are not shared without permission.", tile: "bg-[#DCFCE7] text-[#16A34A]" },
-  { icon: Users, t: "Role-based access", d: "Agents, sub-agents and customers see only the data they are authorized to, checked on the server.", tile: "bg-[#E8F0FE] text-[#2563EB]" },
-  { icon: ShieldCheck, t: "Encrypted connections", d: "All data between your browser and the platform is transmitted over HTTPS.", tile: "bg-[#F3E8FF] text-[#7C3AED]" },
-  { icon: Eye, t: "You stay in control", d: "Extracted values are shown beside the page they came from, so you confirm before relying on them.", tile: "bg-[#FFEDD5] text-[#EA580C]" },
+  { icon: Lock, t: "Private file storage", d: "Policy PDFs are stored privately, have no public URL, and are not shared without permission.", tile: ACCENT_TILE.green },
+  { icon: Users, t: "Role-based access", d: "Agents, sub-agents and customers see only the data they are authorized to, checked on the server.", tile: ACCENT_TILE.blue },
+  { icon: ShieldCheck, t: "Encrypted connections", d: "All data between your browser and the platform is transmitted over HTTPS.", tile: ACCENT_TILE.purple },
+  { icon: Eye, t: "You stay in control", d: "Extracted values are shown beside the page they came from, so you confirm before relying on them.", tile: ACCENT_TILE.orange },
 ];
-
-/** The section eyebrow: a small, coloured, tracked label. One hue per section. */
-function Label({ tone, children }: { tone: string; children: React.ReactNode }) {
-  return <span className={cn("text-[13px] font-bold uppercase tracking-[0.08em]", tone)}>{children}</span>;
-}
-
-/** The section heading.
- *
- *  The same three-stop scale was written out inline seven times on this page,
- *  which is how a type scale drifts: a tweak lands on six of them and the
- *  seventh is left behind at the old size. One component, one scale. */
-function H2({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <h2
-      className={cn(
-        "text-balance text-[28px] font-bold leading-[1.15] tracking-[-0.025em] text-foreground sm:text-[34px] shell:text-[38px]",
-        className,
-      )}
-    >
-      {children}
-    </h2>
-  );
-}
 
 export default function HomePage() {
   const half = Math.ceil(HOME_FAQS.length / 2);
@@ -127,44 +110,20 @@ export default function HomePage() {
                 AI-powered Insurance Document Management
               </span>
               <h1 className="text-balance text-[38px] font-extrabold leading-[1.04] tracking-[-0.035em] text-foreground sm:text-[48px] shell:text-[60px]">
-                Insurance policies, organized{" "}
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{ backgroundImage: "var(--gradient-brand)" }}
-                >
-                  automatically.
-                </span>
+                Insurance policies, organized <GradientText>automatically.</GradientText>
               </h1>
               <p className="max-w-[32.5rem] text-pretty text-lg leading-relaxed text-foreground/70">
                 Turn insurance PDFs into organized policy records, customer histories and renewal
                 reminders &mdash; without repetitive manual work.
               </p>
               <div className="flex flex-wrap gap-3">
-                {/* Sign-up lives in the product, on its own origin — a plain
-                    anchor, not a <Link>. */}
-                <a
-                  href={appHref("/agent/register")}
-                  className="flex items-center gap-2 rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_-12px_rgba(124,58,237,.85)] transition-transform hover:-translate-y-0.5"
-                  style={{ backgroundImage: "var(--gradient-brand)" }}
-                >
+                {/* Sign-up lives in the product, on its own origin — `external`
+                    makes it a plain anchor rather than a <Link>. */}
+                <PrimaryAction href={appHref("/agent/register")} external>
                   Get Started
-                  <ArrowRight className="size-4" />
-                </a>
-                {/* A gradient border, painted with two backgrounds clipped to
-                    different boxes — the only way to stroke an element with a
-                    gradient without an extra wrapper. */}
-                <Link
-                  href="/features"
-                  className="flex items-center rounded-xl border-2 border-transparent px-6 py-3.5 text-[15px] font-semibold text-[#7C3AED] transition-transform hover:-translate-y-0.5"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(#fff,#fff),var(--gradient-brand)",
-                    backgroundOrigin: "padding-box, border-box",
-                    backgroundClip: "padding-box, border-box",
-                  }}
-                >
-                  Explore Features
-                </Link>
+                  <ArrowRight aria-hidden className="size-4" />
+                </PrimaryAction>
+                <SecondaryAction href="/features">Explore Features</SecondaryAction>
               </div>
               <ul className="mt-1 grid gap-2.5 sm:grid-cols-2 sm:gap-x-7">
                 {HERO_CHECKS.map((c) => (
@@ -192,7 +151,7 @@ export default function HomePage() {
       <Section id="problem">
         <div className="grid items-center gap-10 rail:grid-cols-2">
           <div className="flex flex-col gap-4">
-            <Label tone="text-accent-red">The problem</Label>
+            <Eyebrow accent="red">The problem</Eyebrow>
             <H2>
               Stop spending hours organizing information already inside your PDFs.
             </H2>
@@ -221,9 +180,9 @@ export default function HomePage() {
 
       {/* ── How it works ── */}
       <Section id="how-it-works" className="!pt-0">
-        <div className="flex flex-col gap-9 rounded-3xl border border-[#E6EEFB] bg-[#F5F9FF] p-6 sm:p-10 shell:p-14">
+        <Panel className="gap-9">
           <div className="flex flex-col gap-2.5">
-            <Label tone="text-primary">How it works</Label>
+            <Eyebrow accent="blue">How it works</Eyebrow>
             <H2>
               From policy PDF to organized records in three steps.
             </H2>
@@ -294,26 +253,17 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
       </Section>
 
       {/* ── Key features ── */}
       <Section id="features">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex flex-col gap-2.5">
-            <Label tone="text-accent-purple">Key features</Label>
-            <H2>
-              Everything you need to keep insurance policies organized.
-            </H2>
-          </div>
-          <Link
-            href="/features"
-            className="flex items-center gap-1.5 rounded-full border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm font-semibold text-[#6D28D9] transition-transform hover:translate-x-0.5"
-          >
-            See all features
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
+        <SectionHead
+          eyebrow="Key features"
+          accent="purple"
+          title="Everything you need to keep insurance policies organized."
+          aside={<ChipLink href="/features" accent="purple">See all features</ChipLink>}
+        />
         <div className="mt-8">
           <FeatureCards />
         </div>
@@ -321,9 +271,9 @@ export default function HomePage() {
 
       {/* ── Product in action ── */}
       <Section id="product" className="!pt-0">
-        <div className="flex flex-col gap-7 rounded-3xl border border-[#E6EEFB] bg-[#F5F9FF] p-6 sm:p-10 shell:p-14">
+        <Panel>
           <div className="flex flex-col gap-2.5">
-            <Label tone="text-accent-red">Product in action</Label>
+            <Eyebrow accent="red">Product in action</Eyebrow>
             <H2>
               A closer look at the Insoora experience.
             </H2>
@@ -334,13 +284,13 @@ export default function HomePage() {
             </p>
           </div>
           <ProductTabs />
-        </div>
+        </Panel>
       </Section>
 
       {/* ── Who it's for ── */}
       <Section id="who-its-for">
         <div className="flex flex-col gap-2.5">
-          <Label tone="text-accent-teal">Who it&apos;s for</Label>
+          <Eyebrow accent="teal">Who it&apos;s for</Eyebrow>
           <H2>
             One platform, three kinds of users.
           </H2>
@@ -356,7 +306,7 @@ export default function HomePage() {
       {/* ── Security and trust ── */}
       <Section id="security" className="!pt-0">
         <div className="flex flex-col gap-2.5">
-          <Label tone="text-accent-green">Security &amp; trust</Label>
+          <Eyebrow accent="green">Security &amp; trust</Eyebrow>
           <H2>
             Your policy documents are personal. We treat them that way.
           </H2>
@@ -398,24 +348,17 @@ export default function HomePage() {
 
       {/* ── FAQ ── */}
       <Section id="faq" className="!pt-0">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex flex-col gap-2.5">
-            <Label tone="text-accent-orange">Frequently asked questions</Label>
-            <H2>
-              Questions agents ask before signing up.
-            </H2>
-          </div>
-          <span className="flex flex-wrap items-center gap-2.5 text-sm text-foreground/70">
-            Still have questions?
-            <Link
-              href="/contact-us"
-              className="flex items-center gap-1.5 rounded-full border border-[#FED7AA] bg-[#FFF7ED] px-3.5 py-2.5 font-semibold text-[#C2410C] transition-transform hover:translate-x-0.5"
-            >
-              Contact us
-              <ArrowRight className="size-4" />
-            </Link>
-          </span>
-        </div>
+        <SectionHead
+          eyebrow="Frequently asked questions"
+          accent="orange"
+          title="Questions agents ask before signing up."
+          aside={
+            <span className="flex flex-wrap items-center gap-2.5 text-sm text-foreground/70">
+              Still have questions?
+              <ChipLink href="/contact-us" accent="orange">Contact us</ChipLink>
+            </span>
+          }
+        />
         {/* Two columns, as in the design. Each is its own accordion so opening
             a question on the left does not shove the right column down. */}
         <div className="mt-7 grid items-start gap-3 rail:grid-cols-2 rail:gap-x-6">
@@ -426,49 +369,30 @@ export default function HomePage() {
           ))}
         </div>
         <p className="mt-5 text-sm text-muted">
-          <Link href="/faq" className="font-semibold text-primary hover:underline">
+          <Link
+            href="/faq"
+            className="inline-flex min-h-6 items-center font-semibold text-primary hover:underline"
+          >
             Read all frequently asked questions
           </Link>
         </p>
       </Section>
 
       {/* ── Conversion ── */}
-      <Section className="!pt-0">
-        <div
-          className="flex flex-wrap items-center justify-between gap-6 rounded-3xl p-8 text-white sm:p-12"
-          style={{
-            background:
-              "radial-gradient(500px 300px at 95% 0%,#EF4444,transparent 70%),radial-gradient(500px 300px at 0% 100%,#7C3AED,transparent 70%),#1E40AF",
-          }}
-        >
-          <div className="flex max-w-[40rem] flex-col gap-2.5">
-            <span className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#BFDBFE]">
-              Get started today
-            </span>
-            <h2 className="text-balance text-[26px] font-bold tracking-[-0.025em] sm:text-[32px] shell:text-4xl">
-              Spend less time typing. Stay on top of policy renewals.
-            </h2>
-            <p className="text-base text-[#DBEAFE]">
-              Join Insoora and turn your insurance PDFs into organized, searchable records.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href={appHref("/agent/register")}
-              className="flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-[#B91C1C] shadow-[0_14px_28px_-12px_rgba(0,0,0,.45)] transition-transform hover:-translate-y-0.5"
-            >
+      <CtaBand
+        eyebrow="Get started today"
+        title="Spend less time typing. Stay on top of policy renewals."
+        lede="Join Insoora and turn your insurance PDFs into organized, searchable records."
+        actions={
+          <>
+            <BandPrimaryAction href={appHref("/agent/register")} external>
               Get Started
-              <ArrowRight className="size-4" />
-            </a>
-            <Link
-              href="/contact-us"
-              className="flex items-center rounded-xl bg-[#16A34A] px-6 py-3.5 font-semibold text-white shadow-[0_14px_28px_-12px_rgba(22,163,74,.8)] transition-transform hover:-translate-y-0.5"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </Section>
+              <ArrowRight aria-hidden className="size-4" />
+            </BandPrimaryAction>
+            <BandSecondaryAction href="/contact-us">Contact Us</BandSecondaryAction>
+          </>
+        }
+      />
     </>
   );
 }

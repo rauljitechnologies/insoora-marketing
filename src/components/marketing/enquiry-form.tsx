@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle, CheckCheck, Send } from "lucide-react";
 import { api, ClientApiError } from "@/lib/client-api";
 import { Spinner } from "@/components/ui";
+import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
 
 // The Contact Us form.
@@ -53,9 +54,14 @@ function validate(f: Fields): Errors {
 
 const FIELD_ORDER: (keyof Fields)[] = ["name", "email", "phone", "message"];
 
-/** Shared input styling, so every control on the form is the same height. */
+/** Shared input styling, so every control on the form is the same height.
+ *
+ *  The focus treatment is the site's: the border moves AND a soft wide ring
+ *  is laid down. A 1px border change on its own is something people genuinely
+ *  miss, and the shared Button and Input in components/ui already draw the
+ *  halo — the form was the one surface still using a tighter 2px ring. */
 const CONTROL =
-  "h-11 w-full rounded-md border bg-background px-3 text-sm text-foreground transition-colors placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "h-11 w-full rounded-md border bg-background px-3 text-sm text-foreground transition-[border-color,box-shadow] duration-150 placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 aria-invalid:border-danger aria-invalid:focus:ring-danger/20";
 
 function Label({ htmlFor, children, hint }: { htmlFor: string; children: React.ReactNode; hint?: string }) {
   return (
@@ -124,10 +130,10 @@ export function EnquiryForm() {
   if (status === "success") {
     return (
       <div className="flex flex-col items-start gap-3 rounded-2xl border border-success/30 bg-success-soft p-6">
-        <span className="grid size-11 place-items-center rounded-xl bg-background text-success">
+        <span aria-hidden className={cn("grid size-12 place-items-center rounded-xl", ACCENT_TILE.green)}>
           <CheckCheck className="size-6" />
         </span>
-        <h2 className="text-xl font-bold tracking-[-0.02em] text-foreground">Message sent</h2>
+        <h2 className="text-[22px] font-bold tracking-[-0.025em] text-foreground">Message sent</h2>
         <p className="text-[15px] leading-relaxed text-foreground/80">
           Thanks{sentTo.first ? `, ${sentTo.first}` : ""}. We&apos;ve received your enquiry and will reply
           to <span className="font-semibold">{sentTo.email}</span>.
@@ -147,7 +153,7 @@ export function EnquiryForm() {
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold tracking-[-0.02em] text-foreground">Send an enquiry</h2>
+      <h2 className="text-[22px] font-bold tracking-[-0.025em] text-foreground">Send an enquiry</h2>
 
       {status === "error" && (
         <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft p-4">
@@ -244,7 +250,7 @@ export function EnquiryForm() {
           aria-invalid={!!errors.message}
           aria-describedby={errors.message ? "e-message" : "message-count"}
           className={cn(
-            "w-full rounded-md border bg-background p-3 text-sm leading-relaxed text-foreground transition-colors placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-primary/30",
+            "w-full rounded-md border bg-background p-3 text-sm leading-relaxed text-foreground transition-[border-color,box-shadow] duration-150 placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 aria-invalid:border-danger aria-invalid:focus:ring-danger/20",
             errors.message ? "border-danger" : "border-border",
           )}
           placeholder="Tell us how you manage policies today, and what you'd like to change."
@@ -273,12 +279,17 @@ export function EnquiryForm() {
         .
       </p>
 
+      {/* The site's primary action: the brand gradient, the same radius and
+          the same violet lift as "Get Started" in the header, the hero and
+          the conversion band. It was the one flat-blue `rounded-md` button
+          left on a site whose primary actions all carry the gradient. */}
       <button
         type="submit"
         disabled={sending}
-        className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-md bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
+        style={{ backgroundImage: "var(--gradient-brand)" }}
+        className="inline-flex items-center justify-center gap-2 self-start rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_-12px_rgba(124,58,237,.85)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {sending ? <Spinner className="size-4" /> : <Send className="size-4" />}
+        {sending ? <Spinner className="size-4" /> : <Send aria-hidden className="size-4" />}
         {sending ? "Sending…" : "Send message"}
       </button>
     </form>

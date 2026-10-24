@@ -1,5 +1,7 @@
 import { Clock, MapPin, Phone, UserRound } from "lucide-react";
-import { Card, PageHead, Section } from "@/components/marketing/section";
+import { Card, GradientText, PageHead, Section } from "@/components/marketing/section";
+import { ACCENT_TILE } from "@/lib/accents";
+import { cn } from "@/lib/utils";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
 import { CONTACT, addressLines } from "@/lib/contact";
@@ -28,7 +30,13 @@ export default function ContactPage() {
 
       <PageHead
         trail={[{ name: "Contact Us", href: "/contact-us" }]}
-        title="Let's talk about your policies."
+        accent="green"
+        badge="We reply to every enquiry by email"
+        title={
+          <>
+            Let&apos;s talk about <GradientText>your policies.</GradientText>
+          </>
+        }
         lede="Questions about features, or about getting your agency set up? Call us, or send a message and we'll reply by email."
       />
 
@@ -37,7 +45,7 @@ export default function ContactPage() {
             exists. The detail cards sit beside it on desktop and below it on
             anything narrower, so a phone visitor reaches the form first. */}
         <div className="grid gap-6 rail:grid-cols-[minmax(0,1fr)_20rem] rail:items-start">
-          <Card className="order-1">
+          <Card className="order-1 p-6 shadow-card-hover sm:p-8">
             <EnquiryForm />
           </Card>
 
@@ -47,14 +55,14 @@ export default function ContactPage() {
                 "Contact Us" is usually looking for. No email address is
                 published until a real mailbox exists — an address that
                 bounces is worse than none. */}
-            <Card className="flex flex-col gap-2">
-              <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
+            <Card className="card-hover flex flex-col gap-2">
+              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.green)}>
                 <Phone className="size-5" />
               </span>
               <p className="text-sm font-semibold text-foreground">Phone</p>
               <a
                 href={CONTACT.phoneHref}
-                className="text-[15px] font-semibold text-primary hover:underline"
+                className="inline-flex min-h-6 items-center self-start text-[15px] font-semibold text-primary hover:underline"
               >
                 {CONTACT.phone}
               </a>
@@ -63,8 +71,8 @@ export default function ContactPage() {
               </p>
             </Card>
 
-            <Card className="flex flex-col gap-2">
-              <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
+            <Card className="card-hover flex flex-col gap-2">
+              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.red)}>
                 <MapPin className="size-5" />
               </span>
               <p className="text-sm font-semibold text-foreground">Office</p>
@@ -78,16 +86,16 @@ export default function ContactPage() {
               </address>
             </Card>
 
-            <Card className="flex flex-col gap-2">
-              <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
+            <Card className="card-hover flex flex-col gap-2">
+              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.teal)}>
                 <Clock className="size-5" />
               </span>
               <p className="text-sm font-semibold text-foreground">Response</p>
               <p className="text-sm leading-relaxed text-muted">We reply to every enquiry by email.</p>
             </Card>
 
-            <Card className="flex flex-col gap-2 border-warning/30 bg-warning-soft">
-              <span className="grid size-10 place-items-center rounded-xl bg-background text-warning">
+            <Card className="card-hover flex flex-col gap-2 border-warning/30 bg-warning-soft">
+              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.orange)}>
                 <UserRound className="size-5" />
               </span>
               <p className="text-sm font-semibold text-foreground">Already a customer?</p>
@@ -96,7 +104,10 @@ export default function ContactPage() {
                 and are the only one who can change it.
               </p>
               {/* The customer portal is on the product's origin. */}
-              <a href={appHref("/customer/login")} className="mt-1 text-sm font-semibold text-primary hover:underline">
+              <a
+                href={appHref("/customer/login")}
+                className="mt-1 inline-flex min-h-9 items-center self-start rounded-md text-sm font-semibold text-primary hover:underline"
+              >
                 Sign in to your portal
               </a>
             </Card>
