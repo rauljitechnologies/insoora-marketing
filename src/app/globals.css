@@ -1,0 +1,1491 @@
+/* `source(none)` disables Tailwind's automatic project-wide class detection,
+   which otherwise globs every directory under the repo root — including the
+   private `storage/` upload directory. That made each build walk user data
+   (and fail outright on an upload directory the build user cannot read).
+   Class names only ever appear in `src`, so scan exactly that. */
+@import "tailwindcss" source(none);
+@source "../**/*.{ts,tsx}";
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Design tokens.
+
+   Two layers:
+     :root              the back-office / admin theme (unchanged).
+     .portal-customer   the customer portal theme.
+     .portal-agent      the agent portal theme.
+
+   A portal block overrides the SAME token names as :root, so every shared
+   component (bg-primary, text-muted, Badge, Card…) re-themes itself inside
+   that portal — one set of components, three palettes, and the back office
+   stays exactly as it was.
+
+   Nothing in src/ should hardcode a hex value: add a token here instead.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Insurance / fintech admin theme: white surfaces, ink text, blue accent.
+
+   The palette is one refined blue family — a deeper, slightly violet primary
+   than the old flat #1d4ed8, a cooler surface, and a true ink for text
+   instead of navy. Reads like current fintech (Stripe/Razorpay) rather than
+   a 2018 admin template, and every screen picks it up through the tokens. */
+:root {
+  --background: #ffffff;
+  --surface: #f7f8fc;
+  --foreground: #0b1220;
+  --muted: #5c6b8a;
+  --border: #e6e9f2;
+  --primary: #3b5bf5;
+  --primary-hover: #2a46d4;
+  --primary-soft: #eef2ff;
+  --success: #0f8a5f;
+  --success-soft: #e7f8f1;
+  --warning: #b45309;
+  --warning-soft: #fff7e6;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --sidebar: #0b1220;
+  --sidebar-text: #a9b4cc;
+
+  /* ── Shared additions (new names only, so no existing screen changes) ── */
+
+  /* Secondary cyan, in its text-safe shade. The bright spec hue lives on the
+     `accent-*` tokens below and is used for fills, rings and bars — never for
+     small text on a light surface, where it would fail contrast. */
+  --secondary: #0e7490;
+  --secondary-soft: #e0f7fb;
+
+  --accent-primary: #3b5bf5;
+  --accent-secondary: #06b6d4;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+
+  /* Soft, layered shadows: a 1px contact edge plus a wide, very light ambient
+     spread. A single hard shadow is what makes a card look stuck on top of
+     the page rather than resting on it. */
+  --card-shadow: 0 1px 2px rgba(11, 18, 32, 0.04), 0 8px 24px -16px rgba(11, 18, 32, 0.1);
+  --card-shadow-hover: 0 2px 4px rgba(11, 18, 32, 0.05), 0 20px 44px -20px rgba(11, 18, 32, 0.2);
+  --pop-shadow: 0 24px 56px -20px rgba(11, 18, 32, 0.26), 0 4px 12px rgba(11, 18, 32, 0.07);
+  /* The phone tab bar's lift. Cast UPWARDS, because the bar is pinned to the
+     bottom of the viewport and the page scrolls under it: a hairline alone
+     does not separate a white bar from a white list sliding beneath it. */
+  --bar-shadow: 0 -1px 0 rgba(11, 18, 32, 0.04), 0 -8px 24px -16px rgba(11, 18, 32, 0.18);
+
+  /* Brand gradient. The admin side had none, so anything reaching for
+     `--gradient-brand` (the wordmark, a primary CTA) silently fell back to no
+     background at all. */
+  --gradient-brand: linear-gradient(135deg, #3b5bf5 0%, #2a46d4 52%, #06b6d4 100%);
+  --gradient-sidebar: linear-gradient(180deg, #0b1220 0%, #070c16 100%);
+  --gradient-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%);
+
+  /* The stat-card identity washes (see STAT_ACCENT in portal/panels.tsx).
+     Tokens rather than literals in the component, so a portal can retint the
+     whole row from its own theme block — the agent portal does. A portal that
+     does not override them inherits these, so nothing else changes. */
+  --stat-blue: linear-gradient(135deg, #E8F0FE 0%, var(--background) 62%);
+  --stat-violet: linear-gradient(135deg, #F0EBFE 0%, var(--background) 62%);
+  --stat-teal: linear-gradient(135deg, #E0F5F8 0%, var(--background) 62%);
+  --stat-amber: linear-gradient(135deg, #FEF1E0 0%, var(--background) 62%);
+  --stat-green: linear-gradient(135deg, #E6F7ED 0%, var(--background) 62%);
+  --stat-rose: linear-gradient(135deg, #FDECEC 0%, var(--background) 62%);
+}
+
+/* ── The two portals: one brand, two identities ───────────────────────────
+   The agent portal and the customer portal are different products used by
+   different people for different lengths of time, and they should not be
+   told apart only by the words in the sidebar. They are told apart by hue.
+
+   Both hues are literal stops of `--gradient-brand`, the red → purple → blue
+   ramp the logo and the public site are built on:
+
+     agent     the brand ramp's blue stop (#2563EB) — vivid, flat fills
+     customer  rauljitechnologies.com's blue (#2272BA) — deeper, steelier,
+               and gradient-filled rather than flat
+
+   Both are blue, so hue alone no longer separates them: what does is value
+   and treatment. The customer side is the company site's own palette, its
+   primary actions carry a gradient and its sidebar is that site's navy hero
+   ramp; the agent side stays vivid and flat, because an operator presses
+   dozens of buttons an hour and a gradient on each is noise. Their dashboards
+   are different shapes as well.
+
+   Red is deliberately not used as either: it is spoken for by `--danger`,
+   and an interface whose primary action is the same colour as its warnings
+   is one that teaches people to ignore warnings.
+
+   What stays identical across both is what carries the brand: the logo (which
+   is fixed artwork and does not re-theme), the type scale, the radius scale,
+   every component, and all four semantic colours — success, warning, danger
+   and their soft variants. "Expiring" must not change colour depending on who
+   is looking at it.
+
+   The admin theme above is untouched: it is the back office, not a portal
+   anyone is meant to recognise.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Customer portal theme ──
+   Applied by the portal layout on its outermost element.
+
+   The palette is lifted from rauljitechnologies.com — primary #2272BA, the
+   #F8F9FC page ground, and the navy hero ramp as the sidebar — so a customer
+   who arrives from the company site lands somewhere that looks like it
+   belongs to the same company. Values were read from that site's computed
+   styles, not matched by eye.
+
+   Two deliberate departures, both for contrast; each is noted at the line. */
+.portal-customer {
+  --background: #ffffff;        /* card background */
+  --surface: #f8f9fc;           /* page background — rauljitechnologies.com's own */
+  --foreground: #0b1b2e;        /* primary text — navy ink from the same family */
+  --muted: #5b6a7d;             /* secondary text */
+  --border: #dfe6ef;
+  /* rauljitechnologies.com's primary, exactly. */
+  --primary: #2272ba;
+  --primary-hover: #1b5c99;
+  --primary-soft: #e9f1f8;      /* their rgba(34,114,186,.1) resolved on white */
+  --secondary: #16467c;
+  --secondary-soft: #e8eff7;
+  /* Text-safe greens/ambers/reds, and the same four in both portals: a
+     status must not change colour depending on who is looking at it. */
+  --success: #0f8a5f;
+  --success-soft: #e7f8f1;
+  --warning: #b45309;
+  --warning-soft: #fff7e6;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --sidebar: #091c33;
+  /* Light enough to clear 4.5:1 against the LIGHTEST stop of the sidebar
+     gradient below (#16467C), not just the darkest — the nav runs across the
+     whole ramp. */
+  --sidebar-text: #a3b6cc;
+  --accent-primary: #2272ba;
+  /* Their bright accent. Used for fills, rings and bars — never as a ground
+     for small white text, where it falls under 4.5:1. */
+  --accent-secondary: #5dade2;
+
+  /* Their button gradient, with the light stop pulled to their own deeper
+     blue: the site's #3B94D6 end gives a white 14px label only 3.3:1, and a
+     button label is not "large text". Both stops here are colours taken from
+     that site, and both clear 4.5:1 under white. */
+  --gradient-brand: linear-gradient(135deg, #2272ba 0%, #16467c 100%);
+  --gradient-brand-hover: linear-gradient(135deg, #1b5c99 0%, #113b6a 100%);
+  /* Their hero gradient, unchanged. */
+  --gradient-sidebar: linear-gradient(135deg, #071a2f 0%, #0a2240 55%, #16467c 100%);
+  --gradient-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%);
+}
+
+/* ── Agent portal theme — "aurora console" ──
+   Applied by the agent portal shell on its outermost element.
+
+   Violet, on a violet-tinted near-white, with a near-black aubergine sidebar
+   lit by a slow aurora. This replaces the blue it used to wear, for two
+   reasons:
+
+     1. The sign-in page already gives the agent door VIOLET (#7C3AED, the
+        middle stop of the brand ramp) while the customer door is blue. The
+        portal behind the violet door was blue, so the one colour signal the
+        product does give at sign-in was contradicted the moment you were in.
+        Door and room now match.
+
+     2. Agent-blue and customer-blue were two shades of the same hue, told
+        apart only by value. Screenshots of the two portals were genuinely
+        hard to tell apart, which is the thing a per-portal palette exists to
+        prevent.
+
+   Everything below is one violet→indigo family with a cyan highlight. The
+   highlight is what moves — the active nav marker, the credit ring, the
+   aurora — so the colour that draws the eye is always the colour on the
+   thing that changed. The four semantic colours (success / warning / danger
+   and their soft variants) are untouched and identical to the other portals:
+   "expiring" must not change colour depending on who is looking at it. */
+.portal-agent {
+  --background: #ffffff;        /* card background */
+  --surface: #f6f5fd;           /* page background — violet-tinted, and a
+                                   shade deeper than pure white: this screen
+                                   is read all day, and a white field at that
+                                   duration is glare. */
+  --foreground: #140f2e;        /* primary text — deep violet ink (9.6:1) */
+  --muted: #645d86;             /* secondary text (5.7:1 on --surface) */
+  --border: #e7e3f6;
+  /* Violet-700. Text-safe: 7.1:1 on white, and white-on-it is the same, so
+     one token serves both the link colour and the button ground. */
+  --primary: #6d28d9;
+  --primary-hover: #5b21b6;
+  --primary-soft: #f3efff;
+  /* Cyan-700 rather than the bright highlight: this one is used as TEXT. */
+  --secondary: #0e7490;
+  --secondary-soft: #e3f7fb;
+  --success: #0f8a5f;
+  --success-soft: #e7f8f1;
+  --warning: #b45309;
+  --warning-soft: #fff7e6;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --sidebar: #0c0820;
+  /* Clears 4.5:1 against the LIGHTEST stop of the sidebar ramp (#171036),
+     not just the darkest — the nav runs across the whole thing. */
+  --sidebar-text: #a79fc9;
+  --accent-primary: #7c3aed;
+  /* Cyan. Fills, rings and the active nav marker — never small text. */
+  --accent-secondary: #06b6d4;
+
+  --gradient-brand: linear-gradient(135deg, #7c3aed 0%, #6d28d9 46%, #4f46e5 100%);
+  --gradient-brand-hover: linear-gradient(135deg, #6d28d9 0%, #5b21b6 46%, #4338ca 100%);
+  --gradient-sidebar: linear-gradient(180deg, #171036 0%, #0b0719 100%);
+  --gradient-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%);
+
+  /* ── Agent-only additions ──
+     Used by the `.portal-agent` rules at the foot of this file and by
+     `components/agent/*`. Named here rather than inlined so the whole
+     identity still moves from one place. */
+
+  /* The three aurora hues. Also the hero's mesh and the sidebar's bloom. */
+  --aurora-1: #7c3aed;  /* violet */
+  --aurora-2: #06b6d4;  /* cyan   */
+  --aurora-3: #4f46e5;  /* indigo */
+
+  /* Glass, for anything sitting on the sidebar or the hero. */
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-strong: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.14);
+
+  /* Shadows are violet-tinted rather than neutral grey: a grey shadow under
+     a violet card reads as dirt. */
+  --card-shadow: 0 1px 2px rgba(20, 15, 46, 0.05), 0 10px 30px -18px rgba(76, 29, 149, 0.28);
+  --card-shadow-hover: 0 2px 4px rgba(20, 15, 46, 0.06), 0 26px 54px -24px rgba(76, 29, 149, 0.42);
+  --pop-shadow: 0 28px 64px -24px rgba(32, 18, 77, 0.34), 0 4px 14px rgba(20, 15, 46, 0.08);
+
+  /* The stat-card identity washes, retinted into this family. */
+  --stat-blue: linear-gradient(135deg, #EDE9FE 0%, var(--background) 62%);
+  --stat-violet: linear-gradient(135deg, #F3E8FF 0%, var(--background) 62%);
+  --stat-teal: linear-gradient(135deg, #DEF5FA 0%, var(--background) 62%);
+  --stat-amber: linear-gradient(135deg, #FDF0DD 0%, var(--background) 62%);
+  --stat-green: linear-gradient(135deg, #E3F7EC 0%, var(--background) 62%);
+  --stat-rose: linear-gradient(135deg, #FCE9F3 0%, var(--background) 62%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-accent-success: var(--accent-success);
+  --color-accent-warning: var(--accent-warning);
+  --color-accent-danger: var(--accent-danger);
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
+  --shadow-pop: var(--pop-shadow);
+  /* Loaded (and self-hosted) by next/font in app/layout.tsx. The fallback
+     stack still matters: it is what renders for the few ms before the face
+     arrives, and if the variable is ever missing it must not land on Times. */
+  /* Inter, not Plus Jakarta Sans: the product wears Jakarta, the public
+     site wears Inter, and this deployment is only the site. `--font-inter`
+     is set on <html> by app/layout.tsx. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ── Portal breakpoints ──
+     The portal layout turns at two widths that are not Tailwind defaults,
+     and both are load-bearing rather than cosmetic:
+
+       shell (1000px) — below it the 248px sidebar costs more width than the
+         content can spare, so it becomes an overlay drawer and every grid
+         collapses to one column. Tailwind's `lg` (1024px) is 24px late: at
+         1010px the sidebar is still pinned and the policy rows have already
+         run out of room.
+
+       rail (1180px) — the dashboard's 380px status rail only earns its place
+         once the working column keeps ~760px beside it, and the six-column
+         policy row needs the same width to avoid crushing the date column.
+         Tailwind's `xl` (1280px) is 100px late and leaves a dead band where
+         the page is wide but reads as a phone.
+
+     Named rather than arbitrary (`min-[1000px]:`) so the two turns stay
+     consistent across every portal screen. Declared in the block below
+     rather than here: see the note on ordering. */
+}
+
+/* The whole breakpoint scale, re-declared in ascending width order.
+
+   Tailwind emits breakpoint media blocks in the order their theme keys are
+   DECLARED, not in ascending width order. Simply appending `shell` and `rail`
+   put their blocks ahead of `sm`, so above 1180px an `sm:` rule on the same
+   property won on source order — `sm:grid-cols-2` beat the six-column `rail:`
+   policy row and the wide table silently never appeared. Resetting the scale
+   and listing every stop in order makes emission order match width order, so
+   a wider variant always overrides a narrower one. */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 40rem;       /*  640px */
+  --breakpoint-md: 48rem;       /*  768px */
+  --breakpoint-shell: 62.5rem;  /* 1000px — the sidebar becomes a drawer below this */
+  --breakpoint-lg: 64rem;       /* 1024px */
+  --breakpoint-hero: 67.5rem;   /* 1080px — the sign-in hero panel appears here */
+  --breakpoint-rail: 73.75rem;  /* 1180px — the 380px status rail appears here */
+  --breakpoint-xl: 80rem;       /* 1280px */
+  --breakpoint-2xl: 96rem;      /* 1536px */
+}
+
+/* ── Corner radius scale ──
+   Every `rounded-*` utility in the app reads from these, so the whole product
+   softens from one place rather than from 70 pages of edits.
+
+   The old scale was Tailwind's default, built when 4–8px corners were the
+   house style; at this type size it reads as a 2018 admin panel. Each step is
+   bumped roughly 1.5×, which is what separates "boxy" from "current" — and
+   because it is the scale and not a pile of one-off overrides, cards, inputs,
+   buttons and chips all stay in proportion with each other. `rounded-full` is
+   untouched: pills and avatars should stay pills. */
+@theme {
+  /* `shadow-bar` for the phone tab bar; the value is the `--bar-shadow` token
+     above so a portal could retint it from its own block. */
+  --shadow-bar: var(--bar-shadow);
+
+  --radius-xs: 0.25rem;   /*  4px — tiny chips, colour swatches */
+  --radius-sm: 0.375rem;  /*  6px */
+  --radius-md: 0.625rem;  /* 10px — buttons, inputs, nav items */
+  --radius-lg: 0.75rem;   /* 12px — small cards, dropdown items */
+  --radius-xl: 1rem;      /* 16px — cards, dialogs */
+  --radius-2xl: 1.25rem;  /* 20px — panels, hero surfaces */
+  --radius-3xl: 1.75rem;  /* 28px — marketing sections */
+}
+
+html, body {
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* ── Typography ──
+   Plus Jakarta Sans is a wide, open face: at heading sizes the default
+   tracking reads loose and the line-height too airy, so headings get negative
+   tracking that tightens as they grow. Body text is left alone.
+
+   Numbers are set to tabular inside tables, amounts and anything measuring:
+   proportional digits make a column of premiums jitter, which is exactly the
+   place a reader scans vertically. `.nums` opts a single element in. */
+h1, h2, h3, h4, h5 {
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+h1 { letter-spacing: -0.03em; }
+h2 { letter-spacing: -0.024em; }
+
+table,
+.nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Paragraphs read better with a short measure; this stops a wide panel from
+   running body copy to 140 characters. Opt-in, so layouts stay in control. */
+.prose-measure { max-width: 68ch; }
+
+/* The default keyboard-focus ring, for everything that does not style its own.
+   In `@layer base` for the same reason as the cursor rules below: unlayered,
+   it outranked every Tailwind utility, so a control with its own focus
+   treatment (the shared Input and Button both draw a soft `ring-4` halo) drew
+   BOTH — a square outline crossing its own rounded ring. Based here, a
+   `focus:outline-none` utility on such a control wins, and everything else
+   still gets a visible focus ring for free. */
+@layer base {
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Pointer cursor on everything clickable.
+
+   Tailwind v4's preflight follows the CSS spec and gives `button` the default
+   arrow cursor, so every button, menu item and tab in the app read as inert
+   text. This puts the hand back, once, for:
+
+     - real buttons and button-ish inputs,
+     - anything carrying an interactive ARIA role (Radix renders its menu
+       items, tabs and switches as divs with a role, not as buttons),
+     - labels that wrap a checkbox or radio, where clicking the label toggles
+       the control. Labels for text fields are left alone: focusing a field is
+       not a click target in the same sense.
+
+   Disabled controls get `not-allowed` instead. Note that `disabled:pointer-
+   events-none` (on the shared Button) hides any cursor of its own, so this
+   only shows on disabled controls that still receive pointer events.
+
+   In `@layer base` on purpose: unlayered rules outrank every Tailwind layer
+   regardless of specificity, which would make this beat a deliberate
+   `cursor-default` or `cursor-not-allowed` utility on a single element.
+   Based here, a class on the element still wins.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  button,
+  summary,
+  select,
+  a[href],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="color"],
+  input[type="range"],
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]),
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="radio"],
+  [role="checkbox"],
+  [role="switch"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Motion.
+
+   Entrance animations are opt-in classes rather than library-driven, so they
+   cost nothing at runtime and never delay first paint: the markup is already
+   correct, the animation only reveals it. `--delay` staggers a list.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes pr-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pr-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pr-pop {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pr-slide-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pr-drawer {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: none; }
+}
+/* Radix Accordion: the height is published by the primitive as a custom
+   property, so the open/close can be animated without measuring in JS. */
+@keyframes pr-acc-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes pr-acc-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+@keyframes pr-shimmer {
+  to { transform: translateX(100%); }
+}
+@keyframes pr-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Progress rings. --ring-fill is registered so it can be interpolated; the
+   ring's stroke offset is derived from it, with a fallback of 1 so a browser
+   without @property support renders the correct final arc and simply does not
+   animate it. */
+@property --ring-fill {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+@keyframes pr-ring {
+  from { --ring-fill: 0; }
+  to { --ring-fill: 1; }
+}
+@keyframes pr-spin {
+  to { transform: rotate(360deg); }
+}
+/* Hero artwork. The orbits spin around their own centre, so they keep the
+   -50%/-50% centring translate that positions them. */
+@keyframes pr-orbit {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes pr-orbit-rev {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+@keyframes pr-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes pr-glow {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+.anim-rise { animation: pr-rise 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
+.anim-fade { animation: pr-fade 0.35s ease-out both; animation-delay: var(--delay, 0ms); }
+.anim-pop { animation: pr-pop 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
+.anim-slide-in { animation: pr-slide-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.anim-drawer { animation: pr-drawer 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.anim-acc-down { animation: pr-acc-down 0.22s ease-out; }
+.anim-acc-up { animation: pr-acc-up 0.18s ease-in; }
+/* Progress bars: the element is sized to its real percentage, the animation
+   only sweeps it out from the left, so the value is correct without JS. */
+.anim-grow { transform-origin: left center; animation: pr-grow 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 120ms); }
+.anim-ring {
+  stroke-dashoffset: calc(var(--ring-circumference) * (1 - var(--ring-target) * var(--ring-fill, 1)));
+  animation: pr-ring 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--delay, 120ms);
+}
+
+/* Hero artwork. `anim-float` is also used on the shield, which is centred by
+   the same translate, so it declares its own keyframes rather than sharing
+   the chips' plain vertical drift. */
+.anim-orbit { animation: pr-orbit 18s linear infinite; }
+.anim-orbit-slow { animation: pr-orbit-rev 40s linear infinite; }
+.anim-glow { animation: pr-glow 4s ease-in-out infinite; }
+.anim-float { animation: pr-float 5s ease-in-out infinite; }
+/* The shield is positioned by a centring translate, so a plain translateY
+   animation would knock it out of the centre: give it its own keyframes. */
+svg.anim-float {
+  animation-name: pr-float-centred;
+}
+@keyframes pr-float-centred {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(-50%, calc(-50% - 6px)); }
+}
+
+/* Small lift on interactive cards. */
+.card-hover {
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+  border-color: color-mix(in oklab, var(--primary) 28%, var(--border));
+}
+
+/* Skeleton placeholder with a single travelling highlight. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--border) 60%, var(--surface));
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: pr-shimmer 1.4s infinite;
+}
+
+/* Table headings used to be ALL-CAPS in the shared `Th`, which the portal
+   design explicitly rejected ("sentence case everywhere; no ALL-CAPS table
+   headers"), so both portal shells overrode it here. `Th` is sentence case
+   everywhere now, so the override is gone rather than left to rot. */
+
+/* Thin scrollbar for the portal sidebar. */
+.scrollbar-slim { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.18) transparent; }
+.scrollbar-slim::-webkit-scrollbar { width: 6px; }
+.scrollbar-slim::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 9999px; }
+
+/* ── Safe areas ────────────────────────────────────────────────────────────
+
+   The four insets a phone reserves for its own hardware: the notch or
+   Dynamic Island at the top, the home-indicator bar at the bottom, and the
+   rounded corners in landscape.
+
+   These resolve to 0 unless the document is declared `viewport-fit=cover`
+   (see the `viewport` export in app/layout.tsx). Without that declaration
+   every rule below is a no-op, which is why safe-area support could not be
+   "added to the CSS" on its own.
+
+   `max()` rather than a bare `env()`: a bottom bar needs its own breathing
+   room on a phone with no inset at all, so each utility keeps a floor and
+   grows only where the hardware demands it.
+
+   Declared with `@utility` so Tailwind's variants compose — `shell:pb-0`
+   still overrides `pb-safe-nav`, which a plain class could not do. */
+
+/* Each utility carries a FLOOR as well as the inset, because every one of
+   them replaces the padding utility it stands in for rather than adding to
+   it: `px-safe px-4` are two declarations of `padding-inline` with no
+   reliable precedence between them, so the call sites below use the safe-area
+   utility INSTEAD of the Tailwind one. The floor is the value it replaces,
+   overridable per element with the `--safe-*` variables.
+
+   Breakpoint variants still work as expected — `sm:px-6` is a variant, and
+   Tailwind orders variants after bare utilities. */
+
+@utility pt-safe {
+  padding-top: max(var(--safe-pt, 0px), env(safe-area-inset-top, 0px));
+}
+@utility pb-safe {
+  padding-bottom: max(var(--safe-pb, 0px), env(safe-area-inset-bottom, 0px));
+}
+@utility px-safe {
+  padding-left: max(var(--safe-px, 1rem), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--safe-px, 1rem), env(safe-area-inset-right, 0px));
+}
+
+/* A sticky header that must clear the notch while keeping its own height.
+   Height grows by the inset so the content inside stays where it was. */
+@utility h-safe-header {
+  height: calc(var(--safe-header-h, 4.25rem) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* The bottom tab bar: its own 0.5rem of air, plus whatever the home
+   indicator claims. */
+@utility pb-safe-bar {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* Page content sitting behind that bar. 3.5rem is the bar's own control
+   height — content must end above it, not under it. */
+@utility pb-safe-nav {
+  padding-bottom: calc(3.5rem + max(var(--safe-nav-gap, 1.25rem), env(safe-area-inset-bottom, 0px)));
+}
+
+/* ── Viewport height ──────────────────────────────────────────────────────
+
+   `100vh` on a phone is the viewport with the browser's toolbars hidden, so
+   a `min-h-screen` shell is taller than the window whenever they are shown
+   — which is most of the time, and is what makes a page scroll by the height
+   of the address bar before it moves at all. `dvh` tracks the live viewport.
+
+   No `100vh` fallback: the minifier collapses a two-declaration fallback to
+   the last value anyway, and every browser that supports `env(safe-area-
+   inset-*)` with `viewport-fit=cover` — which is what the rest of this block
+   depends on — also supports `dvh`. */
+@utility min-h-app {
+  min-height: 100dvh;
+}
+
+/* ── No sideways scroll ───────────────────────────────────────────────────
+
+   One overflowing element — a long policy number, a wide table that forgot
+   its wrapper — drags the whole document sideways, and on a phone that reads
+   as a broken page rather than as one wide child. Clipping at the root
+   contains it without touching the scroll container inside, so a wide table
+   still scrolls within its own `overflow-x-auto` wrapper.
+
+   `clip` rather than `hidden`: `overflow-x: hidden` silently makes the
+   element a scroll container, which breaks `position: sticky` on the portal
+   header and the table heads inside it. `overflow-x: clip` does not. */
+html {
+  overflow-x: clip;
+}
+
+/* ── Form fields on a phone ───────────────────────────────────────────────
+
+   iOS Safari zooms the whole viewport when a field under 16px takes focus,
+   and does not zoom back out. The app's inputs are `text-sm` (14px), so
+   every tap into a search box, a policy number or a PIN left the page
+   magnified and scrolled sideways — which is the single most "this is a
+   website, not an app" moment on the phone.
+
+   16px below the `md` breakpoint only: the desktop type scale is deliberate
+   and stays as it is. Checkboxes and radios are excluded because font-size
+   is not what sizes them.
+
+   `font-size: 1rem` rather than `16px` so a reader who has raised their
+   browser's base size still gets a proportionally larger field. */
+@media (max-width: 47.999rem) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}
+
+/* Respect the OS setting: everything above degrades to an instant state
+   change rather than being removed, so nothing ends up invisible. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card-hover:hover { transform: none; }
+}
+
+/* ── Public website theme ──────────────────────────────────────────────────
+   Applied by `(marketing)/layout.tsx` on its outermost element, exactly the
+   way `.portal-customer` and `.portal-agent` work above: it overrides the
+   SAME token names as `:root`, so every shared component (Card, Badge,
+   Table, buttonVariants) re-themes with no per-component changes and the
+   back office keeps the palette it has.
+
+   The values are the website's own: a slightly brighter primary, a true navy
+   for dark sections, and a cyan second accent. The portals' cooler, denser
+   blue is deliberately left alone — a working tool and a marketing site want
+   different temperatures, and they are now on separate hosts anyway.
+
+   `--success` stays the darker green rather than the brighter #10b981: the
+   brighter one is used for fills (`--accent-success`) but fails contrast as
+   text on white, and the site has to clear AA. */
+.site {
+  --background: #ffffff;        /* cards and the header */
+  --surface: #f8fafc;           /* the page's own ground */
+  --foreground: #0f172a;        /* primary text — deep navy */
+  --muted: #64748b;             /* secondary text */
+  --border: #e2e8f0;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --secondary: #0284c7;         /* cyan, darkened to stay readable as text */
+  --secondary-soft: #e0f2fe;
+  --success: #047857;
+  --success-soft: #ecfdf5;
+  --warning: #b45309;
+  --warning-soft: #fffbeb;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --sidebar: #0f172a;           /* the dark conversion sections */
+  --sidebar-text: #94a3b8;
+  --accent-primary: #2563eb;
+  --accent-secondary: #0ea5e9;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+  /* The brand gradient is NOT a blue ramp. The design runs red → purple →
+     blue across every primary action, and that three-stop sweep is the thing
+     that makes the site recognisably Insoora rather than another blue SaaS
+     page. Buttons, the wordmark tile and the footer stripe all draw on it. */
+  --gradient-brand: linear-gradient(110deg, #dc2626 0%, #7c3aed 50%, #2563eb 100%);
+  --gradient-brand-hover: linear-gradient(110deg, #b91c1c 0%, #6d28d9 50%, #1d4ed8 100%);
+  --gradient-sidebar: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+
+  /* Section accents. Each section owns one hue, used for its eyebrow and its
+     "see more" chip — the page reads as a sequence of chapters rather than
+     one long blue wash. These are the design's own values. */
+  --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
+  --accent-orange: #ea580c;
+  --accent-teal: #0891b2;
+  --accent-green: #16a34a;
+  --accent-pink: #db2777;
+
+  /* The footer's own ground — deeper and bluer than the portal sidebar. */
+  --footer: #0b1431;
+}
+
+/* ── The customer portal's primary buttons ──
+   Painted with the brand gradient rather than a flat fill. This is the one
+   portal a person visits occasionally and briefly, and the gradient is what
+   makes its primary action read as the thing to press; the agent portal
+   deliberately keeps flat buttons, because an operator presses dozens an hour
+   and a gradient on every one of them is noise.
+
+   Driven from `.btn-primary`, the hook on the shared Button's default
+   variant, so no call site and no component had to change — and the agent and
+   admin shells, which do not carry `.portal-customer`, are untouched.
+
+   `background-image` over the existing `bg-primary`, so the flat colour stays
+   as the fallback if a browser ever fails the gradient. The shadow is left
+   alone: it is already drawn from `--primary`, which is this portal's violet.
+
+   Only the DEFAULT variant is touched. Success and danger keep their flat
+   semantic colours — a destructive button is not a place for brand
+   decoration, and it has to stay instantly readable as "this one is
+   different". */
+.portal-customer .btn-primary {
+  background-image: var(--gradient-brand);
+}
+.portal-customer .btn-primary:hover:not(:disabled) {
+  background-image: var(--gradient-brand-hover);
+}
+
+/* Keyboard focus on the site's dark bands.
+
+   The global focus ring is `--primary` — a mid blue. Against the #0B1431
+   footer and the #0F172A CTA sections that ring is nearly invisible, so a
+   keyboard user loses their place in exactly the part of the page that is
+   nothing but links. These two grounds get a light ring instead.
+
+   Contrast only: no colour anywhere on the site changes, and nothing is
+   different for a visitor using a pointer. */
+.site footer *:focus-visible,
+.site .bg-sidebar *:focus-visible {
+  outline-color: #bfdbfe;
+}
+
+/* The faint grid used behind the hero and the dark CTA bands. A CSS gradient
+   rather than an image: no request, no layout shift, and it re-themes. */
+.site-grid {
+  background-image:
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* The website's typeface and type scale.
+   Both come from the product design reference, which names Inter and gives
+   the scale below. Declared on `.site` so the portals keep Plus Jakarta Sans
+   — the variable is set by `(marketing)/layout.tsx` and nothing else. */
+.site {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--font-sans);
+  /* Inter's own optical sizing and tighter default tracking at display sizes. */
+  font-feature-settings: "cv11", "ss01";
+  font-variation-settings: "opsz" 32;
+  /* Success in the reference is brighter than the back office's; used for
+     fills and badges. The readable text green stays as it is for contrast. */
+  --accent-success: #22c55e;
+}
+
+/* Website motion.
+   Two keyframes, both from the design: one entrance for the hero column, and
+   a slow float for the cards that sit over an illustration. Deliberately the
+   only non-interactive motion on the site — the global reduced-motion block
+   above already switches both off. */
+@keyframes pv-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pv-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.pv-rise  { animation: pv-rise .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--delay, 0ms); }
+.pv-float { animation: pv-float 7s ease-in-out infinite; animation-delay: var(--delay, 0ms); }
+
+/* Theme colour aliases for the section accents, so a section can say
+   `text-accent-red` instead of carrying a hex in the markup. */
+@theme inline {
+  --color-accent-red: var(--accent-red);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-green: var(--accent-green);
+  --color-accent-pink: var(--accent-pink);
+  --color-footer: var(--footer);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGENT PORTAL — the aurora console.
+
+   Everything below is scoped to `.portal-agent`, the class the agent shell
+   puts on its outermost element. Nothing here can reach the customer portal,
+   the back office or the public site, so this is the whole agent identity in
+   one block: its surfaces, its motion, and the small number of shared
+   components it re-dresses.
+
+   Three rules the whole thing obeys:
+
+     Motion reveals, it does not announce. Every entrance animates markup
+     that is ALREADY correct in the server HTML — nothing is hidden waiting
+     for JavaScript, so a page is readable at first paint and the animation is
+     a courtesy on top. Scroll reveals use `animation-timeline: view()` behind
+     an `@supports` gate, which means a browser without scroll-driven
+     animations simply shows the content: there is no JS on this path at all.
+
+     Continuous motion is slow, soft, and confined to decoration. The aurora
+     behind the sidebar takes 22 seconds to cross; the hero blobs 18 to 30.
+     Nothing that carries data moves on its own — an operator is reading this
+     screen for hours and a dashboard that twitches is a dashboard people
+     learn to stop looking at.
+
+     Everything collapses under `prefers-reduced-motion`. The global block
+     earlier in this file already flattens durations; the explicit overrides
+     at the end of this section make sure nothing is left mid-animation and
+     invisible.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ──────────────────────────────────────────────────────────── */
+
+/* The sidebar bloom and the hero blobs: a long, lazy wander. Each blob gets a
+   different duration so the three never line up and the loop never reads as
+   a loop. */
+@keyframes ag-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(14%, -10%, 0) scale(1.14); }
+  66%  { transform: translate3d(-10%, 8%, 0) scale(0.94); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* A light sweep travelling left to right. Used on the hero once, slowly, and
+   on a primary button on hover. */
+@keyframes ag-sheen {
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  12%  { opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+
+/* Entrances. `ag-in` is the shared one; the two directional variants are for
+   a side rail and for a row arriving in a table. */
+@keyframes ag-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes ag-in-left {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes ag-row {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The active nav marker growing into place. */
+@keyframes ag-marker {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* A soft halo breathing around something that needs attention — the credit
+   chip when the balance is low, a live status dot. */
+@keyframes ag-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--ag-pulse-color, rgba(124, 58, 237, 0.45)); }
+  50%      { box-shadow: 0 0 0 7px rgba(0, 0, 0, 0); }
+}
+
+/* Sparkline / ring stroke drawing itself in. The dash length is published by
+   the component as `--ag-dash`, so this keyframe works at any path length. */
+@keyframes ag-draw {
+  from { stroke-dashoffset: var(--ag-dash); }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* A figure's ground filling up — the pipeline bars on the dashboard. */
+@keyframes ag-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+/* The same idea stood on its end, for the chart's day columns. */
+@keyframes ag-grow-y {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+/* Scroll-driven reveal. Separate from `ag-in` because a scroll timeline
+   drives progress rather than time, and a scale on top of that reads as a
+   wobble when the user scrolls back and forth. */
+@keyframes ag-reveal {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Utility classes used by components/agent/* ─────────────────────────── */
+
+/* One aurora blob. Position and hue are set inline by the component. */
+.ag-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(var(--ag-blur, 56px));
+  opacity: var(--ag-opacity, 0.5);
+  will-change: transform;
+  animation: ag-drift var(--ag-duration, 24s) ease-in-out infinite;
+  animation-delay: var(--ag-delay, 0s);
+}
+
+/* The travelling light sweep. The parent needs `overflow: hidden`. */
+.ag-sheen {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  animation: ag-sheen 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: var(--ag-delay, 1.2s);
+  pointer-events: none;
+}
+
+/* A line or arc that draws itself. `--ag-dash` is the path length. */
+.ag-draw {
+  stroke-dasharray: var(--ag-dash);
+  animation: ag-draw 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--delay, 160ms);
+}
+
+/* A bar growing out from its left edge, for the pipeline breakdown. */
+.ag-fill {
+  transform-origin: left center;
+  animation: ag-fill 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--delay, 140ms);
+}
+
+/* A column growing up from its baseline. `transform-box: fill-box` is what
+   makes `transform-origin: bottom` mean the RECT's bottom rather than the
+   whole SVG viewport's — without it every column scales from the chart's
+   floor and the short ones fly up from nowhere. */
+.ag-grow-y {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: ag-grow-y 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--delay, 160ms);
+}
+
+/* Entrance, time-driven. For above-the-fold content, where a scroll timeline
+   would never fire because the element starts in view. */
+.ag-enter      { animation: ag-in 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
+.ag-enter-left { animation: ag-in-left 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
+
+/* Entrance, scroll-driven — for everything below the fold.
+
+   Gated on `@supports`, so a browser without scroll-driven animations gets no
+   rule at all and the content is simply visible. That is the whole reason
+   this is not a JavaScript IntersectionObserver: there is no state in which
+   the content can end up hidden because a script did not run. */
+@supports (animation-timeline: view()) {
+  .ag-reveal {
+    animation: ag-reveal linear both;
+    animation-timeline: view();
+    /* Measured on `cover`, not `entry`.
+       `entry` finishes only once the element's TRAILING edge has entered the
+       viewport, so a panel taller than the screen would sit half-faded for as
+       long as it took to scroll past it — and a short section at the very
+       bottom of a page that barely scrolls could never finish at all. `cover`
+       starts the moment the element touches the viewport and spans the
+       viewport plus the element, so 15% of it is a short, consistent sweep
+       whatever the element's height. */
+    animation-range: cover 0% cover 15%;
+  }
+}
+
+/* A live status dot — the only continuously moving thing allowed next to a
+   figure, and only because "live" is what it means. */
+.ag-live {
+  position: relative;
+  animation: ag-pulse 2.4s ease-out infinite;
+}
+
+/* The pointer-tracked bloom on a card. `--mx` / `--my` are written by the
+   Spotlight client component; with no JavaScript the fallback centres it at
+   the top-right, which is where the CSS-only cards bloom anyway. */
+.ag-spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    22rem circle at var(--mx, 85%) var(--my, 0%),
+    rgba(124, 58, 237, 0.13),
+    transparent 62%
+  );
+  pointer-events: none;
+}
+.ag-spot:hover::after,
+.ag-spot:focus-within::after { opacity: 1; }
+
+/* ── Page ground ────────────────────────────────────────────────────────── */
+
+/* A violet / cyan mesh under the whole console, fixed so it does not scroll
+   with the content. It is 6–7% ink: enough that a white card reads as resting
+   ON something, not enough to be a colour anyone would name. */
+.portal-agent {
+  background-image:
+    radial-gradient(70rem 32rem at 100% -8%, rgba(124, 58, 237, 0.075), transparent 62%),
+    radial-gradient(55rem 30rem at -10% 108%, rgba(6, 182, 212, 0.065), transparent 62%);
+  background-attachment: fixed;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+
+.portal-agent [data-portal-sidebar] {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* The wordmark tile picks up a hairline so it reads as a plate on the glass
+   rather than a logo floating on a dark field. */
+.portal-agent [data-portal-brand]:hover {
+  background-color: var(--glass);
+}
+
+/* Navigation items.
+
+   This is the one piece of chrome an operator uses hundreds of times a day,
+   so it is built to be read rather than admired. Two states, two devices each:
+
+     rest    a legible label, and an icon a step brighter than it
+     active  a cyan marker, and a quiet violet wash
+
+   It used to stack four devices on the active item — a full-strength violet
+   gradient, an inset ring, a 26px violet glow AND a glowing capsule — while
+   every inactive item had none at all. One lit button in a dark field is not
+   a navigation list: the eye goes to the glow and the other six destinations
+   recede. Being distinct enough to answer "which page am I on" from the
+   corner of an eye costs far less than that. */
+.portal-agent [data-nav-item] {
+  transition: background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+.portal-agent [data-nav-item]:hover {
+  background-color: var(--glass);
+}
+.portal-agent [data-nav-item][data-active="true"] {
+  background-image: linear-gradient(90deg, rgba(124, 58, 237, 0.22) 0%, rgba(79, 70, 229, 0.09) 62%, transparent 100%);
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+
+/* The marker: a capsule on the pill's left edge that grows into place when the
+   page changes. Its halo is a hint of one rather than a lamp — at 12px and
+   75% it was bleeding cyan onto the label beside it. */
+.portal-agent [data-nav-marker] {
+  top: 0.35rem;
+  bottom: 0.35rem;
+  height: auto;
+  width: 2.5px;
+  /* The capsule is stretched between top and bottom here, so the shared
+     marker's vertical centring has to be cancelled — and in Tailwind v4 that
+     means cancelling `translate`, NOT `transform`. `-translate-y-1/2` compiles
+     to `translate: var(--tw-translate-x) var(--tw-translate-y)`, a separate
+     property that `transform: none` leaves entirely untouched. So this rule
+     replaced the marker's height and then let it be shifted up by half of the
+     new one anyway: the line sat above its own pill, overhanging the item
+     above it, which is the misalignment this fixes.
+
+     `transform` is deliberately not set at all now — the grow animation below
+     owns it, and a `none` here was only ever inert, since an animation with
+     `both` outranks it for the whole of the element's life. */
+  translate: none;
+  border-radius: 0 3px 3px 0;
+  background-image: linear-gradient(180deg, var(--aurora-2), var(--aurora-1));
+  box-shadow: 0 0 7px rgba(6, 182, 212, 0.4);
+  transform-origin: center;
+  animation: ag-marker 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.portal-agent [data-nav-item] > svg { transition: color 0.16s ease; }
+
+/* Nothing in the nav moves on hover any more. An item that slides 2px right
+   and an icon that scales 6% are, in a list clicked hundreds of times a day,
+   a list that will not hold still — and the slide fought the marker sitting
+   against it. Colour alone is a clearer affordance and costs no jitter.
+
+   The staggered 240ms entrance cascade is gone for the same reason: it played
+   on every full page load, and navigation you have to wait for is slower than
+   navigation that is simply there. */
+
+/* ── Top bar ────────────────────────────────────────────────────────────── */
+
+/* Heavier glass than the shared shell's, and a gradient hairline instead of a
+   flat border — the one place the brand ramp appears in the chrome. */
+.portal-agent [data-portal-header] {
+  background-color: color-mix(in oklab, var(--background) 82%, transparent);
+  border-bottom-color: transparent;
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+.portal-agent [data-portal-header]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(124, 58, 237, 0.32) 18%,
+    rgba(6, 182, 212, 0.3) 62%,
+    transparent 100%
+  );
+}
+
+/* ── Panels and cards ───────────────────────────────────────────────────── */
+
+/* Every panel gets the same gradient hairline across its top edge. It is the
+   cheapest way to make a column of white cards read as one designed system
+   rather than as default boxes, and it costs no layout. */
+.portal-agent [data-panel] { position: relative; }
+.portal-agent [data-panel]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(124, 58, 237, 0.42) 24%,
+    rgba(6, 182, 212, 0.34) 68%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* A panel's section icon sits in a tinted tile rather than floating loose. */
+.portal-agent [data-panel-icon] {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  background-image: linear-gradient(135deg, var(--primary-soft), color-mix(in oklab, var(--secondary-soft) 70%, white));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+.portal-agent [data-panel-icon] > svg { width: 1.125rem; height: 1.125rem; }
+
+/* Stat cards: the identity wash stays, and a violet bloom follows the pointer
+   across the card on top of it. */
+.portal-agent [data-stat] {
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease;
+}
+.portal-agent [data-stat]:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--primary) 32%, var(--border));
+  box-shadow: var(--card-shadow-hover);
+}
+/* The figure leans up a hair with the card, so the number feels attached to
+   the surface rather than painted on it. */
+.portal-agent [data-stat] [data-stat-value] { transition: transform 0.22s ease; }
+.portal-agent [data-stat]:hover [data-stat-value] { transform: translateY(-1px); }
+
+/* ── The hero banner ────────────────────────────────────────────────────── */
+
+.portal-agent [data-hero] {
+  position: relative;
+  isolation: isolate;
+}
+/* A faint grid over the gradient, which gives the aurora blobs behind it
+   something to be read against. Pure CSS, so no request and no shift. */
+.portal-agent [data-hero]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: radial-gradient(120% 100% at 85% 0%, black, transparent 72%);
+  pointer-events: none;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+
+/* Rows arrive in sequence rather than all at once. 18 steps covers a full
+   page of policies; anything past that lands with the last delay, which is
+   what you want — a 40-row table should not take four seconds to appear. */
+/* Table rows do not animate in. A staggered cascade in front of a table
+   delays reading the very data it is drawing attention to, and on a list of
+   policies that is the whole point of the screen. */
+.portal-agent tbody tr:nth-child(n + 11) { animation-delay: 220ms; }
+
+/* A hovered row gets a violet wash and a marker on its leading edge, so the
+   eye can hold its place across a six-column row without a ruler. */
+.portal-agent tbody tr { transition: background-color 0.16s ease; }
+.portal-agent tbody tr:hover { background-color: color-mix(in oklab, var(--primary-soft) 62%, transparent); }
+.portal-agent tbody tr > td:first-child { position: relative; }
+.portal-agent tbody tr > td:first-child::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background-image: linear-gradient(180deg, var(--aurora-1), var(--aurora-2));
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.18s ease;
+}
+.portal-agent tbody tr:hover > td:first-child::before { transform: scaleY(1); }
+
+/* Column headings get the page ground rather than a tint, and stay put when a
+   long table scrolls inside its own panel. */
+.portal-agent thead th {
+  background-color: color-mix(in oklab, var(--surface) 92%, white);
+  letter-spacing: 0.01em;
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+
+/* The agent portal's primary buttons carry the brand gradient and a sweep on
+   hover.
+
+   This reverses an earlier decision — the agent side used to keep flat fills
+   on the argument that an operator pressing dozens of buttons an hour does
+   not need decoration on each one. That still holds for the DENSITY of the
+   effect, which is why the sweep is hover-only and 600ms: nothing moves until
+   you are already pointing at it. The gradient itself is static. */
+.portal-agent .btn-primary {
+  position: relative;
+  overflow: hidden;
+  background-image: var(--gradient-brand);
+}
+.portal-agent .btn-primary:hover:not(:disabled) {
+  background-image: var(--gradient-brand-hover);
+}
+.portal-agent .btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  transform: translateX(-140%) skewX(-18deg);
+  pointer-events: none;
+}
+.portal-agent .btn-primary:hover:not(:disabled)::after {
+  animation: ag-sheen 0.6s ease-out;
+}
+
+/* Focus lands as a violet halo rather than the browser's square outline, on
+   every control that does not already draw its own. */
+.portal-agent *:focus-visible {
+  outline-color: var(--accent-primary);
+}
+
+/* A text field lifts very slightly into focus, which is what tells you the
+   click landed on a form with eight of them. */
+.portal-agent input:not([type="checkbox"]):not([type="radio"]),
+.portal-agent select,
+.portal-agent textarea {
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+}
+.portal-agent input:focus:not([type="checkbox"]):not([type="radio"]),
+.portal-agent select:focus,
+.portal-agent textarea:focus {
+  transform: translateY(-1px);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+
+/* The global block earlier in this file flattens every duration, which is
+   enough for an entrance. These are the cases where that is NOT enough —
+   anything whose resting state is "mid-animation" has to be pinned to its
+   finished state explicitly, or it would be left invisible or empty. */
+@media (prefers-reduced-motion: reduce) {
+  .portal-agent .ag-blob,
+  .portal-agent .ag-sheen { animation: none; }
+  .portal-agent .ag-sheen { display: none; }
+  .ag-reveal,
+  .ag-enter,
+  .ag-enter-left {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .ag-draw { stroke-dashoffset: 0; animation: none; }
+  .ag-fill,
+  .ag-grow-y { transform: none; animation: none; }
+  .portal-agent [data-stat]:hover { transform: none; }
+  .portal-agent [data-nav-item]:hover { transform: none; }
+  /* The active marker is drawn at full height rather than grown into place.
+     It was the one animation in this sheet with no resting state, so it still
+     played its 0.28s scale on every navigation under reduced motion. */
+  .portal-agent [data-nav-marker] { animation: none; transform: none; }
+  .portal-agent input:focus,
+  .portal-agent select:focus,
+  .portal-agent textarea:focus { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIVE PROCESSING — the agent upload queue
+   (src/app/agent/(portal)/upload/)
+
+   The honesty rule for everything in this block: an animation here says
+   "work is happening", never "work is 57% done". The pipeline cannot report a
+   fraction — OCR on one scanned page can outlast extraction on forty text
+   pages — so no element below is ever driven by a made-up number. What moves
+   is a sweep with no end position; what carries a real value (the batch's
+   finished-count bar, the eight stage pips) is driven by counts the server
+   actually reported.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Indeterminate stage bar: a short band travelling the track, used while a
+   row is mid-stage. Deliberately not a 0→100% fill. */
+@keyframes lp-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.lp-track {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+}
+
+.lp-sweep {
+  width: 25%;
+  height: 100%;
+  border-radius: 9999px;
+  background-image: var(--gradient-brand);
+  animation: lp-sweep 1.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* The scan line that crosses a row's icon while the classifier is reading it.
+   One pass per second, vertical, inside a clipped tile. */
+@keyframes lp-scan {
+  0%   { transform: translateY(-120%); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateY(120%); opacity: 0; }
+}
+
+.lp-scan {
+  animation: lp-scan 1.6s ease-in-out infinite;
+}
+
+/* A finished row's tick draws itself once. `forwards` matters: the resting
+   state is the completed tick, so a row that scrolls out and back is not
+   re-animated into an empty circle. */
+@keyframes lp-check {
+  from { stroke-dashoffset: 24; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.lp-check {
+  stroke-dasharray: 24;
+  animation: lp-check 0.4s ease-out 0.05s forwards;
+}
+
+/* A row changing outcome gets one soft tint pass, which is what makes a long
+   list legible while it settles: the eye is drawn to what just changed. */
+@keyframes lp-settle {
+  0%   { background-color: color-mix(in oklab, var(--primary) 9%, transparent); }
+  100% { background-color: transparent; }
+}
+
+.lp-settle {
+  animation: lp-settle 0.9s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Each of these rests mid-animation, so flattening the duration alone would
+     leave an empty track, an invisible scan line or an undrawn tick. */
+  .lp-sweep {
+    animation: none !important;
+    width: 100%;
+    opacity: 0.55;
+  }
+  .lp-scan { animation: none !important; opacity: 0; }
+  .lp-check { animation: none !important; stroke-dashoffset: 0; }
+  .lp-settle { animation: none !important; background-color: transparent; }
+}
