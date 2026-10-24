@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DropdownMenu } from "radix-ui";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HeaderMenu, HeaderMenuItem, HeaderMenuProvider, useHeaderMenus } from "./header-menu";
 
 // The public site's navigation.
 //
@@ -14,6 +15,13 @@ import { cn } from "@/lib/utils";
 // so the site still works with JavaScript disabled — the menu button is the
 // only thing that needs it, and below `shell` the links are also reachable
 // from the footer.
+//
+// The drawer and both header dropdowns share ONE piece of state, provided by
+// `HeaderMenuProvider` here and read by `HeaderMenu` (Resources) and
+// `SignInMenu` (rendered inside this component as `actions`). That is what
+// makes them mutually exclusive: there is no combination of clicks that can
+// leave two panels open on top of each other. See `header-menu.tsx` for the
+// dropdown behaviour itself.
 
 export interface SiteNavItem {
   href: string;
@@ -45,7 +53,21 @@ function isCurrent(path: string, href: string): boolean {
   return path === href || path.startsWith(`${href}/`);
 }
 
-export function SiteNav({
+const DRAWER = "drawer";
+
+export function SiteNav(props: {
+  items: SiteNavItem[];
+  actions: React.ReactNode;
+  drawerActions?: React.ReactNode;
+}) {
+  return (
+    <HeaderMenuProvider>
+      <SiteNavInner {...props} />
+    </HeaderMenuProvider>
+  );
+}
+
+function SiteNavInner({
   items,
   actions,
   /** Shown in the mobile drawer in place of `actions`, when the two should
@@ -57,21 +79,33 @@ export function SiteNav({
   drawerActions?: React.ReactNode;
 }) {
   const path = usePathname();
-  const [open, setOpen] = React.useState(false);
+  const { openId, setOpenId } = useHeaderMenus();
+  const open = openId === DRAWER;
+  // Functional, so closing the drawer cannot clobber a dropdown that has
+  // already claimed the slot in the same tick — see `header-menu.tsx`.
+  const setOpen = React.useCallback(
+    (next: boolean) => setOpenId((prev) => (next ? DRAWER : prev === DRAWER ? null : prev)),
+    [setOpenId],
+  );
 
-  // Any navigation closes the menu, including a back gesture.
+  // Any navigation closes whatever is open — the drawer, or either dropdown
+  // — including on a back gesture.
   //
-  // The lint rule against setState in an effect is right in general and wrong
-  // here: the external system being synchronised from IS the URL, which
+  // The external system being synchronised from IS the URL, which
   // `usePathname` only exposes as a render value. There is no state to derive
-  // it from — the drawer's openness is not a function of the path, it just
-  // has to end when the path changes — and the alternative, remounting the
-  // nav on a `key={path}`, would throw away the header on every navigation.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  React.useEffect(() => setOpen(false), [path]);
+  // this from: the header's openness is not a function of the path, it just
+  // has to end when the path changes. The alternative, remounting the nav on
+  // a `key={path}`, would throw away the header on every navigation.
+  React.useEffect(() => setOpenId(null), [path, setOpenId]);
 
   // While the drawer is open the page behind it must not scroll, or a tap on
   // the overlay scrolls the content instead of dismissing the menu.
+  //
+  // Only the DRAWER does this. The header dropdowns deliberately do not lock
+  // scrolling (`modal={false}`) — when they did, the scrollbar vanished, the
+  // page shifted sideways, and the trigger moved out from under the pointer
+  // mid-click. Two independent owners of `body.style.overflow` could also
+  // restore each other's value and leave the page stuck; now there is one.
   React.useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
@@ -86,7 +120,7 @@ export function SiteNav({
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, setOpen]);
 
   return (
     <>
@@ -111,32 +145,34 @@ export function SiteNav({
           // Radix handles the keyboard contract a hand-rolled menu gets
           // wrong: Escape to close, arrow keys between items, focus returned
           // to the trigger on close, and `aria-expanded` kept in step.
+          // `HeaderMenu` adds the parts Radix leaves out — hover-to-open on a
+          // mouse, a close delay long enough to cross the gap into the panel,
+          // and one-menu-at-a-time.
           return (
-            <DropdownMenu.Root key={n.href}>
-              <DropdownMenu.Trigger className={cn(itemClass, "inline-flex items-center gap-1.5")}>
-                {n.label}
-                <ChevronDown className="size-3.5 opacity-70 transition-transform duration-200 data-[state=open]:rotate-180" />
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  align="start"
-                  sideOffset={8}
-                  className="anim-pop z-50 w-64 overflow-hidden rounded-xl border border-border bg-background p-1.5 shadow-pop"
-                >
-                  {n.children.map((c) => (
-                    <DropdownMenu.Item key={c.href} asChild>
-                      <Link
-                        href={c.href}
-                        className="flex cursor-pointer flex-col rounded-lg px-2.5 py-2 outline-none data-[highlighted]:bg-surface"
-                      >
-                        <span className="text-sm font-semibold text-foreground">{c.label}</span>
-                        {c.hint && <span className="mt-0.5 text-xs text-muted">{c.hint}</span>}
-                      </Link>
-                    </DropdownMenu.Item>
-                  ))}
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+            <HeaderMenu
+              key={n.href}
+              id={`nav:${n.href}`}
+              triggerClassName={cn(itemClass, "group inline-flex items-center gap-1.5")}
+              trigger={
+                <>
+                  {n.label}
+                  <ChevronDown
+                    aria-hidden
+                    className="size-3.5 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                  />
+                </>
+              }
+            >
+              {n.children.map((c) => (
+                <HeaderMenuItem
+                  key={c.href}
+                  href={c.href}
+                  label={c.label}
+                  hint={c.hint}
+                  current={isCurrent(path, c.href)}
+                />
+              ))}
+            </HeaderMenu>
           );
         })}
       </nav>
@@ -145,7 +181,7 @@ export function SiteNav({
         <div className="hidden items-center gap-2 sm:flex shell:gap-3">{actions}</div>
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="site-menu"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -158,49 +194,92 @@ export function SiteNav({
       {/* Mobile drawer. Rendered below the header, so it starts under it. */}
       {open && (
         <>
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 top-16 z-30 cursor-default bg-foreground/40 shell:hidden"
-          />
+          {/* The scrim, PORTALED to <body>.
+              
+              It was a `fixed inset-0` element inside the header — and the
+              header carries `backdrop-blur-[12px]`. A backdrop-filter makes
+              an element the containing block for its fixed-position
+              descendants, so `inset-0` resolved against the 64px-tall header
+              instead of the viewport and `top-16` then collapsed it to zero
+              height. The scrim existed, covered nothing, and "tap outside to
+              close" had no target to tap: on a phone the only way out of the
+              drawer was the X. Portaled to <body> it is outside that
+              containing block and covers the viewport as intended. */}
+          {typeof document !== "undefined" &&
+            createPortal(
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-hidden
+                onClick={() => setOpen(false)}
+                className="site fixed inset-0 top-16 z-30 cursor-default bg-foreground/40 shell:hidden"
+              />,
+              document.body,
+            )}
           <div
             id="site-menu"
-            className="anim-rise absolute inset-x-0 top-16 z-40 border-b border-border bg-background p-4 shadow-pop shell:hidden"
+            // Capped and scrollable, for two reasons. With the body locked, a
+            // drawer taller than the viewport would put its last links and
+            // the Get Started button out of reach on a short phone. And the
+            // cap is 8rem rather than 4rem so a strip of the scrim is always
+            // left showing beneath it — on a 664px phone the drawer filled
+            // the screen edge to edge, which left "tap outside to close" with
+            // nothing to tap.
+            className="anim-rise absolute inset-x-0 top-16 z-40 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-b border-border bg-background p-4 shadow-pop shell:hidden"
           >
             <nav aria-label="Main" className="flex flex-col gap-1">
               {items.map((n) => {
                 const current = isCurrent(path, n.href);
+
+                // A grouped entry is a HEADING in the drawer, not a link.
+                //
+                // It used to be a <Link> to the group's own href while its
+                // children were listed directly underneath — so tapping
+                // "Resources" navigated to /faq, which is also the first
+                // child. A tap on what looks like a disclosure control
+                // taking you to a page is the accidental navigation this
+                // drawer should not have; nothing is lost, because every
+                // child is a link right below it.
+                if (n.children?.length) {
+                  return (
+                    <div key={n.href} className="flex flex-col gap-1 pt-1">
+                      <p className="px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
+                        {n.label}
+                      </p>
+                      {n.children.map((c) => {
+                        const childCurrent = isCurrent(path, c.href);
+                        return (
+                          <Link
+                            key={c.href}
+                            href={c.href}
+                            aria-current={childCurrent ? "page" : undefined}
+                            className={cn(
+                              "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                              childCurrent
+                                ? "bg-primary-soft text-primary"
+                                : "text-foreground hover:bg-surface",
+                            )}
+                          >
+                            {c.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+
                 return (
-                  <React.Fragment key={n.href}>
-                    <Link
-                      href={n.href}
-                      aria-current={current ? "page" : undefined}
-                      className={cn(
-                        "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-                        current ? "bg-primary-soft text-primary" : "text-foreground hover:bg-surface",
-                      )}
-                    >
-                      {n.label}
-                    </Link>
-                    {n.children?.map((c) => {
-                      const childCurrent = isCurrent(path, c.href);
-                      return (
-                        <Link
-                          key={c.href}
-                          href={c.href}
-                          aria-current={childCurrent ? "page" : undefined}
-                          className={cn(
-                            "ml-3 rounded-lg border-l border-border px-3 py-2.5 text-sm transition-colors",
-                            childCurrent ? "text-primary" : "text-foreground/80 hover:bg-surface",
-                          )}
-                        >
-                          {c.label}
-                        </Link>
-                      );
-                    })}
-                  </React.Fragment>
+                  <Link
+                    key={n.href}
+                    href={n.href}
+                    aria-current={current ? "page" : undefined}
+                    className={cn(
+                      "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      current ? "bg-primary-soft text-primary" : "text-foreground hover:bg-surface",
+                    )}
+                  >
+                    {n.label}
+                  </Link>
                 );
               })}
             </nav>
