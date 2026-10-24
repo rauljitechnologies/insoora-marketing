@@ -1,7 +1,9 @@
-import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ScrollText } from "lucide-react";
 import { Breadcrumb, Container } from "./section";
+import { ChipLink } from "./cta";
+import { ACCENT_TILE, heroWash } from "@/lib/accents";
 import { LEGAL_REVIEW_VISIBLE, sectionId, type LegalDocument } from "@/lib/legal/content";
+import { cn } from "@/lib/utils";
 
 // Renderer shared by the Privacy Policy and the Terms pages.
 //
@@ -22,16 +24,34 @@ export function LegalPage({
 
   return (
     <>
-      <section className="border-b border-border bg-surface">
-        <Container className="py-12 sm:py-14">
-          <Breadcrumb trail={trail} />
-          <h1 className="mt-5 text-[28px] font-extrabold leading-[1.15] tracking-[-0.03em] text-foreground sm:text-[34px]">
-            {doc.title}
-          </h1>
-          <p className="mt-3 max-w-2xl text-pretty text-[15px] leading-relaxed text-muted">{doc.intro}</p>
-          <p className="mt-3 text-sm text-muted">
-            Last updated <time>{doc.updated}</time>
-          </p>
+      {/* The same hero construction as every other page — two radials over
+          #F8FBFF, tinted teal for the legal pair — rather than the flat grey
+          band these two used to wear. A legal document is still part of the
+          site, and a visitor who follows the footer link should not feel they
+          have left it. */}
+      <section
+        className="overflow-hidden border-b border-[#E6EEFB]"
+        style={{ background: heroWash("teal") }}
+      >
+        <Container className="py-11 sm:py-14">
+          <div className="pv-rise flex flex-col items-start">
+            <Breadcrumb trail={trail} />
+            <span
+              aria-hidden
+              className={cn("mt-5 grid size-11 place-items-center rounded-xl", ACCENT_TILE.teal)}
+            >
+              <ScrollText className="size-5" />
+            </span>
+            <h1 className="mt-4 text-balance text-[32px] font-extrabold leading-[1.08] tracking-[-0.032em] text-foreground sm:text-[40px]">
+              {doc.title}
+            </h1>
+            <p className="mt-4 max-w-2xl text-pretty text-lg leading-relaxed text-foreground/70">
+              {doc.intro}
+            </p>
+            <p className="mt-4 text-sm text-muted">
+              Last updated <time>{doc.updated}</time>
+            </p>
+          </div>
         </Container>
       </section>
 
@@ -62,14 +82,17 @@ export function LegalPage({
         <div className="grid gap-10 rail:grid-cols-[13.75rem_minmax(0,1fr)] rail:gap-12">
           {/* Contents. Sticky on desktop; a plain list above the text on
               anything narrower, where a sticky rail would eat the screen. */}
-          <nav aria-label="Contents" className="rail:sticky rail:top-24 rail:self-start">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Contents</p>
+          <nav
+            aria-label="Contents"
+            className="rounded-2xl border border-border bg-surface p-4 rail:sticky rail:top-24 rail:self-start"
+          >
+            <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-accent-teal-ink">Contents</p>
             <ol className="mt-3 flex flex-col gap-1.5">
               {doc.sections.map((s, i) => (
                 <li key={s.heading}>
                   <a
                     href={`#${sectionId(i, s.heading)}`}
-                    className="flex gap-2 text-sm leading-snug text-foreground/75 transition-colors hover:text-primary"
+                    className="flex gap-2 rounded-md px-1 py-1 text-sm leading-snug text-foreground/75 transition-colors hover:bg-background hover:text-primary"
                   >
                     <span className="shrink-0 tabular-nums text-muted">{i + 1}.</span>
                     {s.heading}
@@ -82,8 +105,8 @@ export function LegalPage({
           <div className="flex min-w-0 flex-col gap-10">
             {doc.sections.map((s, i) => (
               <section key={s.heading} id={sectionId(i, s.heading)} className="scroll-mt-24">
-                <h2 className="text-xl font-bold tracking-[-0.02em] text-foreground">
-                  <span className="mr-2 tabular-nums text-muted">{i + 1}.</span>
+                <h2 className="text-balance text-[22px] font-bold leading-[1.2] tracking-[-0.025em] text-foreground sm:text-[26px]">
+                  <span className="mr-2 tabular-nums text-accent-teal-ink">{i + 1}.</span>
                   {s.heading}
                 </h2>
                 <div className="mt-3 flex flex-col gap-3">
@@ -115,13 +138,12 @@ export function LegalPage({
               </section>
             ))}
 
-            <p className="border-t border-border pt-6 text-sm text-muted">
-              Questions about this document? Use our{" "}
-              <Link href="/contact-us" className="font-medium text-primary hover:underline">
+            <div className="flex flex-wrap items-center gap-3 border-t border-border pt-6 text-sm text-muted">
+              Questions about this document?
+              <ChipLink href="/contact-us" accent="teal">
                 Contact Us
-              </Link>{" "}
-              page.
-            </p>
+              </ChipLink>
+            </div>
           </div>
         </div>
       </Container>

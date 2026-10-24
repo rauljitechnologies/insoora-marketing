@@ -1,9 +1,10 @@
-import Link from "next/link";
 import {
   BellRing, FileSearch, FileStack, FolderClock, Layers, Lock,
   SlidersHorizontal, Table2, Users, type LucideIcon,
 } from "lucide-react";
-import { PageHead, Section, SectionHead } from "@/components/marketing/section";
+import { Eyebrow, GradientText, PageHead, Panel, Section } from "@/components/marketing/section";
+import { BandPrimaryAction, BandSecondaryAction, CtaBand } from "@/components/marketing/cta";
+import { ACCENT_CHIP, ACCENT_TILE, type Accent } from "@/lib/accents";
 import {
   CustomerVaultShot, ExtractedDetailsShot, PolicyListShot,
   RenewalTimelineShot, SearchExportShot,
@@ -32,6 +33,10 @@ const TRAIL = [{ name: "Features", href: "/features" }];
 interface Feature {
   icon: LucideIcon;
   id: string;
+  /** This feature's chapter colour: its tile, its eyebrow and its chip in the
+   *  contents list. Nine identically-blue sections is what made this page
+   *  read as one undifferentiated wall; the home page never does that. */
+  accent: Accent;
   title: string;
   lead: string;
   detail: string[];
@@ -44,6 +49,7 @@ const FEATURES: Feature[] = [
   {
     icon: FileSearch,
     id: "extraction",
+    accent: "red",
     title: "Automated policy data extraction",
     lead: "Insoora reads an insurance policy PDF and pulls out the fields an agent would otherwise type: policy number, insurer, insured name, cover start and expiry dates, premium, and vehicle or asset details.",
     detail: [
@@ -58,6 +64,7 @@ const FEATURES: Feature[] = [
   {
     icon: Layers,
     id: "bulk-upload",
+    accent: "blue",
     title: "Bulk policy upload",
     lead: "Upload many policy PDFs in one action and let them process together, instead of handling one document at a time.",
     detail: [
@@ -70,6 +77,7 @@ const FEATURES: Feature[] = [
   {
     icon: SlidersHorizontal,
     id: "search",
+    accent: "purple",
     title: "Policy search, filters and sorting",
     lead: "Find any policy by customer, insurer, policy number, status or expiry window, then sort the result.",
     detail: [
@@ -82,6 +90,7 @@ const FEATURES: Feature[] = [
   {
     icon: Users,
     id: "customer-records",
+    accent: "teal",
     title: "Customer-wise policy organization",
     lead: "Every policy is linked to its policyholder, so one search shows everything that customer holds and has ever held.",
     detail: [
@@ -94,6 +103,7 @@ const FEATURES: Feature[] = [
   {
     icon: FolderClock,
     id: "history",
+    accent: "pink",
     title: "Historical policy access",
     lead: "Each customer's policies stack up year by year, with the original PDF kept against every past policy.",
     detail: [
@@ -105,6 +115,7 @@ const FEATURES: Feature[] = [
   {
     icon: BellRing,
     id: "renewals",
+    accent: "orange",
     title: "Expiry and renewal tracking",
     lead: "The renewals list is built from the expiry date printed on the policy itself, not from a reminder someone remembered to set.",
     detail: [
@@ -118,6 +129,7 @@ const FEATURES: Feature[] = [
   {
     icon: Lock,
     id: "secure-access",
+    accent: "green",
     title: "Secure document access",
     lead: "Policy PDFs are held in private storage with no public URL, and every download is served through a link that expires within minutes.",
     detail: [
@@ -130,6 +142,7 @@ const FEATURES: Feature[] = [
   {
     icon: Table2,
     id: "exports",
+    accent: "blue",
     title: "CSV and Excel export",
     lead: "Authorized agents export policy and renewal lists as CSV or Excel for their own records and reporting.",
     detail: [
@@ -141,6 +154,7 @@ const FEATURES: Feature[] = [
   {
     icon: FileStack,
     id: "templates",
+    accent: "purple",
     title: "Insurer template rules and extraction review",
     lead: "An administrator can add per-insurer field aliases, regular expressions and validation rules, and test them against a real document before saving.",
     detail: [
@@ -168,28 +182,47 @@ export default function FeaturesPage() {
 
       <PageHead
         trail={TRAIL}
-        title="Everything Insoora does, and where each feature stops."
+        accent="blue"
+        badge={`${FEATURES.length} capabilities, with their limits`}
+        title={
+          <>
+            Everything Insoora does, and <GradientText>where each feature stops.</GradientText>
+          </>
+        }
         lede="Insoora reads insurance policy PDFs, files them under the right customer and tracks renewals. Below is each capability in detail — including the limits, because those are what you need before you commit a book of business to it."
       />
 
       {/* A contents list: nine features is long enough that a reader arriving
           from a search result deserves a way to jump to the one they came for,
           and the anchors give the page internal links worth following. */}
-      <Section className="!py-10">
-        <nav aria-label="Features on this page">
-          <ul className="flex flex-wrap gap-2">
-            {FEATURES.map((f) => (
-              <li key={f.id}>
-                <a
-                  href={`#${f.id}`}
-                  className="inline-flex rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground/80 transition-colors hover:border-primary hover:text-primary"
-                >
-                  {f.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      {/* A contents list: nine features is long enough that a reader arriving
+          from a search result deserves a way to jump to the one they came
+          for, and the anchors give the page internal links worth following.
+
+          Each chip wears its feature's own hue, so the list doubles as the
+          page's colour key — the chip you pressed and the section you land on
+          are the same colour. */}
+      <Section className="!pb-12 !pt-10">
+        <Panel className="gap-5 !p-6 sm:!p-8">
+          <Eyebrow accent="blue">On this page</Eyebrow>
+          <nav aria-label="Features on this page">
+            <ul className="flex flex-wrap gap-2">
+              {FEATURES.map((f) => (
+                <li key={f.id}>
+                  <a
+                    href={`#${f.id}`}
+                    className={cn(
+                      "inline-flex rounded-full border bg-background px-3.5 py-2 text-sm font-medium transition-transform hover:-translate-y-0.5",
+                      ACCENT_CHIP[f.accent],
+                    )}
+                  >
+                    {f.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </Panel>
       </Section>
 
       {/* Alternating text and preview, so nine features do not read as nine
@@ -213,16 +246,19 @@ export default function FeaturesPage() {
               <div className={cn(Shot && i % 2 === 1 && "rail:order-2")}>
                 <span
                   aria-hidden
-                  className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary"
+                  className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE[f.accent])}
                 >
                   <f.icon className="size-5" />
                 </span>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <h2 className="text-xl font-bold tracking-[-0.02em] text-foreground sm:text-2xl">
+                <Eyebrow accent={f.accent} className="mt-4">
+                  Feature {String(i + 1).padStart(2, "0")}
+                </Eyebrow>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <h2 className="text-balance text-[26px] font-bold leading-[1.15] tracking-[-0.025em] text-foreground sm:text-[30px]">
                     {f.title}
                   </h2>
                   {f.status && (
-                    <span className="rounded-full bg-secondary-soft px-2.5 py-1 text-[11px] font-semibold text-secondary">
+                    <span className="rounded-full bg-secondary-soft px-2.5 py-1 text-[11px] font-semibold text-[#075985]">
                       {f.status}
                     </span>
                   )}
@@ -252,28 +288,21 @@ export default function FeaturesPage() {
         );
       })}
 
-      <Section tone="dark" className="border-t border-border">
-        <SectionHead
-          title="Try it with your own policy PDFs."
-          lede="Create an agent account and upload a few documents — that is the only honest way to judge how well it reads your insurers' layouts."
-          className="[&_h2]:text-white [&_p]:text-sidebar-text"
-        />
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          {/* Sign-up is on the product's origin — a plain anchor. */}
-          <a
-            href={appHref("/agent/register")}
-            className="inline-flex h-11 items-center rounded-md bg-background px-5 text-sm font-semibold text-primary transition-transform hover:-translate-y-px"
-          >
-            Get Started
-          </a>
-          <Link
-            href="/faq"
-            className="inline-flex h-11 items-center rounded-md border border-white/30 bg-white/10 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
-          >
-            Read the FAQ
-          </Link>
-        </div>
-      </Section>
+      <CtaBand
+        eyebrow="Get started today"
+        title="Try it with your own policy PDFs."
+        lede="Create an agent account and upload a few documents — that is the only honest way to judge how well it reads your insurers' layouts."
+        actions={
+          <>
+            {/* Sign-up is on the product's origin — `external` makes it a
+                plain anchor rather than a <Link>. */}
+            <BandPrimaryAction href={appHref("/agent/register")} external>
+              Get Started
+            </BandPrimaryAction>
+            <BandSecondaryAction href="/faq">Read the FAQ</BandSecondaryAction>
+          </>
+        }
+      />
     </>
   );
 }
