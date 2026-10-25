@@ -1,10 +1,10 @@
-import { Clock, MapPin, Phone, UserRound } from "lucide-react";
+import { ArrowRight, Clock, MapPin, Phone, UserRound } from "lucide-react";
 import { Card, GradientText, PageHead, Section } from "@/components/marketing/section";
 import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
-import { CONTACT, addressLines } from "@/lib/contact";
+import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
 import { EnquiryForm } from "@/components/marketing/enquiry-form";
 import { appHref } from "@/lib/site-config";
 
@@ -84,6 +84,21 @@ export default function ContactPage() {
                   </span>
                 ))}
               </address>
+              {/* The footer already offers directions and this page did not,
+                  which is the wrong way round — this is the page someone opens
+                  when they intend to visit. A maps SEARCH by address rather
+                  than a place ID, for the same reason as the footer's: the
+                  listing may not exist yet, and a search always resolves to
+                  something a visitor can use. */}
+              <a
+                href={mapsSearchHref()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex min-h-9 items-center gap-1.5 self-start rounded-md text-sm font-semibold text-primary hover:underline"
+              >
+                Get directions
+                <ArrowRight aria-hidden className="size-3.5" />
+              </a>
             </Card>
 
             <Card className="card-hover flex flex-col gap-2">

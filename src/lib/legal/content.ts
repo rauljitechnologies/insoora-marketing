@@ -26,6 +26,13 @@ export interface LegalDocument {
   title: string;
   /** Shown under the title; the date the wording last changed. */
   updated: string;
+  /** The same date as YYYY-MM-DD, for the `datetime` attribute.
+   *
+   *  `<time>13 October 2026</time>` with no `datetime` is not machine
+   *  readable — the element's own text is only valid as a date in a handful
+   *  of formats, and a long-form English date is not one of them. Held
+   *  beside the printed form so the two cannot drift. */
+  updatedIso: string;
   intro: string;
   sections: LegalSection[];
 }
@@ -40,12 +47,15 @@ export interface LegalDocument {
  */
 export const LEGAL_REVIEW_VISIBLE = process.env.LEGAL_REVIEW_FLAGS !== "off";
 
-/** Changed when the wording changes, not when the page is edited. */
+/** Changed when the wording changes, not when the page is edited. Both
+ *  forms of the same date: one for a reader, one for a parser. */
 const LAST_UPDATED = "13 October 2026";
+const LAST_UPDATED_ISO = "2026-10-13";
 
 export const PRIVACY_POLICY: LegalDocument = {
   title: "Privacy Policy",
   updated: LAST_UPDATED,
+  updatedIso: LAST_UPDATED_ISO,
   intro:
     "How Insoora handles information when you use our website and the platform for insurance agents, sub-agents and their customers.",
   sections: [
@@ -129,6 +139,7 @@ export const PRIVACY_POLICY: LegalDocument = {
 export const TERMS: LegalDocument = {
   title: "Terms & Conditions",
   updated: LAST_UPDATED,
+  updatedIso: LAST_UPDATED_ISO,
   intro: "The terms that apply when you create an account or use the Insoora platform.",
   sections: [
     {

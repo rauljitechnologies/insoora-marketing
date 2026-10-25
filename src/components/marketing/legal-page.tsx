@@ -49,7 +49,7 @@ export function LegalPage({
               {doc.intro}
             </p>
             <p className="mt-4 text-sm text-muted">
-              Last updated <time>{doc.updated}</time>
+              Last updated <time dateTime={doc.updatedIso}>{doc.updated}</time>
             </p>
           </div>
         </Container>

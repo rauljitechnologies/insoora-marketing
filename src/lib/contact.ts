@@ -51,3 +51,25 @@ export function streetAddress(): string {
   const { street, street2 } = CONTACT.address;
   return [street, street2].filter(Boolean).join(", ");
 }
+
+/**
+ * A Google Maps link for the office.
+ *
+ * A SEARCH by address rather than a link to a place ID: there may not be a
+ * verified listing yet, and a search always resolves to something a visitor
+ * can use, whereas a wrong or missing place ID resolves to nothing.
+ *
+ * Derived from `CONTACT.address` rather than written out, because it was
+ * previously a hardcoded query string in the footer — so a corrected address
+ * would have left the directions link pointing at the old one. The house
+ * number is dropped: "201" in a maps query narrows the search to a street
+ * number Maps may not hold, and the tower plus the road is what actually
+ * finds the building.
+ */
+export function mapsSearchHref(): string {
+  const { street, street2, city, postalCode } = CONTACT.address;
+  const query = [street.replace(/^\d+\s+/, ""), street2.replace(/^B\/h\s+/i, ""), city, postalCode]
+    .filter(Boolean)
+    .join(" ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}

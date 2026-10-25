@@ -87,6 +87,18 @@ export function EnquiryForm() {
   const [touched, setTouched] = React.useState(false);
   const [status, setStatus] = React.useState<"idle" | "sending" | "success" | "error">("idle");
   const [sentTo, setSentTo] = React.useState({ first: "", email: "" });
+  // The honeypot is uncontrolled — nothing should ever type into it, so it
+  // has no business in `Fields`. Read on submit so its value can actually be
+  // sent; see the note at the field itself.
+  const honeypot = React.useRef<HTMLInputElement>(null);
+  // The success panel replaces the form, so focus would otherwise be left on
+  // a button that no longer exists and fall back to <body>. Moved to the
+  // confirmation heading instead, which is also what announces it.
+  const confirmation = React.useRef<HTMLHeadingElement>(null);
+
+  React.useEffect(() => {
+    if (status === "success") confirmation.current?.focus();
+  }, [status]);
 
   const errors = touched ? validate(f) : {};
   const set = (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -111,6 +123,12 @@ export function EnquiryForm() {
           phone: f.phone.trim(),
           type: f.type,
           message: f.message.trim(),
+          // The honeypot. It was rendered on the page but never submitted,
+          // so the field was decoration: a bot that filled it in was accepted
+          // exactly like a human. It is checked by THIS site's own relay
+          // route, which drops the field before forwarding — so the product's
+          // request contract is untouched either way. A real visitor sends "".
+          company_website: honeypot.current?.value ?? "",
         },
       });
       setSentTo({ first: f.name.trim().split(/\s+/)[0], email: f.email.trim() });
@@ -129,11 +147,23 @@ export function EnquiryForm() {
 
   if (status === "success") {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-2xl border border-success/30 bg-success-soft p-6">
+      // `role="status"` so the confirmation is announced where it appears
+      // rather than only noticed by sighted readers; `tabIndex={-1}` on the
+      // heading makes it a focus target without adding it to the tab order.
+      <div
+        role="status"
+        className="flex flex-col items-start gap-3 rounded-2xl border border-success/30 bg-success-soft p-6"
+      >
         <span aria-hidden className={cn("grid size-12 place-items-center rounded-xl", ACCENT_TILE.green)}>
           <CheckCheck className="size-6" />
         </span>
-        <h2 className="text-[22px] font-bold tracking-[-0.025em] text-foreground">Message sent</h2>
+        <h2
+          ref={confirmation}
+          tabIndex={-1}
+          className="text-[22px] font-bold tracking-[-0.025em] text-foreground focus-visible:outline-none"
+        >
+          Message sent
+        </h2>
         <p className="text-[15px] leading-relaxed text-foreground/80">
           Thanks{sentTo.first ? `, ${sentTo.first}` : ""}. We&apos;ve received your enquiry and will reply
           to <span className="font-semibold">{sentTo.email}</span>.
@@ -264,10 +294,20 @@ export function EnquiryForm() {
       </div>
 
       {/* Honeypot: off-screen rather than display:none, which some bots skip.
-          A real visitor never reaches it — it is not in the tab order. */}
+          A real visitor never reaches it — it is not in the tab order.
+
+          Its value is read on submit and sent as `company_website`, which is
+          the field the product's /api/enquiries rejects a non-empty value on.
+          Without that it was a field nothing looked at. */}
       <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden">
         <label htmlFor="company_website">Company website</label>
-        <input id="company_website" name="company_website" tabIndex={-1} autoComplete="off" />
+        <input
+          ref={honeypot}
+          id="company_website"
+          name="company_website"
+          tabIndex={-1}
+          autoComplete="off"
+        />
       </div>
 
       <p className="text-xs leading-relaxed text-muted">

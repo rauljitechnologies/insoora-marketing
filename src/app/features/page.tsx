@@ -193,9 +193,6 @@ export default function FeaturesPage() {
       />
 
       {/* A contents list: nine features is long enough that a reader arriving
-          from a search result deserves a way to jump to the one they came for,
-          and the anchors give the page internal links worth following. */}
-      {/* A contents list: nine features is long enough that a reader arriving
           from a search result deserves a way to jump to the one they came
           for, and the anchors give the page internal links worth following.
 

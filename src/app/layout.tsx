@@ -4,13 +4,13 @@ import { Inter } from "next/font/google";
 import { ArrowRight, Download, FileText, Lock, MapPin, Phone, Users } from "lucide-react";
 import { buttonVariants } from "@/components/ui";
 import { Container } from "@/components/marketing/section";
-import { CONTACT, addressLines } from "@/lib/contact";
+import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand";
 import { SiteNav, type SiteNavItem } from "@/components/marketing/site-nav";
 import { SignInLinks, SignInMenu } from "@/components/marketing/sign-in-menu";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
-import { siteUrl } from "@/lib/seo";
+import { PRODUCT, siteUrl } from "@/lib/seo";
 import "./globals.css";
 
 // Site-wide metadata.
@@ -20,15 +20,24 @@ import "./globals.css";
 // comes from NEXT_PUBLIC_SITE_URL (lib/site-config) — the site's own domain,
 // not the product's.
 //
-// Unlike the product deployment, which is `noindex` by default and opts the
-// public pages back in, everything on THIS deployment is public. Indexing is
-// still decided per page by `pageMetadata`, which keeps a staging host out of
-// the index until a real domain is configured.
+// Indexing is decided PER PAGE by `pageMetadata`, which keeps a staging host
+// out of the index until a real domain is configured — so there is no `robots`
+// key here. There used to be a site-wide `{ index: true, follow: true }`, and
+// because all seven pages set their own it only ever reached the one route
+// that does not: the 404, where Next emits its own `noindex` and the inherited
+// tag then contradicted it. Nothing inherits a robots directive now.
+// The description is `PRODUCT.summary`, the same sentence the JSON-LD and the
+// Open Graph cards use, rather than a second description of its own. It used
+// to read "Insurance policy extraction, review and records — local-first",
+// which described the product as local-first; it is a hosted web application,
+// and a site-wide description that contradicts the page it sits on is both a
+// quality signal and simply wrong. Every page overrides this with its own
+// anyway (see `pageMetadata`) — this is the fallback.
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: "Insoora", template: "%s · Insoora" },
-  description: "Insurance policy extraction, review and records — local-first.",
-  robots: { index: true, follow: true },
+  title: { default: `${PRODUCT.name} — ${PRODUCT.tagline.replace(/\.$/, "")}`, template: "%s · Insoora" },
+  description: PRODUCT.summary,
+  applicationName: PRODUCT.name,
 };
 
 // Next injects `width=device-width, initial-scale=1` on its own; what it does
@@ -156,13 +165,16 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
   const actions = (
     <>
       <SignInMenu className="hidden sm:inline-flex" />
-      <Link
+      {/* A plain <a>, not a <Link>: this is an absolute URL on the product's
+          origin, and there is no client-side route across an origin for the
+          router to handle or prefetch. Same rule as SiteNavItem.external. */}
+      <a
         href={appHref("/agent/register")}
         className="flex h-10 w-full items-center justify-center rounded-md px-4 text-sm font-semibold text-white shadow-[0_8px_18px_-8px_rgba(124,58,237,.8)] transition-transform hover:-translate-y-px sm:w-auto"
         style={{ backgroundImage: "var(--gradient-brand)" }}
       >
         Get Started
-      </Link>
+      </a>
     </>
   );
 
@@ -240,13 +252,13 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
               </p>
             </div>
             <div className="flex flex-none flex-wrap items-center gap-3">
-              <Link
+              <a
                 href={appHref("/agent/register")}
                 className="flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold text-white shadow-[0_8px_18px_-8px_rgba(124,58,237,.8)] transition-transform hover:-translate-y-px"
                 style={{ backgroundImage: "var(--gradient-brand)" }}
               >
                 Get Started
-              </Link>
+              </a>
               <Link
                 href="/contact-us"
                 className="flex h-11 items-center gap-1.5 rounded-md border border-white/15 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
@@ -307,11 +319,12 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 <Phone className="size-3.5 text-[#FCA5A5]" />
                 {CONTACT.phone}
               </a>
-              {/* A maps search by address rather than a place ID: the listing
-                  may not exist yet, and a search always resolves to something
-                  a visitor can use. */}
+              {/* A maps search by address rather than a place ID — see
+                  `mapsSearchHref`. Built from lib/contact rather than written
+                  out here, so a corrected address cannot leave the directions
+                  link pointing at the old one. */}
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Prem+Prakash+Tower+Ankleshwar+Mahadev+Road+Godhra+389001"
+                href={mapsSearchHref()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
