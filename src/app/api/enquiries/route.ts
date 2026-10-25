@@ -30,6 +30,18 @@ import { APP_URL } from "@/lib/site-config";
  *  an unbounded upload being read into memory here first. */
 const MAX_BODY = 8 * 1024;
 
+/**
+ * The honeypot field the form renders off-screen.
+ *
+ * Checked HERE rather than upstream, for a reason worth stating: this
+ * deployment cannot see the product's request schema, so it cannot know
+ * whether an extra key is accepted or rejected by it. Enforcing the trap on
+ * this side and then deleting the key before forwarding means the spam check
+ * actually runs and the product receives exactly the body it received before
+ * — no guess about another service's validation.
+ */
+const HONEYPOT = "company_website";
+
 export async function POST(req: NextRequest) {
   const raw = await req.text();
   if (raw.length > MAX_BODY) {
@@ -37,6 +49,28 @@ export async function POST(req: NextRequest) {
       { error: { code: "PAYLOAD_TOO_LARGE", message: "That message is too long." } },
       { status: 413 },
     );
+  }
+
+  // The body is re-serialised only when the honeypot key is present, so an
+  // ordinary submission is still forwarded byte for byte.
+  let body = raw;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (HONEYPOT in parsed) {
+      const trap = parsed[HONEYPOT];
+      if (typeof trap === "string" && trap.trim() !== "") {
+        // Accepted and discarded, not rejected. A bot that is told it failed
+        // retries with the field left blank; one that is told it succeeded
+        // does not. Nothing is stored and nothing is forwarded.
+        return NextResponse.json({ data: { ok: true } }, { status: 202 });
+      }
+      delete parsed[HONEYPOT];
+      body = JSON.stringify(parsed);
+    }
+  } catch {
+    // Not JSON. Forward it unchanged and let the product reject it — this
+    // route is a pipe, and inventing a second validation error message here
+    // would mean two services disagreeing about the same bad request.
   }
 
   // The first hop in x-forwarded-for is the visitor; the rest is proxies.
@@ -52,7 +86,7 @@ export async function POST(req: NextRequest) {
         ...(ip ? { "x-forwarded-for": ip } : {}),
         ...(req.headers.get("user-agent") ? { "user-agent": req.headers.get("user-agent")! } : {}),
       },
-      body: raw,
+      body,
       // No cookies, no credentials — there is no session to carry.
       cache: "no-store",
     });
