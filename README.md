@@ -40,7 +40,7 @@ Two variables (see `.env.example`), and they are **not** both required:
 
 | Variable | Required? | What it is |
 | --- | --- | --- |
-| `NEXT_PUBLIC_APP_URL` | **Yes, in production** | The product's origin. Every "Sign in" / "Get Started" link points into it, and the enquiry relay posts to it. |
+| `NEXT_PUBLIC_APP_URL` | **In practice, yes** | The product's origin. Every "Sign in" / "Get Started" link points into it, and the enquiry relay posts to it. Unset, the build warns and uses the host in `.env.example`. |
 | `NEXT_PUBLIC_SITE_URL` | No — it is the indexing switch | This site's own domain. Canonicals, Open Graph URLs, `sitemap.xml` and `robots.txt` are built from it. |
 
 Both are `NEXT_PUBLIC_` and therefore **inlined at build time** — changing
@@ -56,18 +56,30 @@ neither variable was ever set on the deployment.
 
 So `lib/site-config.ts` now resolves them like this:
 
-- **`NEXT_PUBLIC_APP_URL`** — the variable, or the dev fallback outside
-  production. A **production build fails** if it is unset or points at
-  localhost. There is no honest fallback: this deployment cannot discover the
-  product's hostname, and a guess sends every converting visitor to a dead
-  URL. The build error names the variable.
+- **`NEXT_PUBLIC_APP_URL`** — the variable, else (in production) the host
+  recorded in `.env.example`, else the dev fallback. A production build that
+  falls back **warns on stderr**, naming the variable; it does not fail.
 - **`NEXT_PUBLIC_SITE_URL`** — the variable, else
-  `VERCEL_PROJECT_PRODUCTION_URL`, else `VERCEL_URL`, else the dev fallback.
-  Vercel sets those two itself, so canonicals are always a real, reachable,
+  `VERCEL_PROJECT_PRODUCTION_URL`, else `VERCEL_URL`, else (in production) the
+  domain in `.env.example`, else the dev fallback. Vercel sets those two
+  itself, so on Vercel a canonical is always a real, reachable,
   self-referencing origin even before the domain is connected.
 
-An empty or whitespace-only value counts as unset, so a blank variable in a
-dashboard takes the fallback rather than failing the build.
+An empty or whitespace-only value counts as unset.
+
+The build deliberately does **not** fail on a missing origin. That was the
+first attempt — a failed deploy is read in a log, a dead link is found by a
+customer — and it is the wrong trade: it blocks every deploy of a site whose
+seven pages are otherwise correct and whose only defect is one link's
+destination, and it blocks it hardest while nobody yet knows the product's
+final hostname. So: warn loudly, deploy anyway, never emit localhost.
+
+Neither default is verified to resolve — at the time of writing
+`app.insoora.com` and `www.insoora.com` both fail DNS, because the custom
+domain is not connected yet. For `NEXT_PUBLIC_SITE_URL` that is harmless (the
+page is `noindex` anyway, and on Vercel the default is never reached). For
+`NEXT_PUBLIC_APP_URL` it is not: **until that origin serves the product,
+"Sign in" and "Get Started" lead somewhere that does not answer.**
 
 ### Indexing
 
@@ -93,7 +105,10 @@ at nothing.
 3. Framework preset: Next.js. Build command, output and install command are
    all the defaults.
 4. Environment variables, for Production **and** Preview:
-   - `NEXT_PUBLIC_APP_URL` — required; the build fails without it.
+   - `NEXT_PUBLIC_APP_URL` — set it to wherever the product is actually
+     served. Omitting it does not break the build, but check the deploy log:
+     a warning there means every "Sign in" and "Get Started" is pointing at
+     the default in `.env.example`.
    - `NEXT_PUBLIC_SITE_URL` — leave unset until the custom domain resolves.
 5. Add the domain here when it is ready; the product keeps its own hostname.
    Then set `NEXT_PUBLIC_SITE_URL` to it and redeploy to switch indexing on.

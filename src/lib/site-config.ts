@@ -14,14 +14,40 @@
 // a degraded link, it is a dead one, and a localhost canonical tells a crawler
 // to index nothing.
 //
-// So the fallbacks are now scoped to development, and a production build that
-// cannot resolve an origin FAILS rather than inventing one. A build error names
-// the variable to set; a localhost link in production is discovered by a
-// visitor. See `requireOrigin` below.
+// So the localhost fallbacks are scoped to development. In production an
+// unset variable falls back to the origin recorded in `.env.example` — this
+// project's own stated configuration, not a hostname invented here — and the
+// build logs a loud warning naming the variable.
+//
+// It deliberately does NOT fail the build. That was the first attempt, on the
+// reasoning that a failed deploy is seen in a log and a bad link is seen by a
+// customer. It is the wrong trade: it blocks every deploy of a site whose
+// seven pages are otherwise correct and whose only defect is one link's
+// destination, and it blocks it hardest exactly when nobody yet knows the
+// product's final hostname. A warning that is read at leisure beats a
+// deployment that cannot happen.
 //
 // `process.env.NEXT_PUBLIC_*` is read as a literal member expression on
 // purpose — that is the form Next inlines at build time. Reading it through a
 // variable or a helper would leave `undefined` in the browser bundle.
+
+// ── The production defaults ──────────────────────────────────────────────
+//
+// Both are the values committed in `.env.example`, which is where this
+// project records its intended hostnames. Neither is verified to resolve:
+// at the time of writing `app.insoora.com` and `www.insoora.com` both fail
+// DNS, because the custom domain has not been connected yet.
+//
+// That is fine for `DEFAULT_SITE_URL`, which only ever supplies a canonical
+// on a page that is `noindex` anyway (see `siteUrlIsConfigured`), and on
+// Vercel it is never reached at all — the two `VERCEL_*` hosts come first.
+//
+// It is NOT fine for `DEFAULT_APP_URL`: until that origin serves the product,
+// "Sign in" and "Get Started" lead somewhere that does not answer. Setting
+// `NEXT_PUBLIC_APP_URL` to the origin the product is really on is the one
+// piece of configuration this deployment cannot work out for itself.
+const DEFAULT_SITE_URL = "https://www.insoora.com";
+const DEFAULT_APP_URL = "https://app.insoora.com";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
@@ -44,23 +70,32 @@ function present(value: string | undefined): string | undefined {
 }
 
 /**
- * The configured origin, or a hard failure in a production build.
+ * The configured origin, or the right fallback for the environment.
  *
- * `name` is the variable a human has to set — it is quoted back to them in
- * the build log, which is the whole point of failing here rather than later.
+ * `name` is the variable a human has to set; it is quoted back to them in the
+ * build log, which is the entire purpose of the warning. The warning fires
+ * once per build (this module is evaluated once per bundle), goes to stderr,
+ * and does not fail the build.
  */
-function requireOrigin(value: string | undefined, name: string, devFallback: string): string {
+function resolveOrigin(
+  value: string | undefined,
+  name: string,
+  { production, development }: { production: string; development: string },
+): string {
+  // Anything explicitly configured and not pointing at a loopback address
+  // wins outright, in every environment.
   if (value && !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(value)) return normalize(value);
 
-  if (!IS_PRODUCTION) return normalize(value ?? devFallback);
+  if (!IS_PRODUCTION) return normalize(value ?? development);
 
-  throw new Error(
-    `${name} is not set to a public https:// origin.\n\n` +
-      `This production build would otherwise emit localhost URLs on every ` +
-      `page, which is what previously shipped. Set ${name} in the deployment's ` +
-      `environment variables (Vercel → Project → Settings → Environment ` +
-      `Variables, for Production and Preview) and redeploy. See .env.example.`,
+  console.warn(
+    `\n⚠  ${name} is not set to a public origin.\n` +
+      `   Falling back to ${production} (from .env.example).\n` +
+      `   If that is not where this points in production, set ${name} in the\n` +
+      `   deployment's environment variables — Vercel → Project → Settings →\n` +
+      `   Environment Variables, for Production and Preview — and redeploy.\n`,
   );
+  return normalize(production);
 }
 
 /**
@@ -87,29 +122,28 @@ function requireOrigin(value: string | undefined, name: string, devFallback: str
 const VERCEL_HOST =
   present(process.env.VERCEL_PROJECT_PRODUCTION_URL) ?? present(process.env.VERCEL_URL);
 
-export const SITE_URL = requireOrigin(
+export const SITE_URL = resolveOrigin(
   present(process.env.NEXT_PUBLIC_SITE_URL) ?? (VERCEL_HOST ? `https://${VERCEL_HOST}` : undefined),
   "NEXT_PUBLIC_SITE_URL",
-  "http://localhost:3100",
+  { production: DEFAULT_SITE_URL, development: "http://localhost:3100" },
 );
 
 /**
  * The product's base URL — where the three portals and the API live.
  *
  * Every "Sign in" and "Get Started" control on this site points into it, and
- * `/api/enquiries` relays the contact form to it server-side. There is no
- * fallback for it in production and there cannot be a sensible one: this
- * deployment has no way to discover the product's hostname, and guessing it
- * would send every visitor who presses the site's primary button to a dead
- * URL. Required, therefore — the build says so.
+ * `/api/enquiries` relays the contact form to it server-side. This is the one
+ * value that genuinely has to be set: unset, the whole conversion path leads
+ * to `DEFAULT_APP_URL`, which is this project's intended host but is not yet
+ * answering. The build warns rather than failing, so check the deploy log.
  *
  * `NEXT_PUBLIC_` because the header's sign-in menu is a client component and
  * has to build the same URLs the server-rendered footer does.
  */
-export const APP_URL = requireOrigin(
+export const APP_URL = resolveOrigin(
   present(process.env.NEXT_PUBLIC_APP_URL),
   "NEXT_PUBLIC_APP_URL",
-  "http://localhost:3000",
+  { production: DEFAULT_APP_URL, development: "http://localhost:3000" },
 );
 
 /** An absolute URL into the product, e.g. `appHref("/agent/login")`. */
