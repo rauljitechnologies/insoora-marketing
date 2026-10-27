@@ -9,6 +9,7 @@ import { BrandLogo } from "@/components/brand";
 import { SiteNav, type SiteNavItem } from "@/components/marketing/site-nav";
 import { SignInLinks, SignInMenu } from "@/components/marketing/sign-in-menu";
 import { SocialLinks } from "@/components/marketing/social-links";
+import { Analytics, AnalyticsNoScript } from "@/components/marketing/analytics";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
@@ -193,6 +194,12 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={cn(inter.variable, "h-full antialiased")}>
     <body className="min-h-full">
+    {/* Tag Manager's noscript fallback, immediately after the opening
+        <body> tag where Google's instructions put it. It renders nothing
+        for anyone running JavaScript, and it is BEFORE the skip link only
+        because a <noscript> is not focusable and so cannot come between a
+        keyboard user and "Skip to content". */}
+    <AnalyticsNoScript />
     {/* `.site` is kept as a wrapper element rather than moved onto <body>:
         globals.css hangs the site's whole token set and its `.site footer`
         focus rules off this class, and it is shared verbatim with the product
@@ -236,7 +243,14 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
               "radial-gradient(500px 280px at 100% 0%,rgba(220,38,38,.18),transparent 70%),radial-gradient(500px 300px at 0% 100%,rgba(37,99,235,.22),transparent 70%)",
           }}
         />
-        <Container className="relative py-12 shell:py-14">
+        {/* The bands were each padded as if they were a section of the page
+            — 48/40/44/44/20/24px of vertical chrome before a single line of
+            text — which on a wide screen read as four strips of empty navy
+            with some links floating in them. Every value below is one step
+            down the scale; nothing moved and nothing was removed, the footer
+            is just ~60px shorter and the rules sit closer to what they
+            separate. */}
+        <Container className="relative py-10 shell:py-12">
           {/* Four bands, each the full width of the column.
 
               The earlier footer hung a tall office card beside four two-item
@@ -244,23 +258,13 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
               other. Nothing here is taller than its neighbours: the office is
               a fifth link column of plain text rather than a card, which puts
               every column within ~20px of the next and leaves the row flat. */}
-          <div className="flex flex-col gap-6 border-b border-white/10 pb-10 shell:flex-row shell:items-end shell:justify-between shell:gap-12">
+          <div className="flex flex-col gap-6 border-b border-white/10 pb-8 shell:flex-row shell:items-end shell:justify-between shell:gap-12">
             <div className="flex min-w-0 flex-col gap-4">
               <BrandLogo tone="dark" variant="stacked" />
               <p className="max-w-xl text-[15px] leading-[1.6] text-[#94A3B8]">
                 Insurance policy management made simple. Turn policy PDFs into organized, searchable
                 records and never miss a renewal.
               </p>
-              {/* The social profiles, under the brand lockup rather than in a
-                  link column: they are the same entity as the logo above
-                  them, not a fifth category of page. These are also the URLs
-                  the Organization schema lists in `sameAs` — both come from
-                  lib/contact, so the markup cannot claim a profile the
-                  footer does not link to. */}
-              <SocialLinks
-                className="gap-2.5"
-                linkClassName="border-white/15 text-[#CBD5E1] hover:bg-white/10 hover:text-white"
-              />
             </div>
             <div className="flex flex-none flex-wrap items-center gap-3">
               <a
@@ -283,7 +287,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           {/* Four link columns of ~177px — enough for "Terms & Conditions" —
               and a wider fifth so the landmark line of the address does not
               wrap. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-11 sm:grid-cols-3 shell:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.25fr)] shell:gap-x-8">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-9 sm:grid-cols-3 shell:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.25fr)] shell:gap-x-8">
             {FOOTER_COLUMNS.map((c) => (
               <nav key={c.t} aria-label={c.t} className="flex min-w-0 flex-col gap-3">
                 <strong className={cn("text-[13px] uppercase tracking-[0.08em]", c.tone)}>{c.t}</strong>
@@ -348,7 +352,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
 
           {/* The four controls as one rule-to-rule strip: spread across the
               full width, they close the band instead of clustering left. */}
-          <ul className="grid gap-x-6 gap-y-3 border-y border-white/10 py-5 min-[420px]:grid-cols-2 shell:grid-cols-4">
+          <ul className="grid gap-x-6 gap-y-3 border-y border-white/10 py-4 min-[420px]:grid-cols-2 shell:grid-cols-4">
             {TRUST.map((t) => (
               <li key={t.t} className="flex items-center gap-2.5 text-[13px] font-medium text-[#E2E8F0]">
                 <span aria-hidden className="grid size-8 flex-none place-items-center rounded-md bg-white/[0.06]">
@@ -359,11 +363,25 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             ))}
           </ul>
 
-          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-6 text-[13px] text-[#94A3B8]">
+          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-5 text-[13px] text-[#94A3B8]">
             <span>
               © {new Date().getFullYear()} Insoora. All rights reserved. Made in Godhra, Gujarat.
             </span>
             <div className="flex flex-wrap items-center gap-4">
+              {/* The social profiles sit in the closing bar, beside Privacy
+                  and Terms, because that row already exists and has spare
+                  width — under the brand lockup they added 56px to the
+                  tallest column of the top band, and since that band is
+                  `items-end`, every pixel of it came back as empty space
+                  above the two buttons on the opposite side.
+
+                  These are the URLs the Organization schema lists in
+                  `sameAs`; both read lib/contact, so the markup cannot
+                  claim a profile the footer does not link to. */}
+              <SocialLinks
+                className="gap-2"
+                linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:bg-white/10 hover:text-white"
+              />
               <Link href="/privacy-policy" className="transition-colors hover:text-white">
                 Privacy
               </Link>
@@ -385,6 +403,8 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
         </Container>
       </footer>
     </div>
+    {/* Outside `.site`, and last: it renders nothing. */}
+    <Analytics />
     </body>
     </html>
   );

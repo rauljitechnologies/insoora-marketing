@@ -48,14 +48,21 @@ export interface LegalDocument {
 export const LEGAL_REVIEW_VISIBLE = process.env.LEGAL_REVIEW_FLAGS !== "off";
 
 /** Changed when the wording changes, not when the page is edited. Both
- *  forms of the same date: one for a reader, one for a parser. */
-const LAST_UPDATED = "13 October 2026";
-const LAST_UPDATED_ISO = "2026-10-13";
+ *  forms of the same date: one for a reader, one for a parser.
+ *
+ *  One pair per document rather than one shared pair, because the two do not
+ *  change together. The privacy policy's cookies section was rewritten when
+ *  Google Analytics was added to the site; dating the terms to that day too
+ *  would announce a change to them that nobody made. */
+const PRIVACY_UPDATED = "27 October 2026";
+const PRIVACY_UPDATED_ISO = "2026-10-27";
+const TERMS_UPDATED = "13 October 2026";
+const TERMS_UPDATED_ISO = "2026-10-13";
 
 export const PRIVACY_POLICY: LegalDocument = {
   title: "Privacy Policy",
-  updated: LAST_UPDATED,
-  updatedIso: LAST_UPDATED_ISO,
+  updated: PRIVACY_UPDATED,
+  updatedIso: PRIVACY_UPDATED_ISO,
   intro:
     "How Insoora handles information when you use our website and the platform for insurance agents, sub-agents and their customers.",
   sections: [
@@ -119,8 +126,12 @@ export const PRIVACY_POLICY: LegalDocument = {
     },
     {
       heading: "Cookies and analytics",
-      body: ["We use cookies that are necessary to keep you signed in and to protect the service."],
-      review: "State whether any analytics or marketing cookies are used; add a consent banner if so.",
+      body: [
+        "We use cookies that are necessary to keep you signed in and to protect the service.",
+        "This public website also uses Google Analytics, loaded through Google Tag Manager, to count visits and see which pages are read. It sets its own cookies and sends that usage data to Google; we see visitor numbers and page reports, not individual people, and it is not used to identify you. It runs on these public pages only — it is not loaded inside the signed-in platform, and it never sees a policy document or the details extracted from one.",
+      ],
+      review:
+        "Google Analytics (property G-C683RQCP76) and Google Tag Manager (container GTM-5943B5QG) are live on the public site. Decide whether a consent banner is required before they load — analytics cookies are not “necessary”, so EU/UK visitors need prior consent, and confirm the position under India’s DPDP Act. This section must also be re-read whenever a new tag is added to the container, since the container can load one without a code change. Add Google to the third-party list above once that review is done.",
     },
     {
       heading: "Contact for privacy questions",
@@ -138,8 +149,8 @@ export const PRIVACY_POLICY: LegalDocument = {
 
 export const TERMS: LegalDocument = {
   title: "Terms & Conditions",
-  updated: LAST_UPDATED,
-  updatedIso: LAST_UPDATED_ISO,
+  updated: TERMS_UPDATED,
+  updatedIso: TERMS_UPDATED_ISO,
   intro: "The terms that apply when you create an account or use the Insoora platform.",
   sections: [
     {
