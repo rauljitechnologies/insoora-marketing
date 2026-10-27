@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL, absolute, siteUrlIsConfigured } from "@/lib/site-config";
-import { CONTACT, addressOneLine, streetAddress } from "@/lib/contact";
+import { CONTACT, addressOneLine, socialHrefs, streetAddress } from "@/lib/contact";
 
 // Search and AI-answer metadata for the public website.
 //
@@ -101,6 +101,12 @@ export function organizationSchema() {
     name: CONTACT.name,
     url: siteUrl(),
     description: PRODUCT.summary,
+    // The profiles that are the same business elsewhere. This is how an
+    // answer engine ties the site to the Facebook page and the Instagram
+    // account rather than treating the three as unrelated — and every URL
+    // here is also a visible, crawlable link in the footer, which is what
+    // keeps the markup and the page telling the same story.
+    sameAs: socialHrefs(),
     telephone: CONTACT.phone,
     address: {
       "@type": "PostalAddress",

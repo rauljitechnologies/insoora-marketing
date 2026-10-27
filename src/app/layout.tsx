@@ -8,6 +8,7 @@ import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
 import { BrandLogo } from "@/components/brand";
 import { SiteNav, type SiteNavItem } from "@/components/marketing/site-nav";
 import { SignInLinks, SignInMenu } from "@/components/marketing/sign-in-menu";
+import { SocialLinks } from "@/components/marketing/social-links";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
@@ -250,6 +251,16 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 Insurance policy management made simple. Turn policy PDFs into organized, searchable
                 records and never miss a renewal.
               </p>
+              {/* The social profiles, under the brand lockup rather than in a
+                  link column: they are the same entity as the logo above
+                  them, not a fifth category of page. These are also the URLs
+                  the Organization schema lists in `sameAs` — both come from
+                  lib/contact, so the markup cannot claim a profile the
+                  footer does not link to. */}
+              <SocialLinks
+                className="gap-2.5"
+                linkClassName="border-white/15 text-[#CBD5E1] hover:bg-white/10 hover:text-white"
+              />
             </div>
             <div className="flex flex-none flex-wrap items-center gap-3">
               <a

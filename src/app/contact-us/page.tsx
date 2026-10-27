@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, MapPin, Phone, UserRound } from "lucide-react";
+import { ArrowRight, AtSign, Clock, MapPin, Phone, UserRound } from "lucide-react";
 import { Card, GradientText, PageHead, Section } from "@/components/marketing/section";
 import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
 import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
 import { EnquiryForm } from "@/components/marketing/enquiry-form";
+import { SocialLinkList } from "@/components/marketing/social-links";
 import { appHref } from "@/lib/site-config";
 
 export const metadata = pageMetadata({
@@ -107,6 +108,22 @@ export default function ContactPage() {
               </span>
               <p className="text-sm font-semibold text-foreground">Response</p>
               <p className="text-sm leading-relaxed text-muted">We reply to every enquiry by email.</p>
+            </Card>
+
+            {/* The social profiles, with their handles printed: this is the
+                page someone opens looking for a way to reach us, and the
+                footer's icon row alone does not tell them which account is
+                ours. Same list as the footer and the `sameAs` in the schema
+                above — all three read lib/contact. */}
+            <Card className="card-hover flex flex-col gap-2">
+              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.purple)}>
+                <AtSign className="size-5" />
+              </span>
+              <p className="text-sm font-semibold text-foreground">Follow us</p>
+              <p className="text-sm leading-relaxed text-muted">
+                Product updates and renewal reminders, as we ship them.
+              </p>
+              <SocialLinkList className="mt-1" />
             </Card>
 
             <Card className="card-hover flex flex-col gap-2 border-warning/30 bg-warning-soft">
