@@ -73,3 +73,56 @@ export function mapsSearchHref(): string {
     .join(" ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
+
+/**
+ * One public social profile.
+ *
+ * `id` keys the glyph in `components/marketing/social-links` — adding a
+ * platform here without drawing its glyph there is a type error rather than
+ * a blank square in the footer.
+ */
+export interface SocialProfile {
+  id: "facebook" | "instagram" | "youtube";
+  label: string;
+  href: string;
+  /** The handle as it is printed, where the page has room for it. */
+  handle: string;
+}
+
+/**
+ * The business's public social profiles, in the order they are shown.
+ *
+ * Read by the footer, the Contact Us page and `sameAs` in the JSON-LD — the
+ * same one-definition rule as the phone number above. `sameAs` is the field
+ * an answer engine uses to decide that this site and that Instagram account
+ * are the same business, so only profiles we actually control belong here:
+ * a wrong entry does not merely fail to help, it ties the brand to somebody
+ * else's account.
+ */
+export const SOCIAL: readonly SocialProfile[] = [
+  {
+    id: "facebook",
+    label: "Facebook",
+    href: "https://www.facebook.com/insooraofficial",
+    handle: "@insooraofficial",
+  },
+  {
+    id: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/insooraofficial",
+    handle: "@insooraofficial",
+  },
+  {
+    id: "youtube",
+    label: "YouTube",
+    // The handle URL, not a /channel/UC… id: it is the one a visitor can
+    // read and retype, and it survives the channel being renamed.
+    href: "https://www.youtube.com/@insooraofficial",
+    handle: "@insooraofficial",
+  },
+];
+
+/** Just the URLs, for schema.org's `sameAs`. */
+export function socialHrefs(): string[] {
+  return SOCIAL.map((s) => s.href);
+}
