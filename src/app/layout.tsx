@@ -9,6 +9,7 @@ import { BrandLogo } from "@/components/brand";
 import { SiteNav, type SiteNavItem } from "@/components/marketing/site-nav";
 import { SignInLinks, SignInMenu } from "@/components/marketing/sign-in-menu";
 import { SocialLinks } from "@/components/marketing/social-links";
+import { Analytics, AnalyticsNoScript } from "@/components/marketing/analytics";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
@@ -193,6 +194,12 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={cn(inter.variable, "h-full antialiased")}>
     <body className="min-h-full">
+    {/* Tag Manager's noscript fallback, immediately after the opening
+        <body> tag where Google's instructions put it. It renders nothing
+        for anyone running JavaScript, and it is BEFORE the skip link only
+        because a <noscript> is not focusable and so cannot come between a
+        keyboard user and "Skip to content". */}
+    <AnalyticsNoScript />
     {/* `.site` is kept as a wrapper element rather than moved onto <body>:
         globals.css hangs the site's whole token set and its `.site footer`
         focus rules off this class, and it is shared verbatim with the product
@@ -396,6 +403,8 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
         </Container>
       </footer>
     </div>
+    {/* Outside `.site`, and last: it renders nothing. */}
+    <Analytics />
     </body>
     </html>
   );
