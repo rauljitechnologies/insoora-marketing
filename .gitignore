@@ -7,5 +7,7 @@ next-env.d.ts
 *.tsbuildinfo
 .env
 .env*.local
+# Same contents as .env, under a name the patterns above do not catch.
+/envfile
 .vercel
 .DS_Store
