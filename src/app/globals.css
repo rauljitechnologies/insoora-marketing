@@ -102,7 +102,7 @@
    (`anim-fade`, `anim-slide-in`, `anim-drawer`, `anim-grow`, `anim-ring`,
    `anim-orbit*`, `anim-glow`, `anim-float`), skeletons and `scrollbar-slim`.
 
-   None of it is reachable here. This deployment renders seven public pages
+   None of it is reachable here. This deployment renders public pages
    inside one `.site` wrapper — no element on this host ever carries
    `.portal-agent` or `.portal-customer`, and no page uses those utilities.
    But hand-written CSS is not tree-shaken the way Tailwind utilities are: all

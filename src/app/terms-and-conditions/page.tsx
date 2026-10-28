@@ -6,7 +6,7 @@ import { breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Terms & Conditions",
   description:
-    "The terms that apply when you create a Insoora account or use the platform to upload, read and store insurance policy documents.",
+    "The terms that apply when you create an Insoora account or use the platform to upload, read and store insurance policy documents — including who is responsible for what.",
   path: "/terms-and-conditions",
 });
 

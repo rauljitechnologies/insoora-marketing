@@ -8,6 +8,38 @@
 export const CONTACT = {
   name: "Insoora",
 
+  /**
+   * The company behind the product, as it must be printed.
+   *
+   * "Insoora" is the product and the brand; it is not a legal person. Every
+   * public page that attributes the service, and the legal documents that have
+   * to name a contracting party, use this string — so the attribution cannot
+   * say one thing in the footer and another in the Terms.
+   *
+   * Supplied by the business. Deliberately NOT accompanied by a CIN, a
+   * registered office or a GSTIN: none of those has been verified here, and a
+   * wrong company identifier on a legal page is worse than an absent one. The
+   * legal documents carry a review flag naming exactly which of those is
+   * still missing.
+   */
+  legalEntity: "Raulji Technologies Private Limited",
+
+  /** How the attribution reads wherever it is shown. One string, one wording. */
+  managedBy: "Managed by Raulji Technologies Private Limited",
+
+  /**
+   * The person the business asked us to name as its contact.
+   *
+   * A CONTACT PERSON and nothing more. The business confirmed the name may be
+   * published in that capacity and did not confirm any statutory role, so no
+   * page here calls him a Grievance Officer, a Data Protection Officer, a
+   * director or a lawyer. The SPDI Rules 2011 require a designated Grievance
+   * Officer's name and contact to be published (Rule 5(9)); that designation
+   * is a decision for the business and is flagged as outstanding rather than
+   * asserted by naming this person into the role.
+   */
+  contactPerson: "Ronak Shah",
+
   /** As it should be printed, with the spacing an Indian mobile is read in. */
   phone: "+91 81530 77965",
   /** The same number for `tel:`, which must carry no spaces. */

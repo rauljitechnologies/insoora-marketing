@@ -3,7 +3,7 @@ import { absolute, siteUrlIsConfigured } from "@/lib/seo";
 
 // robots.txt.
 //
-// This host serves the seven public pages and nothing else — the portals, the
+// This host serves the public marketing pages and nothing else — the portals, the
 // back office and the real API all live on the product's own domain and have
 // their own robots.txt. So the only thing to keep out here is this
 // deployment's one route that is not a page: the contact form's relay.

@@ -12,7 +12,7 @@ import { ImageResponse } from "next/og";
 // this size — the alternative was adding a font file to the repository for one
 // image.
 //
-// Placed in the `(marketing)` segment, so the seven public pages inherit it
+// Placed in the `(marketing)` segment, so the public pages inherit it
 // and the portals (which are `noindex` and never shared) do not generate one.
 
 export const alt =

@@ -6,7 +6,7 @@ import { breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Privacy Policy",
   description:
-    "How Insoora handles information when you use our website and the platform for insurance agents, sub-agents and their customers — what is stored, who can reach it and for how long.",
+    "What Insoora collects, why, where it is processed, who can reach it and how long it is kept — written against how the platform is actually built.",
   path: "/privacy-policy",
 });
 

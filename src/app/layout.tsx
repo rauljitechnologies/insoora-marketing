@@ -9,7 +9,7 @@ import { BrandLogo } from "@/components/brand";
 import { SiteNav, type SiteNavItem } from "@/components/marketing/site-nav";
 import { SignInLinks, SignInMenu } from "@/components/marketing/sign-in-menu";
 import { SocialLinks } from "@/components/marketing/social-links";
-import { Analytics, AnalyticsNoScript } from "@/components/marketing/analytics";
+import { Analytics, CookieSettingsButton } from "@/components/marketing/analytics";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
@@ -25,7 +25,7 @@ import "./globals.css";
 // Indexing is decided PER PAGE by `pageMetadata`, which keeps a staging host
 // out of the index until a real domain is configured — so there is no `robots`
 // key here. There used to be a site-wide `{ index: true, follow: true }`, and
-// because all seven pages set their own it only ever reached the one route
+// because every page sets its own it only ever reached the one route
 // that does not: the 404, where Next emits its own `noindex` and the inherited
 // tag then contradicted it. Nothing inherits a robots directive now.
 // The description is `PRODUCT.summary`, the same sentence the JSON-LD and the
@@ -93,6 +93,11 @@ const NAV: SiteNavItem[] = [
       { href: "/faq", label: "FAQ", hint: "How extraction, access and renewals work" },
       { href: "/privacy-policy", label: "Privacy Policy", hint: "What is stored and who can reach it" },
       { href: "/terms-and-conditions", label: "Terms & Conditions", hint: "The terms of using Insoora" },
+      {
+        href: "/refund-and-cancellation",
+        label: "Refund & Cancellation",
+        hint: "Cancelling a plan, and how refunds are handled",
+      },
     ],
   },
   { href: "/about-us", label: "About Us" },
@@ -101,11 +106,17 @@ const NAV: SiteNavItem[] = [
 
 // Footer columns, from the design.
 //
-// Six of the design's links point at pages that do not exist — Blog, Help
-// centre, Getting started guide, Refund Policy, Pricing, Data security. They
-// are left out rather than pointed at a placeholder: a footer link that 404s
-// is worse than a shorter footer, and inventing those pages to fill the slots
-// would be inventing content.
+// Five of the design's links still point at pages that do not exist — Blog,
+// Help centre, Getting started guide, Pricing, Data security. They are left
+// out rather than pointed at a placeholder: a footer link that 404s is worse
+// than a shorter footer, and inventing those pages to fill the slots would be
+// inventing content.
+//
+// Refund Policy was the sixth, and it is now real: the product takes money, so
+// a paid service with no published cancellation terms was a genuine gap rather
+// than a slot in a template. It is a page written against what the platform
+// actually does, and it says on its face that its commercial terms are still
+// awaiting business approval.
 const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
   {
     t: "Product",
@@ -139,6 +150,7 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
     links: [
       { href: "/privacy-policy", label: "Privacy Policy" },
       { href: "/terms-and-conditions", label: "Terms & Conditions" },
+      { href: "/refund-and-cancellation", label: "Refund & Cancellation" },
     ],
   },
 ];
@@ -156,9 +168,9 @@ const TRUST: { icon: typeof Lock; t: string; tone: string }[] = [
  * The public website shell.
  *
  * Deliberately NOT `async` and deliberately not reading a session: there is
- * no session on this host. Every one of the seven pages is static, which is
+ * no session on this host. Every one of the public pages is static, which is
  * the whole reason the site is worth deploying apart from the product — a
- * cookie read anywhere in this tree would make all seven dynamic again.
+ * cookie read anywhere in this tree would make them all dynamic again.
  *
  * A signed-in visitor who presses "Sign in" lands on the product's own login,
  * which redirects them into their portal. That hop happens over there.
@@ -194,12 +206,6 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={cn(inter.variable, "h-full antialiased")}>
     <body className="min-h-full">
-    {/* Tag Manager's noscript fallback, immediately after the opening
-        <body> tag where Google's instructions put it. It renders nothing
-        for anyone running JavaScript, and it is BEFORE the skip link only
-        because a <noscript> is not focusable and so cannot come between a
-        keyboard user and "Skip to content". */}
-    <AnalyticsNoScript />
     {/* `.site` is kept as a wrapper element rather than moved onto <body>:
         globals.css hangs the site's whole token set and its `.site footer`
         focus rules off this class, and it is shared verbatim with the product
@@ -364,8 +370,14 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           </ul>
 
           <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-5 text-[13px] text-[#94A3B8]">
+            {/* The company attribution belongs on every page, not only in the
+                legal documents: "Insoora" is a product name and a visitor is
+                entitled to know which company stands behind it. One string,
+                from lib/contact, shared with the Privacy Policy and the Terms
+                so the three cannot disagree. */}
             <span>
-              © {new Date().getFullYear()} Insoora. All rights reserved. Made in Godhra, Gujarat.
+              © {new Date().getFullYear()} Insoora. All rights reserved. {CONTACT.managedBy}. Made in
+              Godhra, Gujarat.
             </span>
             <div className="flex flex-wrap items-center gap-4">
               {/* The social profiles sit in the closing bar, beside Privacy
@@ -388,6 +400,11 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
               <Link href="/terms-and-conditions" className="transition-colors hover:text-white">
                 Terms
               </Link>
+              {/* Reopens the consent banner. Consent has to be as easy to
+                  withdraw as it was to give, and without this the only way
+                  back from "Accept" would be clearing site data. Renders
+                  nothing outside production, where there is no banner. */}
+              <CookieSettingsButton className="transition-colors hover:text-white" />
               {/* `#main` rather than `#top`: `#top` is the home page's hero
                   and does not exist on the six inner pages, where this
                   control silently did nothing. Every page has `#main`. */}

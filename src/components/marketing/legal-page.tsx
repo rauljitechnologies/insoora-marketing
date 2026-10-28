@@ -82,9 +82,18 @@ export function LegalPage({
         <div className="grid gap-10 rail:grid-cols-[13.75rem_minmax(0,1fr)] rail:gap-12">
           {/* Contents. Sticky on desktop; a plain list above the text on
               anything narrower, where a sticky rail would eat the screen. */}
+          {/* Contents.
+              
+              Capped and scrollable while sticky. The privacy policy went from
+              eleven sections to eighteen, and a sticky rail taller than the
+              viewport puts its last entries permanently below the fold with
+              no way to reach them — the rail cannot scroll with the page
+              because that is the whole point of it being sticky. `top-24`
+              clears the header, so the cap is the remaining viewport height
+              minus that offset and a little breathing room. */}
           <nav
             aria-label="Contents"
-            className="rounded-2xl border border-border bg-surface p-4 rail:sticky rail:top-24 rail:self-start"
+            className="rounded-2xl border border-border bg-surface p-4 rail:sticky rail:top-24 rail:max-h-[calc(100dvh-8rem)] rail:self-start rail:overflow-y-auto rail:overscroll-contain"
           >
             <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-accent-teal-ink">Contents</p>
             <ol className="mt-3 flex flex-col gap-1.5">

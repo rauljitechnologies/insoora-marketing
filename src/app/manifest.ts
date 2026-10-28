@@ -10,7 +10,7 @@ import { PRODUCT } from "@/lib/seo";
 // one they were 70 kB of dead weight in the repository and Android had no
 // icon to install with.
 //
-// Deliberately modest: `display: "browser"`, because this is a seven-page
+// Deliberately modest: `display: "browser"`, because this is a public
 // marketing site and nothing about it benefits from being launched in a
 // standalone window with no address bar. The manifest is here for the icons,
 // the name and the theme colour, not to pretend the site is an app. The

@@ -22,7 +22,7 @@
 // It deliberately does NOT fail the build. That was the first attempt, on the
 // reasoning that a failed deploy is seen in a log and a bad link is seen by a
 // customer. It is the wrong trade: it blocks every deploy of a site whose
-// seven pages are otherwise correct and whose only defect is one link's
+// pages are otherwise correct and whose only defect is one link's
 // destination, and it blocks it hardest exactly when nobody yet knows the
 // product's final hostname. A warning that is read at leisure beats a
 // deployment that cannot happen.
