@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 // robots tags on the page saying different things. `noindex` alone still
 // permits following, so the links below are crawled.
 //
-// Everything here is static and server-rendered, like the seven real pages —
+// Everything here is static and server-rendered, like the real pages —
 // it adds no JavaScript.
 
 export const metadata: Metadata = {

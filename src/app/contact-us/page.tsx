@@ -1,4 +1,5 @@
-import { ArrowRight, AtSign, Clock, MapPin, Phone, UserRound } from "lucide-react";
+import { ArrowRight, AtSign, Clock, MapPin, Phone, ShieldCheck, UserRound } from "lucide-react";
+import Link from "next/link";
 import { Card, GradientText, PageHead, Section } from "@/components/marketing/section";
 import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,17 @@ export default function ContactPage() {
               <p className="text-sm leading-relaxed text-muted">
                 Call for anything urgent. Otherwise the form reaches us just as well.
               </p>
+              {/* The contact person, by name, because the business asked for
+                  it and because a named person is what the consumer and data
+                  protection rules expect to find on a contact page.
+                  Deliberately labelled "Contact person" and nothing else: no
+                  statutory designation has been confirmed, so this page does
+                  not call him a Grievance Officer or a Data Protection
+                  Officer. See the note in lib/contact. */}
+              <p className="mt-1 text-sm leading-relaxed text-muted">
+                Contact person:{" "}
+                <span className="font-semibold text-foreground">{CONTACT.contactPerson}</span>
+              </p>
             </Card>
 
             <Card className="card-hover flex flex-col gap-2">
@@ -115,6 +127,34 @@ export default function ContactPage() {
                 footer's icon row alone does not tell them which account is
                 ours. Same list as the footer and the `sameAs` in the schema
                 above — all three read lib/contact. */}
+            {/* Privacy and data requests.
+                
+                This card exists because the Privacy Policy promises a route
+                for access, correction, deletion and withdrawal of consent,
+                and a promise with no visible door is not a route. It points
+                at the enquiry form's "Account support" option, which is the
+                only intake that actually reaches staff — there is no
+                dedicated privacy queue in the product, and inventing a
+                second address for one would mean publishing a mailbox nobody
+                reads. */}
+            <Card className="card-hover flex flex-col gap-2">
+              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.teal)}>
+                <ShieldCheck className="size-5" />
+              </span>
+              <p className="text-sm font-semibold text-foreground">Privacy & data requests</p>
+              <p className="text-sm leading-relaxed text-muted">
+                To ask for a copy of your data, a correction, deletion, or to withdraw a consent, send the
+                form above with <span className="font-medium text-foreground">Account support</span>{" "}
+                selected, or call us. We will ask a few questions to confirm it is really you before we act.
+              </p>
+              <Link
+                href="/privacy-policy#14-your-choices-and-requests"
+                className="mt-1 inline-flex min-h-9 items-center self-start rounded-md text-sm font-semibold text-primary hover:underline"
+              >
+                What you can ask for
+              </Link>
+            </Card>
+
             <Card className="card-hover flex flex-col gap-2">
               <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.purple)}>
                 <AtSign className="size-5" />

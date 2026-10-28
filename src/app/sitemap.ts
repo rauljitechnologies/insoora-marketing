@@ -1,37 +1,135 @@
+import { readdirSync } from "node:fs";
+import path from "node:path";
 import type { MetadataRoute } from "next";
 import { absolute, siteUrlIsConfigured } from "@/lib/seo";
 
-// The public website's sitemap.
+// The public website's sitemap — DISCOVERED, not hand-listed.
 //
-// Only the seven marketing pages. The portals, the back office, every
-// /api/* route and the auth pages are all absent on purpose: they are either
-// private, or they are a door rather than a destination, and a sitemap that
-// lists them invites a crawler to spend its budget on pages it will be
-// redirected away from.
+// ── Why this walks the filesystem ────────────────────────────────────────
+//
+// This used to be an array of seven paths maintained by hand, and that is a
+// list which is correct exactly until someone adds a page. A new page is then
+// live, linked from the footer and crawlable, but absent from the sitemap —
+// and nothing fails, nothing warns, and the omission is invisible until
+// somebody thinks to compare the two by eye. The Refund & Cancellation page
+// was the first to prove it.
+//
+// So the routes are read from `src/app` itself: every directory that contains
+// a `page.tsx` IS a route, which is the App Router's own rule, so the sitemap
+// cannot disagree with what the site actually serves. Add a page and it is in
+// the sitemap on the next build with no edit here.
+//
+// This runs at build time on the server (the sitemap is static), so reading
+// the directory is free and never happens on a request.
+//
+// ── What is deliberately excluded ────────────────────────────────────────
+//
+// `api/` is a route but not a page. Route GROUPS — `(marketing)` — and
+// dynamic segments — `[id]`, `[...slug]` — are not URLs as written, and the
+// private `_folder` convention is not routable at all. `not-found.tsx` is not
+// a `page.tsx` and so never appears. If a dynamic route is ever added, it has
+// to be enumerated explicitly: a sitemap cannot invent its parameters, and
+// `DYNAMIC_SEGMENT` below makes that a visible skip rather than a wrong URL.
 //
 // When no real domain is configured the sitemap is empty rather than full of
 // localhost URLs — see robots.ts, which stops advertising it at the same time.
 
-/** `changeFrequency` and `priority` are hints, and only honest ones are given:
- *  the home page does change most often, the legal pages barely ever. */
-const PAGES: { path: string; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }[] = [
-  { path: "/", changeFrequency: "monthly", priority: 1 },
-  { path: "/features", changeFrequency: "monthly", priority: 0.9 },
-  { path: "/faq", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/about-us", changeFrequency: "yearly", priority: 0.6 },
-  { path: "/contact-us", changeFrequency: "yearly", priority: 0.6 },
-  { path: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/terms-and-conditions", changeFrequency: "yearly", priority: 0.3 },
-];
+/** The App Router directory this site's routes are read from. */
+const APP_DIR = path.join(process.cwd(), "src", "app");
+
+/** `[id]`, `[...slug]`, `[[...opt]]` — a parameterised segment. */
+const DYNAMIC_SEGMENT = /^\[.*\]$/;
+
+/** `(marketing)` — organises files without appearing in the URL. */
+const ROUTE_GROUP = /^\(.*\)$/;
+
+/** Directory names that are never part of the public page tree. */
+const NOT_A_PAGE = new Set(["api"]);
+
+/**
+ * Every static page route under `src/app`, as URL paths.
+ *
+ * Returns "/" for `src/app/page.tsx` and "/features" for
+ * `src/app/features/page.tsx`. A route group contributes nothing to the path
+ * but is still descended into, which is how `(marketing)/about-us/page.tsx`
+ * would correctly yield "/about-us".
+ */
+function discoverRoutes(dir = APP_DIR, prefix = ""): string[] {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    // The directory not being readable must not fail a build. An empty
+    // sitemap is a recoverable mistake; a failed deploy of an otherwise
+    // correct site is not a trade worth making — the same reasoning as the
+    // origin warning in lib/site-config.
+    return [];
+  }
+
+  const found: string[] = [];
+
+  // A directory is a route only if it holds a page. `.tsx` and `.ts` both
+  // count, because either is a valid page module.
+  if (entries.some((e) => e.isFile() && /^page\.(tsx|ts|jsx|js)$/.test(e.name))) {
+    found.push(prefix === "" ? "/" : prefix);
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const name = entry.name;
+    if (name.startsWith("_") || name.startsWith(".")) continue;
+    if (NOT_A_PAGE.has(name)) continue;
+    // A parameterised route has no single URL, so it is skipped rather than
+    // guessed at. Enumerate it here explicitly if one is ever added.
+    if (DYNAMIC_SEGMENT.test(name)) continue;
+
+    found.push(
+      ...discoverRoutes(
+        path.join(dir, name),
+        // A route group adds a folder but not a path segment.
+        ROUTE_GROUP.test(name) ? prefix : `${prefix}/${name}`,
+      ),
+    );
+  }
+
+  return found;
+}
+
+/**
+ * How often a page really changes, and how much it matters, by path.
+ *
+ * Hints only, and only honest ones are given: the home page does change most
+ * often, the legal pages barely ever. A path with no entry gets the fallback
+ * — so a newly added page lands in the sitemap with sensible values and can
+ * be tuned here afterwards, which is the opposite of the old behaviour where
+ * a new page was simply missing.
+ */
+const HINTS: Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }> = {
+  "/": { changeFrequency: "monthly", priority: 1 },
+  "/features": { changeFrequency: "monthly", priority: 0.9 },
+  "/faq": { changeFrequency: "monthly", priority: 0.8 },
+  "/about-us": { changeFrequency: "yearly", priority: 0.6 },
+  "/contact-us": { changeFrequency: "yearly", priority: 0.6 },
+  "/privacy-policy": { changeFrequency: "yearly", priority: 0.3 },
+  "/terms-and-conditions": { changeFrequency: "yearly", priority: 0.3 },
+  "/refund-and-cancellation": { changeFrequency: "yearly", priority: 0.3 },
+};
+
+const FALLBACK = { changeFrequency: "monthly" as const, priority: 0.5 };
 
 export default function sitemap(): MetadataRoute.Sitemap {
   if (!siteUrlIsConfigured()) return [];
 
   const lastModified = new Date();
-  return PAGES.map((p) => ({
-    url: absolute(p.path),
-    lastModified,
-    changeFrequency: p.changeFrequency,
-    priority: p.priority,
-  }));
+
+  // Sorted so the file's order is stable between builds — "/" first, then
+  // alphabetically. An unstable sitemap produces a diff on every deploy and
+  // tells a crawler nothing by changing.
+  return discoverRoutes()
+    .sort((a, b) => (a === "/" ? -1 : b === "/" ? 1 : a.localeCompare(b)))
+    .map((route) => ({
+      url: absolute(route),
+      lastModified,
+      ...(HINTS[route] ?? FALLBACK),
+    }));
 }

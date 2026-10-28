@@ -66,6 +66,18 @@ export const FAQS: FaqItem[] = [
     a: "Authorized agents can export policy and renewal lists as CSV or Excel for their own records. Exports follow the same access rules as the screen they came from, so an export never contains a policy the person could not already see.",
   },
   {
+    // Added because the privacy policy now discloses this and the FAQ is
+    // where people actually look for it. It is also the answer most likely to
+    // be assumed wrongly: a product built in Gujarat for Indian insurers is
+    // taken to keep its data in India, and it does not.
+    q: "Where is my data stored?",
+    a: "Insoora's application, database and document storage run outside India — the application and database are hosted in Singapore, and uploaded PDFs are held in Cloudflare's object storage. We say so plainly because a product built in India for Indian insurers is often assumed to store its data in India. The Privacy Policy sets out the providers involved and what each one does.",
+  },
+  {
+    q: "Does the Insoora website use cookies?",
+    a: "The signed-in platform uses only the cookies needed to keep you signed in and to protect the service. The public website would also like to use Google Analytics to count visits, and that is not necessary for the site to work — so it loads only if you accept it. Nothing analytics-related is loaded until you choose, declining is remembered, and you can change your mind from the Cookie settings link in the footer.",
+  },
+  {
     q: "Who is Insoora for?",
     a: "Individual insurance agents who manage policies on their own, agencies whose sub-agents upload into one shared book of business, and the policyholders those agents serve. It is built for the Indian insurance market and the PDFs Indian insurers issue.",
   },
