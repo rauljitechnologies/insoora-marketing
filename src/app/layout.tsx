@@ -175,6 +175,12 @@ const TRUST: { icon: typeof Lock; t: string; tone: string }[] = [
  * A signed-in visitor who presses "Sign in" lands on the product's own login,
  * which redirects them into their portal. That hop happens over there.
  */
+// `lang="en-IN"`, not `en`. The Open Graph locale is already `en_IN` and the
+// WebSite schema already says `inLanguage: "en-IN"`, so a bare `en` on the
+// document itself was the one place the three disagreed — and this is the
+// declaration a browser, a screen reader and a translation prompt actually
+// read. The audience is Indian insurance agents; the copy uses Indian English
+// and quotes an Indian address and phone number.
 export default function MarketingLayout({ children }: LayoutProps<"/">) {
   const actions = (
     <>
@@ -209,7 +215,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
   );
 
   return (
-    <html lang="en" className={cn(inter.variable, "h-full antialiased")}>
+    <html lang="en-IN" className={cn(inter.variable, "h-full antialiased")}>
     <body className="min-h-full">
     {/* `.site` is kept as a wrapper element rather than moved onto <body>:
         globals.css hangs the site's whole token set and its `.site footer`
