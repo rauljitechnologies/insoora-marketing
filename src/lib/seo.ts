@@ -85,6 +85,16 @@ interface PageSeo {
   description: string;
   /** Route path, e.g. "/features". Used for the canonical and the OG URL. */
   path: string;
+  /**
+   * A card of this page's own, replacing the shared one.
+   *
+   * Needed because `openGraph` here REPLACES whatever a colocated
+   * `opengraph-image.tsx` contributed (the shallow-merge rule described on
+   * `OG_IMAGE`). The blog articles each generate their own card, and without
+   * this they would silently inherit the site-wide one — which is the exact
+   * bug `OG_IMAGE` was added to fix, one segment deeper.
+   */
+  image?: { url: string; alt: string };
 }
 
 /**
@@ -96,9 +106,10 @@ interface PageSeo {
  * the brief asks us to avoid, and it is the kind of thing nobody notices until
  * the wrong hostname is ranking.
  */
-export function pageMetadata({ title, description, path }: PageSeo): Metadata {
+export function pageMetadata({ title, description, path, image }: PageSeo): Metadata {
   const url = absolute(path);
   const indexable = siteUrlIsConfigured();
+  const card = image ? { ...OG_IMAGE, url: image.url, alt: image.alt } : OG_IMAGE;
 
   return {
     title,
@@ -114,13 +125,13 @@ export function pageMetadata({ title, description, path }: PageSeo): Metadata {
       description,
       url,
       locale: "en_IN",
-      images: [OG_IMAGE],
+      images: [card],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [OG_IMAGE],
+      images: [card],
     },
   };
 }
@@ -244,3 +255,75 @@ export function jsonLdGraph(...nodes: object[]) {
 
 /** The organisation's postal address on one line, for human-readable copy. */
 export const contactOneLine = addressOneLine;
+
+// ── Blog ─────────────────────────────────────────────────────────────────
+
+/**
+ * One article, as `BlogPosting`.
+ *
+ * ── On `author` ──────────────────────────────────────────────────────────
+ *
+ * The organisation, not a person. Schema.org wants an author and Google reads
+ * it, but no individual byline has been verified for these articles — and the
+ * rest of this site refuses to invent facts it cannot stand behind, which
+ * includes staff writers. Naming the company is both true and checkable: it
+ * resolves to the same `@id` as the Organization node on every page, so the
+ * publisher and the author are visibly one entity rather than two claims.
+ *
+ * ── On dates ─────────────────────────────────────────────────────────────
+ *
+ * `datePublished` and `dateModified` come from the post's own hand-written
+ * fields. They are not build timestamps and not file mtimes: a date that
+ * moves every deploy tells a crawler the article was rewritten when it was
+ * not, which is a freshness signal we would not have earned.
+ *
+ * `image` is the article's own generated card (`/blog/<slug>/opengraph-image`),
+ * so a result that shows a thumbnail shows that article's, not the site's.
+ */
+export function blogPostingSchema(post: {
+  slug: string;
+  title: string;
+  description: string;
+  published: string;
+  updated: string;
+  sectionLabel: string;
+}) {
+  const url = absolute(`/blog/${post.slug}`);
+  return {
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    headline: post.title,
+    description: post.description,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    datePublished: post.published,
+    dateModified: post.updated,
+    author: { "@id": `${siteUrl()}/#organization` },
+    publisher: { "@id": `${siteUrl()}/#organization` },
+    image: absolute(`/blog/${post.slug}/opengraph-image`),
+    articleSection: post.sectionLabel,
+    inLanguage: "en-IN",
+    isAccessibleForFree: true,
+  };
+}
+
+/** The blog itself, as a `Blog` listing its posts. */
+export function blogSchema(posts: { slug: string; title: string; published: string }[]) {
+  return {
+    "@type": "Blog",
+    "@id": `${absolute("/blog")}#blog`,
+    name: `${PRODUCT.name} Blog`,
+    description:
+      "Practical guides on organizing insurance policy documents, running an agency, tracking renewals and how policy data extraction works.",
+    url: absolute("/blog"),
+    publisher: { "@id": `${siteUrl()}/#organization` },
+    inLanguage: "en-IN",
+    blogPost: posts.map((p) => ({
+      "@type": "BlogPosting",
+      "@id": `${absolute(`/blog/${p.slug}`)}#article`,
+      headline: p.title,
+      url: absolute(`/blog/${p.slug}`),
+      datePublished: p.published,
+    })),
+  };
+}
