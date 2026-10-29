@@ -218,16 +218,31 @@ function SiteNavInner({
             )}
           <div
             id="site-menu"
-            // Capped and scrollable, for two reasons. With the body locked, a
-            // drawer taller than the viewport would put its last links and
-            // the Get Started button out of reach on a short phone. And the
-            // cap is 8rem rather than 4rem so a strip of the scrim is always
-            // left showing beneath it — on a 664px phone the drawer filled
-            // the screen edge to edge, which left "tap outside to close" with
-            // nothing to tap.
-            className="anim-rise absolute inset-x-0 top-16 z-40 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-b border-border bg-background p-4 shadow-pop shell:hidden"
+            // Capped, for two reasons. With the body locked, a drawer taller
+            // than the viewport would put its last links out of reach on a
+            // short phone. And the cap is 8rem rather than 4rem so a strip of
+            // the scrim is always left showing beneath it — on a 664px phone
+            // the drawer filled the screen edge to edge, which left "tap
+            // outside to close" with nothing to tap.
+            //
+            // A COLUMN, with the scrolling confined to the links below. The
+            // whole drawer used to be the scroll container, and the nav alone
+            // is nine links plus the Resources heading — taller than the cap
+            // on any phone. So the sign-in doors and Get Started, which come
+            // after it, rendered below the drawer's own fold: in the DOM,
+            // reachable only by scrolling a panel that does not look
+            // scrollable. The two things a visitor opens this menu to find
+            // are the two things they could not see. Now they are a pinned
+            // bar that never scrolls away.
+            className="anim-rise absolute inset-x-0 top-16 z-40 flex max-h-[calc(100dvh-8rem)] flex-col border-b border-border bg-background shadow-pop shell:hidden"
           >
-            <nav aria-label="Main" className="flex flex-col gap-1">
+            {/* `min-h-0` is what lets this shrink below its content height —
+                without it a flex item refuses to, and the overflow moves back
+                out to the drawer. */}
+            <nav
+              aria-label="Main"
+              className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-4 pb-2"
+            >
               {items.map((n) => {
                 const current = isCurrent(path, n.href);
 
@@ -283,7 +298,15 @@ function SiteNavInner({
                 );
               })}
             </nav>
-            <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3 sm:hidden">
+            {/* The pinned action bar.
+
+                It used to be `sm:hidden`, on the reasoning that above `sm`
+                the header shows its own actions — but the hamburger survives
+                until `shell` (1000px), so every width from 640px to 999px got
+                a menu with no way into either portal. The menu now always
+                carries both doors while it exists; a duplicate control on a
+                tablet is not a defect, a missing one is. */}
+            <div className="flex flex-none flex-col gap-2 border-t border-border p-4">
               {drawerActions ?? actions}
             </div>
           </div>

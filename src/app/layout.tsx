@@ -192,12 +192,17 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
     </>
   );
 
-  // Below `sm` the header hides its actions, so the drawer is the only route
-  // to either portal or to sign-up: it carries both doors plus Get Started.
+  // Below `sm` the header hides its actions entirely, so the drawer is the
+  // only route to either portal or to sign-up: it carries both doors plus Get
+  // Started, pinned so they cannot scroll out of the menu (see `SiteNav`).
+  //
+  // `lg` rather than `sm` on the button: at `sm` it was 36px tall, shorter
+  // than the 44px sign-in rows above it — the primary call to action was the
+  // smallest tap target in the bar.
   const drawerActions = (
     <>
       <SignInLinks />
-      <a href={appHref("/agent/register")} className={cn(buttonVariants({ size: "sm" }), "w-full")}>
+      <a href={appHref("/agent/register")} className={cn(buttonVariants({ size: "lg" }), "w-full")}>
         Get Started
       </a>
     </>
