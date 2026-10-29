@@ -90,6 +90,14 @@ const NAV: SiteNavItem[] = [
     href: "/faq",
     label: "Resources",
     children: [
+      // Blog leads the shelf rather than becoming a sixth top-level link.
+      // The header is one non-wrapping flex row, and the band just above
+      // `shell` (1000px) is already its tightest — five links plus both
+      // actions inside 936px of container, which is why the brand lockup
+      // drops its tagline there (see components/brand.tsx). A sixth link
+      // would be bought out of that margin. "Resources" is defined as the
+      // shelf the content pages go on, and a blog is exactly that.
+      { href: "/blog", label: "Blog", hint: "Guides on filing, renewals and extraction" },
       { href: "/faq", label: "FAQ", hint: "How extraction, access and renewals work" },
       { href: "/privacy-policy", label: "Privacy Policy", hint: "What is stored and who can reach it" },
       { href: "/terms-and-conditions", label: "Terms & Conditions", hint: "The terms of using Insoora" },
@@ -132,6 +140,10 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
     t: "Resources",
     tone: "text-[#FCA5A5]",
     links: [
+      // Every child of a header dropdown needs a plain crawlable link
+      // somewhere, because the dropdown trigger is a button and none of its
+      // URLs are links in the header. The footer is where that happens.
+      { href: "/blog", label: "Blog" },
       { href: "/faq", label: "FAQ" },
       { href: "/contact-us", label: "Help & support" },
     ],

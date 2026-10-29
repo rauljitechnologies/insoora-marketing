@@ -2,6 +2,7 @@ import { readdirSync } from "node:fs";
 import path from "node:path";
 import type { MetadataRoute } from "next";
 import { absolute, siteUrlIsConfigured } from "@/lib/seo";
+import { POSTS, blogLastModified } from "@/lib/blog";
 
 // The public website's sitemap — DISCOVERED, not hand-listed.
 //
@@ -107,6 +108,7 @@ function discoverRoutes(dir = APP_DIR, prefix = ""): string[] {
 const HINTS: Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }> = {
   "/": { changeFrequency: "monthly", priority: 1 },
   "/features": { changeFrequency: "monthly", priority: 0.9 },
+  "/blog": { changeFrequency: "weekly", priority: 0.8 },
   "/faq": { changeFrequency: "monthly", priority: 0.8 },
   "/about-us": { changeFrequency: "yearly", priority: 0.6 },
   "/contact-us": { changeFrequency: "yearly", priority: 0.6 },
@@ -117,19 +119,56 @@ const HINTS: Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["ch
 
 const FALLBACK = { changeFrequency: "monthly" as const, priority: 0.5 };
 
+/**
+ * Why most entries carry NO `lastModified`.
+ *
+ * Every page used to be stamped with `new Date()` — the moment of the build.
+ * That is not a modification date, it is a deployment date, and publishing it
+ * as `lastmod` tells a crawler that all eight pages were rewritten every time
+ * anything shipped. A `lastmod` that always says "just now" is worse than
+ * none: it is unreliable, crawlers learn to ignore it, and it costs the signal
+ * on the pages where the date IS real.
+ *
+ * File mtimes would be no better. A CI checkout writes every file at clone
+ * time, so on Vercel they all carry the build date wearing a different hat.
+ *
+ * So the rule here is: a date is emitted only where something actually
+ * records when the content changed. The articles have hand-maintained
+ * `published`/`updated` fields, and /blog changes when the collection does.
+ * The eight static pages have no such record, so they get no `lastmod` — which
+ * the sitemap protocol permits, and which is the honest answer.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   if (!siteUrlIsConfigured()) return [];
 
-  const lastModified = new Date();
-
-  // Sorted so the file's order is stable between builds — "/" first, then
-  // alphabetically. An unstable sitemap produces a diff on every deploy and
-  // tells a crawler nothing by changing.
-  return discoverRoutes()
+  // The static pages, discovered from the filesystem. `/blog` is found here
+  // too — it is a real `page.tsx` — and is given its date below.
+  const staticRoutes: MetadataRoute.Sitemap = discoverRoutes()
+    // Stable order: "/" first, then alphabetically. An unstable sitemap
+    // produces a diff on every deploy and tells a crawler nothing by changing.
     .sort((a, b) => (a === "/" ? -1 : b === "/" ? 1 : a.localeCompare(b)))
     .map((route) => ({
       url: absolute(route),
-      lastModified,
       ...(HINTS[route] ?? FALLBACK),
+      // The listing genuinely changes when a post is added or revised, and
+      // nothing else makes it change. That is a real date.
+      ...(route === "/blog" ? { lastModified: blogLastModified() } : {}),
     }));
+
+  // The articles. `/blog/[slug]` is a DYNAMIC segment, which `discoverRoutes`
+  // deliberately skips — it cannot invent parameters — so this is the explicit
+  // enumeration that note asks for. It reads the published collection, which
+  // means a post cannot go live without appearing here, and a draft that has
+  // not been added to the collection cannot appear here while being
+  // unreachable.
+  const posts: MetadataRoute.Sitemap = POSTS.map((post) => ({
+    url: absolute(`/blog/${post.slug}`),
+    lastModified: post.updated,
+    changeFrequency: "yearly" as const,
+    // Below the pillar pages and above the legal ones. An article is worth
+    // crawling; it is not more important than the features page.
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...posts];
 }
