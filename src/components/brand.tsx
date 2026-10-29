@@ -61,6 +61,28 @@ const RAMP = ["#DC2626", "#7C3AED", "#2563EB"] as const;
 
 const WORD_COLOUR = { light: "text-foreground", dark: "text-white" } as const;
 
+/**
+ * The tagline, as the business writes it.
+ *
+ * Stored in sentence case and set to caps by CSS rather than typed in caps.
+ * Two reasons: a screen reader that does reach it reads a sentence instead of
+ * spelling an acronym, and the same string stays usable as prose if it is
+ * ever needed in a heading or a meta description — `text-transform` is a
+ * presentation decision and belongs in the stylesheet, not in the data.
+ */
+const TAGLINE = "Your insurance, always with you";
+
+/**
+ * Tagline colour, per tone.
+ *
+ * Not the wordmark's colour at lower opacity. On the footer's #0B1431 the
+ * wordmark is pure white, and white at 60% over that navy lands around 4.2:1
+ * — fine for 13px body text, marginal for a 10px line. `#94A3B8` is the
+ * slate the footer already uses for its secondary text, so the tagline
+ * matches the type around it instead of looking like faded white.
+ */
+const TAGLINE_COLOUR = { light: "text-muted", dark: "text-[#94A3B8]" } as const;
+
 /** The canopy, as its three panels — the gaps between them are the ribs. */
 const PANELS = [
   "M42.7 6Q43 6 42.8 6.3Q42.6 6.6 39.5 9.3Q36.3 11.9 33.8 15.4Q31.2 18.9 29.8 22.1Q28.3 25.2 27.1 30Q25.8 34.8 22.7 33.2Q19.5 31.6 17 31.4Q14.4 31.1 12 31.6Q9.6 32.2 6.5 34.2Q3.3 36.1 3.3 35.2Q3.3 34.2 4.4 31.8Q5.5 29.5 8.1 25.9Q10.7 22.3 14.4 19Q18 15.8 20.9 14Q23.8 12.1 28.5 10.1Q33.2 8 37.7 7.1Q42.2 6.2 42.3 6.2Z",
@@ -157,23 +179,63 @@ export function BrandMark({ className, idScope }: { className?: string; idScope?
 }
 
 /**
- * The wordmark.
+ * The wordmark and the tagline, as one text block.
  *
  * Real text, not a path: selectable, searchable, translatable, and read aloud
  * as a word. Set in the face the surrounding page already loads, at 800 with
  * open tracking — which is what keeps an all-caps word from reading as a
  * solid block at small sizes.
+ *
+ * ── Why the two lines are sized the way they are ─────────────────────────
+ *
+ * A tagline in a lockup is conventionally set to the width of the wordmark
+ * above it, and here that cannot be done: "INSOORA" is seven characters and
+ * "YOUR INSURANCE, ALWAYS WITH YOU" is thirty-one, so matching the widths
+ * would put the tagline near 6px — present in the markup and unreadable on a
+ * screen. So the tagline is allowed to run wider than the wordmark and
+ * becomes the base of the lockup instead, which is the other standard
+ * resolution and the honest one at this ratio.
+ *
+ * What holds the pair together is the contrast between them: the wordmark is
+ * heavy and tightly tracked, the tagline is small, lighter, and tracked much
+ * wider, so the two read as one mark rather than as two lines of text that
+ * happen to sit together. `leading-none` on both and a 2px gap keep the block
+ * compact enough to sit beside a 40px symbol inside a 64px header.
  */
-function Wordmark({ tone, className }: { tone: "light" | "dark"; className?: string }) {
+function Wordmark({
+  tone,
+  tagline,
+  className,
+  taglineClassName,
+}: {
+  tone: "light" | "dark";
+  /** False in a context too tight for two lines. */
+  tagline: boolean;
+  className?: string;
+  taglineClassName?: string;
+}) {
   return (
-    <span
-      className={cn(
-        "font-extrabold uppercase leading-none tracking-[0.06em]",
-        WORD_COLOUR[tone],
-        className,
+    <span className="flex min-w-0 flex-col gap-[2px]">
+      <span
+        className={cn(
+          "font-extrabold uppercase leading-none tracking-[0.06em]",
+          WORD_COLOUR[tone],
+          className,
+        )}
+      >
+        Insoora
+      </span>
+      {tagline && (
+        <span
+          className={cn(
+            "font-semibold uppercase leading-none",
+            TAGLINE_COLOUR[tone],
+            taglineClassName,
+          )}
+        >
+          {TAGLINE}
+        </span>
       )}
-    >
-      Insoora
     </span>
   );
 }
@@ -182,18 +244,50 @@ function Wordmark({ tone, className }: { tone: "light" | "dark"; className?: str
  * The full lockup, linked home.
  *
  * `horizontal` is the header lockup; `stacked` is for the footer and anywhere
- * the brand is given room of its own. Both are the same two pieces, so the
- * symbol and the wordmark can never disagree between them.
+ * the brand is given room of its own. Both are the same pieces, so the
+ * symbol, the wordmark and the tagline can never disagree between them.
+ *
+ * ── Where the horizontal lockup drops its tagline ───────────────────────
+ *
+ * The header is one flex row that cannot wrap, so the lockup has to give way
+ * wherever its neighbours need the width. It does that twice, and both
+ * boundaries are about what else is in the row rather than a round number:
+ *
+ *   below 400px   hidden. At 360px the container leaves 320px, and the
+ *                 symbol, the gap, the tagline, the header's `gap-6` and the
+ *                 40px menu button come to roughly 314px — it fits with
+ *                 nothing to spare, and stops fitting on a 320px phone.
+ *   400px–shell   shown. The nav is collapsed to the menu button here, so
+ *                 the row is mostly empty and there is room to spare.
+ *   shell–hero    hidden again. This is the tightest band on the whole site:
+ *                 at 1000px the five nav links unfold AND both actions are
+ *                 visible, all in 936px of container. The tagline adds about
+ *                 100px to the lockup, which is the difference between a
+ *                 comfortable row and one with a few pixels left.
+ *   hero upward   shown. 1080px gives the row its margin back.
+ *
+ * Dropping a tagline at constrained widths is what responsive lockups do;
+ * what a lockup must not do is push the primary navigation off the edge.
+ *
+ * The stacked lockup always shows it: it sits in the footer with a column of
+ * its own and no neighbour to crowd.
+ *
+ * `aria-label` on the link names the brand, so neither line is announced
+ * separately — a screen reader hears "Insoora — home" and not the wordmark
+ * followed by a slogan on every page.
  */
 export function BrandLogo({
   tone = "light",
   variant = "horizontal",
   href = "/",
+  tagline = true,
   className,
 }: {
   tone?: "light" | "dark";
   variant?: "horizontal" | "stacked";
   href?: string;
+  /** Set false where the lockup has no room for a second line. */
+  tagline?: boolean;
   className?: string;
 }) {
   const stacked = variant === "stacked";
@@ -209,7 +303,21 @@ export function BrandLogo({
       )}
     >
       <BrandMark className={stacked ? "size-12" : "size-10"} />
-      <Wordmark tone={tone} className={stacked ? "text-[22px]" : "text-[19px]"} />
+      <Wordmark
+        tone={tone}
+        tagline={tagline}
+        // Up from 22/19. The wordmark was reading small against the symbol
+        // beside it — a 40px mark next to 19px type leaves the type looking
+        // like a caption to the picture rather than half of one lockup.
+        className={stacked ? "text-[27px]" : "text-[22px]"}
+        // Tracked far wider than the wordmark, which is what makes a line
+        // this small read as a tagline instead of as fine print.
+        taglineClassName={
+          stacked
+            ? "text-[10px] tracking-[0.17em]"
+            : "hidden text-[8.5px] tracking-[0.145em] min-[400px]:block shell:hidden hero:block"
+        }
+      />
     </Link>
   );
 }
