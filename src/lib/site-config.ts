@@ -157,18 +157,49 @@ export function absolute(path: string): string {
 }
 
 /**
- * True once this site's real domain is configured — the indexing gate.
+ * Vercel's name for the deployment target: "production", "preview" or
+ * "development". Unset everywhere else, which is what lets the gate below
+ * tell "this is a preview build" apart from "this is not Vercel at all".
+ */
+const VERCEL_ENV = present(process.env.VERCEL_ENV);
+
+/**
+ * True when THIS deployment is the one allowed into a search index.
+ *
+ * Two conditions, and both are needed.
+ *
+ * ── 1. A real domain is configured ───────────────────────────────────────
  *
  * Keyed on `NEXT_PUBLIC_SITE_URL` being set explicitly, NOT merely on
  * `SITE_URL` having resolved to something non-localhost. That distinction is
  * the point: a Vercel host (resolution steps 2 and 3 above) gives the pages
- * valid, self-referencing canonicals, but it must not be indexed, or the
- * `*.vercel.app` copy competes with the real domain the moment that domain is
- * connected — and then has to be de-indexed and redirected. Until someone
- * sets the real domain here, every page is `noindex`, robots.txt disallows
- * everything and the sitemap is empty.
+ * valid, self-referencing canonicals, but it must not be indexed. Until
+ * someone sets the real domain here, every page is `noindex`, robots.txt
+ * disallows everything and the sitemap is empty.
+ *
+ * ── 2. This is the production deployment ─────────────────────────────────
+ *
+ * Condition 1 alone was the whole gate, and it stopped being sufficient the
+ * moment the domain went live. `NEXT_PUBLIC_SITE_URL` is set per-project on
+ * Vercel and applies to Production AND Preview, so every preview deployment
+ * inherited it and served `robots.txt` with `Allow: /` plus `index, follow`
+ * on every page. `insoora-marketing.vercel.app` was a fully crawlable second
+ * copy of the site, and the only thing arguing against it was a cross-origin
+ * canonical to www — which is a HINT to a crawler, not a directive. That is
+ * precisely the duplicate-content situation condition 1 exists to prevent,
+ * reintroduced by the configuration that switched indexing on.
+ *
+ * So on Vercel, only `VERCEL_ENV === "production"` may be indexed. Off Vercel
+ * the variable is unset and condition 1 decides alone, which keeps a local
+ * `next build` and any other host working as before.
+ *
+ * Note the failure mode if `VERCEL_ENV` ever stopped being exposed at build
+ * time: it would be `undefined`, the check falls through to condition 1, and
+ * production stays indexable. The safe direction.
  */
 export function siteUrlIsConfigured(): boolean {
   const configured = present(process.env.NEXT_PUBLIC_SITE_URL);
-  return configured !== undefined && !/localhost|127\.0\.0\.1/.test(configured);
+  if (configured === undefined || /localhost|127\.0\.0\.1/.test(configured)) return false;
+  if (VERCEL_ENV !== undefined) return VERCEL_ENV === "production";
+  return true;
 }

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { OG_IMAGE_ALT } from "@/lib/seo";
 
 // The social sharing card for every public page.
 //
@@ -15,8 +16,11 @@ import { ImageResponse } from "next/og";
 // Placed in the `(marketing)` segment, so the public pages inherit it
 // and the portals (which are `noindex` and never shared) do not generate one.
 
-export const alt =
-  "Insoora — your insurance, always with you. Insurance policy management software that reads policy PDFs, organizes them by customer and tracks renewals";
+// Re-exported from lib/seo rather than written here, because `pageMetadata`
+// now names this same image by hand for the other seven pages (see the note
+// on OG_IMAGE there) and has to give it the same alt text. One string, so the
+// card's description cannot differ depending on which page was shared.
+export const alt = OG_IMAGE_ALT;
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

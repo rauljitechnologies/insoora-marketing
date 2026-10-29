@@ -44,6 +44,42 @@ export const PRODUCT = {
   audience: "Insurance agents, insurance agencies and their policyholders in India",
 } as const;
 
+/**
+ * The Open Graph card every page shares.
+ *
+ * ── Why this is declared by hand ──────────────────────────────────────────
+ *
+ * `app/opengraph-image.tsx` is a file convention, and a file convention
+ * contributes to the metadata of the segment it sits in. Metadata objects are
+ * merged SHALLOWLY (see `generate-metadata.md`, "Merging"): a nested field
+ * like `openGraph` defined in a later segment REPLACES the earlier one
+ * wholesale rather than being merged key by key.
+ *
+ * `pageMetadata` returns an `openGraph` object, so every page that called it
+ * overwrote the root segment's contribution — including the `images` entry it
+ * never set. The result was that the home page had a card (it shares the root
+ * segment with the image file) and the other seven pages had none: sharing
+ * /features anywhere produced a bare text link, and `summary_large_image`
+ * with no image is the worst-looking Twitter card there is.
+ *
+ * So the card is named explicitly here and spread into both `openGraph` and
+ * `twitter` below. A relative URL is correct — `metadataBase` in the root
+ * layout resolves it to an absolute one, which both networks require.
+ *
+ * The hand-written reference loses the cache-busting query Next appends to
+ * the file-convention form. That is the right trade: a stale card after an
+ * image change is a one-off, a missing card is on every share forever.
+ */
+export const OG_IMAGE_ALT =
+  "Insoora — your insurance, always with you. Insurance policy management software that reads policy PDFs, organizes them by customer and tracks renewals";
+
+const OG_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: OG_IMAGE_ALT,
+} as const;
+
 interface PageSeo {
   title: string;
   description: string;
@@ -78,11 +114,13 @@ export function pageMetadata({ title, description, path }: PageSeo): Metadata {
       description,
       url,
       locale: "en_IN",
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [OG_IMAGE],
     },
   };
 }
