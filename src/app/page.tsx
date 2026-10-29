@@ -14,6 +14,7 @@ import { ExtractionPreview } from "@/components/marketing/extraction-preview";
 import { AccessScene, MessyScene } from "@/components/marketing/scene-visuals";
 import { FeatureCards } from "@/components/marketing/feature-cards";
 import { AudienceCards } from "@/components/marketing/audience-cards";
+import { Testimonials } from "@/components/marketing/testimonials";
 import { ProductTabs } from "@/components/marketing/product-tabs";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { JsonLd } from "@/components/marketing/json-ld";
@@ -302,6 +303,15 @@ export default function HomePage() {
           <AudienceCards />
         </div>
       </Section>
+
+      {/* ── What the product is for ──
+
+          Renders nothing in production today: every entry is still
+          illustrative, and `visibleTestimonials()` drops unverified entries
+          outside a preview. So this is a no-op on the live site until a real,
+          consented testimonial is added — which is the intent. See
+          lib/testimonials. */}
+      <Testimonials />
 
       {/* ── Security and trust ── */}
       <Section id="security" className="!pt-0">
