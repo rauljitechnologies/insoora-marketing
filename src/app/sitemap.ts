@@ -108,6 +108,8 @@ function discoverRoutes(dir = APP_DIR, prefix = ""): string[] {
 const HINTS: Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }> = {
   "/": { changeFrequency: "monthly", priority: 1 },
   "/features": { changeFrequency: "monthly", priority: 0.9 },
+  "/how-it-works": { changeFrequency: "monthly", priority: 0.9 },
+  "/product-in-action": { changeFrequency: "monthly", priority: 0.8 },
   "/blog": { changeFrequency: "weekly", priority: 0.8 },
   "/faq": { changeFrequency: "monthly", priority: 0.8 },
   "/about-us": { changeFrequency: "yearly", priority: 0.6 },

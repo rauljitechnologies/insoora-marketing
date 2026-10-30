@@ -85,7 +85,28 @@ const inter = Inter({
 // crawlable linking for them — every child appears there too.
 const NAV: SiteNavItem[] = [
   { href: "/", label: "Home" },
-  { href: "/features", label: "Features" },
+  // "Product" is a dropdown for the same reason "Resources" is: there are
+  // now three pages describing the product rather than one, and a fifth and
+  // sixth top-level link cannot be bought out of this header's margin (see
+  // the note below). Grouping them keeps the bar at five entries — exactly
+  // what it was — while making /how-it-works and /product-in-action
+  // reachable from every page.
+  //
+  // Its `href` is /features, which is both the shelf's own landing page and
+  // the first child, so the group lights up as current on all three.
+  {
+    href: "/features",
+    label: "Product",
+    children: [
+      { href: "/features", label: "Features", hint: "Every capability, and where each one stops" },
+      { href: "/how-it-works", label: "How It Works", hint: "The seven steps a policy PDF takes" },
+      {
+        href: "/product-in-action",
+        label: "Product in Action",
+        hint: "Every screen, drawn with sample data",
+      },
+    ],
+  },
   {
     href: "/faq",
     label: "Resources",
@@ -131,8 +152,13 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
     tone: "text-[#93C5FD]",
     links: [
       { href: "/features", label: "Features" },
-      { href: "/#how-it-works", label: "How it works" },
-      { href: "/#product", label: "Product in action" },
+      // These were `/#how-it-works` and `/#product` — anchors a third of the
+      // way down the home page. Both are now pages of their own, with the
+      // seven-step workflow and the full screen gallery the home page's
+      // summaries only gesture at. The anchors still exist and still work;
+      // the footer simply points at the longer answer.
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/product-in-action", label: "Product in action" },
       { href: appHref("/agent/login"), label: "Sign in", external: true },
     ],
   },

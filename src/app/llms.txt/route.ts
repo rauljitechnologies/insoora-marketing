@@ -85,6 +85,16 @@ export function GET(): Response {
       "/features",
       "Every feature in detail: PDF extraction, bulk upload, policy search, customer-wise histories, renewal tracking, role-based access, CSV and Excel export.",
     ),
+    entry(
+      "How It Works",
+      "/how-it-works",
+      "The seven steps a policy document takes: upload, extraction, review of flagged fields, filing under the customer, search, customer access, and renewal tracking — each with its stated limit.",
+    ),
+    entry(
+      "Product in Action",
+      "/product-in-action",
+      "Every screen in the product, drawn with invented sample data: agent dashboard, bulk upload, extracted details, review queue, policy list, customer history, exports, renewals and the customer portal.",
+    ),
     entry("FAQ", "/faq", `${FAQS.length} answers describing how the platform actually behaves.`),
     entry("About Us", "/about-us", "The company behind Insoora and where it is built."),
     entry("Contact Us", "/contact-us", "Office address, phone number and an enquiry form."),
