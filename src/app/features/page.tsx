@@ -6,8 +6,9 @@ import { Eyebrow, GradientText, PageHead, Panel, Section } from "@/components/ma
 import { BandPrimaryAction, BandSecondaryAction, CtaBand } from "@/components/marketing/cta";
 import { ACCENT_CHIP, ACCENT_TILE, type Accent } from "@/lib/accents";
 import {
-  CustomerVaultShot, ExtractedDetailsShot, PolicyListShot,
-  RenewalTimelineShot, SearchExportShot,
+  CustomerMatchShot, ExportBuilderShot, ExtractedDetailsShot, PolicyHistoryShot,
+  RenewalTimelineShot, RoleAccessShot, SearchExportShot, TemplateRuleShot,
+  UploadQueueShot,
 } from "@/components/marketing/product-shots";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema } from "@/lib/seo";
@@ -42,7 +43,12 @@ interface Feature {
   detail: string[];
   limits: string;
   status?: string;
-  shot?: "policies" | "extracted" | "vault" | "renewals" | "search";
+  /** Every feature has one. Four of these nine used to have none, and the
+   *  page then alternated between a two-column section and a full-width wall
+   *  of text — which is not an alternating rhythm, it is a rhythm that keeps
+   *  dropping a beat. Each screen is the shape of the thing it describes:
+   *  a queue for the upload, a matrix for access, a stack for history. */
+  shot: "upload" | "extracted" | "match" | "history" | "renewals" | "access" | "search" | "export" | "template";
 }
 
 const FEATURES: Feature[] = [
@@ -72,7 +78,7 @@ const FEATURES: Feature[] = [
       "A file that fails does not stop the rest of the batch.",
     ],
     limits: "Very large files and very long documents take longer to process; the batch view is where progress is visible.",
-    shot: "policies",
+    shot: "upload",
   },
   {
     icon: SlidersHorizontal,
@@ -98,7 +104,7 @@ const FEATURES: Feature[] = [
       "For an agency, sub-agents upload into the same book of business, and the agency sees the whole of it while each person sees only what their role allows.",
     ],
     limits: "Matching depends on the mobile number being read correctly and being the one on file; when it is not, the policy waits for an agent to assign it.",
-    shot: "vault",
+    shot: "match",
   },
   {
     icon: FolderClock,
@@ -111,6 +117,7 @@ const FEATURES: Feature[] = [
       "Policyholders see the same history in their own portal, for the policies their agent has shared with them.",
     ],
     limits: "History begins when a policy is uploaded. Insoora cannot recover documents for years that were never added to it.",
+    shot: "history",
   },
   {
     icon: BellRing,
@@ -138,6 +145,7 @@ const FEATURES: Feature[] = [
     ],
     limits:
       "Insoora holds no security certification, has not been penetration tested, and does not yet offer multi-factor authentication. Those are stated plainly rather than implied away.",
+    shot: "access",
   },
   {
     icon: Table2,
@@ -149,6 +157,7 @@ const FEATURES: Feature[] = [
       "An export follows the same access rules as the screen it came from, so it can never contain a policy the person could not already open.",
     ],
     limits: "Export is an agent capability. Policyholder accounts download their own documents but do not export lists.",
+    shot: "export",
     status: "Agents only",
   },
   {
@@ -163,16 +172,21 @@ const FEATURES: Feature[] = [
     ],
     limits:
       "These rules are configured deliberately by an administrator. Insoora does not learn an insurer's layout on its own, and no machine-learning model is trained on your documents.",
+    shot: "template",
     status: "Admin configured",
   },
 ];
 
 const SHOTS = {
-  policies: PolicyListShot,
+  upload: UploadQueueShot,
   extracted: ExtractedDetailsShot,
-  vault: CustomerVaultShot,
+  match: CustomerMatchShot,
+  history: PolicyHistoryShot,
   renewals: RenewalTimelineShot,
+  access: RoleAccessShot,
   search: SearchExportShot,
+  export: ExportBuilderShot,
+  template: TemplateRuleShot,
 } as const;
 
 export default function FeaturesPage() {
@@ -226,7 +240,7 @@ export default function FeaturesPage() {
           identical cards. The preview side is empty for the features that
           have no screen of their own, and the text then takes the full width. */}
       {FEATURES.map((f, i) => {
-        const Shot = f.shot ? SHOTS[f.shot] : null;
+        const Shot = SHOTS[f.shot];
         return (
           <Section
             key={f.id}
@@ -234,13 +248,8 @@ export default function FeaturesPage() {
             tone={i % 2 === 1 ? "surface" : "background"}
             className="border-t border-border"
           >
-            <div
-              className={cn(
-                "grid gap-8 rail:items-center rail:gap-12",
-                Shot && "rail:grid-cols-2",
-              )}
-            >
-              <div className={cn(Shot && i % 2 === 1 && "rail:order-2")}>
+            <div className="grid gap-8 rail:grid-cols-2 rail:items-center rail:gap-12">
+              <div className={cn(i % 2 === 1 && "rail:order-2")}>
                 <span
                   aria-hidden
                   className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE[f.accent])}
@@ -275,11 +284,9 @@ export default function FeaturesPage() {
                   <p className="mt-1.5 text-sm leading-relaxed text-muted">{f.limits}</p>
                 </div>
               </div>
-              {Shot && (
-                <div className={cn(i % 2 === 1 && "rail:order-1")}>
-                  <Shot />
-                </div>
-              )}
+              <div className={cn("min-w-0", i % 2 === 1 && "rail:order-1")}>
+                <Shot />
+              </div>
             </div>
           </Section>
         );

@@ -29,7 +29,7 @@ export const metadata = {
   ...pageMetadata({
     title: "Insurance Policy Management Software for Agents",
     description:
-      "Insoora turns insurance policy PDFs into organized policy records, customer histories and renewal reminders — so agents stop re-entering data their documents already contain.",
+      "Insoora turns insurance policy PDFs into organized policy records, customer histories and a renewals list built from the policy's own expiry date — so agents stop re-entering data their documents already contain.",
     path: "/",
   }),
   title: { absolute: "Insoora — Insurance Policy Management Software for Agents" },
@@ -114,8 +114,9 @@ export default function HomePage() {
                 Insurance policies, organized <GradientText>automatically.</GradientText>
               </h1>
               <p className="max-w-[32.5rem] text-pretty text-lg leading-relaxed text-foreground/70">
-                Turn insurance PDFs into organized policy records, customer histories and renewal
-                reminders &mdash; without repetitive manual work.
+                Turn insurance PDFs into organized policy records, customer histories and a
+                renewals list built from each policy&apos;s own expiry date &mdash; without
+                repetitive manual work.
               </p>
               <div className="flex flex-wrap gap-3">
                 {/* Sign-up lives in the product, on its own origin — `external`
@@ -182,14 +183,24 @@ export default function HomePage() {
       {/* ── How it works ── */}
       <Section id="how-it-works" className="!pt-0">
         <Panel className="gap-9">
-          <div className="flex flex-col gap-2.5">
-            <Eyebrow accent="blue">How it works</Eyebrow>
-            <H2>
-              From policy PDF to organized records in three steps.
-            </H2>
-            <p className="text-base text-foreground/70">
-              A simple process to extract, organize and manage your insurance policy information.
-            </p>
+          {/* The summary. Three steps is the right length beside a hero; the
+              product actually runs seven, and /how-it-works is where the
+              other four — the review of a flagged field, how a policy finds
+              its customer, what the policyholder sees, and where the expiry
+              date comes from — are set out in full. */}
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-col gap-2.5">
+              <Eyebrow accent="blue">How it works</Eyebrow>
+              <H2>
+                From policy PDF to organized records in three steps.
+              </H2>
+              <p className="text-base text-foreground/70">
+                A simple process to extract, organize and manage your insurance policy information.
+              </p>
+            </div>
+            <ChipLink href="/how-it-works" accent="blue">
+              See all seven steps
+            </ChipLink>
           </div>
           <div className="grid gap-6 shell:grid-cols-3">
             {STEPS.map((s, i) => (
@@ -273,16 +284,24 @@ export default function HomePage() {
       {/* ── Product in action ── */}
       <Section id="product" className="!pt-0">
         <Panel>
-          <div className="flex flex-col gap-2.5">
-            <Eyebrow accent="red">Product in action</Eyebrow>
-            <H2>
-              A closer look at the Insoora experience.
-            </H2>
-            <p className="text-base text-foreground/70">
-              See how insurance PDFs are uploaded, extracted and organized into easy-to-manage
-              records. Every view below is drawn with an invented policy &mdash; no customer&apos;s
-              records appear on this page.
-            </p>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-col gap-2.5">
+              <Eyebrow accent="red">Product in action</Eyebrow>
+              <H2>
+                A closer look at the Insoora experience.
+              </H2>
+              <p className="text-base text-foreground/70">
+                See how insurance PDFs are uploaded, extracted and organized into easy-to-manage
+                records. Every view below is drawn with an invented policy &mdash; no customer&apos;s
+                records appear on this page.
+              </p>
+            </div>
+            {/* Six views here; eleven on the gallery page, including the
+                dashboard and the customer's phone, which this widget has no
+                room for. */}
+            <ChipLink href="/product-in-action" accent="red">
+              See every screen
+            </ChipLink>
           </div>
           <ProductTabs />
         </Panel>
