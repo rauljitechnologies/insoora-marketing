@@ -36,14 +36,31 @@ function Frame({
 }) {
   return (
     <figure className={cn("overflow-hidden rounded-2xl border border-border bg-background shadow-card", className)}>
+      {/* `min-w-0` on the caption is load-bearing, not tidiness.
+
+          `truncate` sets `white-space: nowrap`, but a flex item defaults to
+          `min-width: auto` — so the caption could never shrink below the full
+          width of its own label, and the bar's min-content became "three dots
+          + the whole label + the Sample data pill". That is ~380px for
+          "Agent portal — Extracted details", and a grid item wrapping one of
+          these inherited it as a floor: at 320px the column grew to 399px and
+          dragged the page sideways. The truncation only ever appeared to work
+          because nothing had yet put a frame in a column narrower than its
+          own label.
+
+          So: the caption shrinks and ellipses, which is what `truncate` was
+          always for, and the two things that must keep their size — the dots
+          and the marker — say so. */}
       <div className="flex items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
-        <span aria-hidden className="flex gap-1.5">
+        <span aria-hidden className="flex flex-none gap-1.5">
           <span className="size-2 rounded-full bg-border" />
           <span className="size-2 rounded-full bg-border" />
           <span className="size-2 rounded-full bg-border" />
         </span>
-        <figcaption className="ml-1 truncate text-xs font-medium text-muted">{label}</figcaption>
-        <SampleTag className="ml-auto" />
+        <figcaption className="ml-1 min-w-0 flex-1 truncate text-xs font-medium text-muted">
+          {label}
+        </figcaption>
+        <SampleTag className="flex-none" />
       </div>
       <div aria-hidden>{children}</div>
     </figure>

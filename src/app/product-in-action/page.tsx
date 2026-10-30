@@ -209,7 +209,10 @@ function ShotFigure({ shot, wide }: { shot: Shot; wide?: boolean }) {
     <article
       id={shot.id}
       className={cn(
-        "scroll-mt-24",
+        // `min-w-0`: a grid item defaults to `min-width: auto` and grows its
+        // track rather than letting its contents shrink. Every shot inside a
+        // frame is allowed to narrow instead.
+        "min-w-0 scroll-mt-24",
         wide && "grid gap-7 rail:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] rail:items-center rail:gap-12",
       )}
     >

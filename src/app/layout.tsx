@@ -193,6 +193,11 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
   },
 ];
 
+/** One footer column link. See the note at the call site for why the height
+ *  floor is here rather than left to the line box. */
+const FOOTER_LINK =
+  "inline-flex min-h-6 w-max items-center text-sm text-[#CBD5E1] transition-colors hover:text-white";
+
 /** The four controls the footer vouches for. Each one is implemented — this
  *  row is not a badge wall of certifications we do not hold. */
 const TRUST: { icon: typeof Lock; t: string; tone: string }[] = [
@@ -349,11 +354,22 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 {c.links.map((l) =>
                   // An absolute URL into the product gets a plain anchor —
                   // see SiteNavItem.external.
+                  //
+                  // `inline-flex min-h-6 items-center w-max`: these are
+                  // stacked navigation links, not links inside a sentence, so
+                  // WCAG 2.2's 24px minimum target size applies to them with
+                  // no inline exception to fall back on. At `text-sm` the
+                  // line box is 20px, which is what every one of them
+                  // measured. The `gap-3` on the column already provides the
+                  // spacing, so raising each link to 24px costs no layout —
+                  // and `w-max` keeps the target the width of the label
+                  // rather than the whole column, so the gap between two
+                  // links does not become part of either one.
                   l.external ? (
                     <a
                       key={l.href + l.label}
                       href={l.href}
-                      className="text-sm text-[#CBD5E1] transition-colors hover:text-white"
+                      className={FOOTER_LINK}
                     >
                       {l.label}
                     </a>
@@ -361,7 +377,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                     <Link
                       key={l.href + l.label}
                       href={l.href}
-                      className="text-sm text-[#CBD5E1] transition-colors hover:text-white"
+                      className={FOOTER_LINK}
                     >
                       {l.label}
                     </Link>
@@ -384,7 +400,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
               </span>
               <a
                 href={CONTACT.phoneHref}
-                className="flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#FCA5A5]"
+                className="inline-flex min-h-6 w-max items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#FCA5A5]"
               >
                 <Phone className="size-3.5 text-[#FCA5A5]" />
                 {CONTACT.phone}
@@ -397,7 +413,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 href={mapsSearchHref()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
+                className="inline-flex min-h-6 w-max items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
               >
                 Get directions
                 <ArrowRight className="size-3.5" />
@@ -443,17 +459,23 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 className="gap-2"
                 linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:bg-white/10 hover:text-white"
               />
-              <Link href="/privacy-policy" className="transition-colors hover:text-white">
+              <Link
+                href="/privacy-policy"
+                className="inline-flex min-h-6 items-center transition-colors hover:text-white"
+              >
                 Privacy
               </Link>
-              <Link href="/terms-and-conditions" className="transition-colors hover:text-white">
+              <Link
+                href="/terms-and-conditions"
+                className="inline-flex min-h-6 items-center transition-colors hover:text-white"
+              >
                 Terms
               </Link>
               {/* Reopens the consent banner. Consent has to be as easy to
                   withdraw as it was to give, and without this the only way
                   back from "Accept" would be clearing site data. Renders
                   nothing outside production, where there is no banner. */}
-              <CookieSettingsButton className="transition-colors hover:text-white" />
+              <CookieSettingsButton className="inline-flex min-h-6 items-center transition-colors hover:text-white" />
               {/* `#main` rather than `#top`: `#top` is the home page's hero
                   and does not exist on the six inner pages, where this
                   control silently did nothing. Every page has `#main`. */}
