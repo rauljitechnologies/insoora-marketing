@@ -5,7 +5,7 @@ export const post: Post = {
   title: "OCR in Insurance: How Digital Policy Extraction Works",
   metaTitle: "OCR in Insurance: How Digital Policy Extraction Actually Works",
   description:
-    "What OCR does to an insurance policy PDF, why a text layer matters more than image quality, where extraction goes wrong, and how to judge whether a system's output can be trusted.",
+    "What OCR does to an insurance policy PDF, why a text layer matters more than image quality, and how to judge whether a system's output can be trusted.",
   excerpt:
     "\"The software reads the policy\" covers two completely different operations with different failure modes. Knowing which one is happening tells you how much to trust the result.",
   published: "2026-10-30",
@@ -17,6 +17,7 @@ export const post: Post = {
   related: [
     "organize-insurance-policy-documents-digitally",
     "insurance-agency-management-practical-guide",
+    "reduce-manual-insurance-policy-data-entry",
   ],
   sections: [
     {

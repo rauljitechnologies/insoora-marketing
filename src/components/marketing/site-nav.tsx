@@ -6,7 +6,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { HeaderMenu, HeaderMenuItem, HeaderMenuProvider, useHeaderMenus } from "./header-menu";
+import {
+  HeaderMenu, HeaderMenuGroup, HeaderMenuItem, HeaderMenuProvider, useHeaderMenus,
+} from "./header-menu";
 
 // The public site's navigation.
 //
@@ -36,8 +38,42 @@ export interface SiteNavItem {
    *  menu, and it is what gives Radix the keyboard contract. So `href` is not
    *  rendered in the header for an entry with children; it is kept only to
    *  key the entry and to mark it current. Every child page therefore also
-   *  needs a plain link somewhere crawlable — the footer carries all three. */
-  children?: { href: string; label: string; hint?: string }[];
+   *  needs a plain link somewhere crawlable — the footer carries them all.
+   *
+   *  `group` shelves a child under a label inside the panel. Consecutive
+   *  children sharing one are rendered as a labelled group; children with no
+   *  `group` are rendered flat, which is what the Sign in menu and the old
+   *  three-item Resources menu want. Added when Product grew to seven
+   *  entries: three pages describing the product and four describing one
+   *  portal each are two kinds of destination, and an unlabelled list of
+   *  seven makes the reader work that out from the names. */
+  children?: { href: string; label: string; hint?: string; group?: string }[];
+  /** The dropdown panel's width class. Defaults to the menu's own `w-64`,
+   *  which is right for four short rows and too narrow for eight with hints. */
+  menuWidth?: string;
+  /** Lay the panel out in two columns. For the eight-entry Solutions menu,
+   *  where one column would be ~480px tall — taller than the space under the
+   *  header on a laptop, which is the point at which a dropdown stops being
+   *  one. */
+  menuColumns?: 2;
+}
+
+/**
+ * The children of one nav entry, bucketed by `group` in source order.
+ *
+ * Returns a single unlabelled bucket when no child declares a group, so the
+ * flat case stays flat rather than being wrapped in a group with no label.
+ */
+function groupChildren(
+  children: NonNullable<SiteNavItem["children"]>,
+): { label?: string; items: NonNullable<SiteNavItem["children"]> }[] {
+  const buckets: { label?: string; items: NonNullable<SiteNavItem["children"]> }[] = [];
+  for (const child of children) {
+    const last = buckets[buckets.length - 1];
+    if (last && last.label === child.group) last.items.push(child);
+    else buckets.push({ label: child.group, items: [child] });
+  }
+  return buckets;
 }
 
 /** Marks the current page, treating "/" as exact and the rest as prefixes.
@@ -152,6 +188,7 @@ function SiteNavInner({
             <HeaderMenu
               key={n.href}
               id={`nav:${n.href}`}
+              width={n.menuWidth}
               triggerClassName={cn(itemClass, "group inline-flex items-center gap-1.5")}
               trigger={
                 <>
@@ -163,15 +200,32 @@ function SiteNavInner({
                 </>
               }
             >
-              {n.children.map((c) => (
-                <HeaderMenuItem
-                  key={c.href}
-                  href={c.href}
-                  label={c.label}
-                  hint={c.hint}
-                  current={isCurrent(path, c.href)}
-                />
-              ))}
+              {/* Two columns is a grid on the PANEL, not on each group: the
+                  groups are the columns, which is why `menuColumns` and
+                  grouping are used together. A grid around
+                  `DropdownMenu.Group` elements keeps Radix's item roles and
+                  arrow-key order intact — the keyboard still walks the items
+                  in source order, which is the reading order of the columns. */}
+              <div className={cn(n.menuColumns === 2 && "grid grid-cols-2 gap-x-1")}>
+                {groupChildren(n.children).map((bucket, i) => {
+                  const rows = bucket.items.map((c) => (
+                    <HeaderMenuItem
+                      key={c.href}
+                      href={c.href}
+                      label={c.label}
+                      hint={c.hint}
+                      current={isCurrent(path, c.href)}
+                    />
+                  ));
+                  return bucket.label ? (
+                    <HeaderMenuGroup key={bucket.label} label={bucket.label}>
+                      {rows}
+                    </HeaderMenuGroup>
+                  ) : (
+                    <React.Fragment key={`flat-${i}`}>{rows}</React.Fragment>
+                  );
+                })}
+              </div>
             </HeaderMenu>
           );
         })}
@@ -261,24 +315,37 @@ function SiteNavInner({
                       <p className="px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
                         {n.label}
                       </p>
-                      {n.children.map((c) => {
-                        const childCurrent = isCurrent(path, c.href);
-                        return (
-                          <Link
-                            key={c.href}
-                            href={c.href}
-                            aria-current={childCurrent ? "page" : undefined}
-                            className={cn(
-                              "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-                              childCurrent
-                                ? "bg-primary-soft text-primary"
-                                : "text-foreground hover:bg-surface",
-                            )}
-                          >
-                            {c.label}
-                          </Link>
-                        );
-                      })}
+                      {/* The drawer repeats the panel's groups as a second,
+                          quieter level of label. Twenty-three links in a
+                          scrolling sheet is a lot to read; the labels are
+                          what make it scannable instead of long. */}
+                      {groupChildren(n.children).map((bucket, i) => (
+                        <div key={bucket.label ?? `flat-${i}`} className="flex flex-col gap-1">
+                          {bucket.label && (
+                            <p className="px-3 pt-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted/80">
+                              {bucket.label}
+                            </p>
+                          )}
+                          {bucket.items.map((c) => {
+                            const childCurrent = isCurrent(path, c.href);
+                            return (
+                              <Link
+                                key={c.href}
+                                href={c.href}
+                                aria-current={childCurrent ? "page" : undefined}
+                                className={cn(
+                                  "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                                  childCurrent
+                                    ? "bg-primary-soft text-primary"
+                                    : "text-foreground hover:bg-surface",
+                                )}
+                              >
+                                {c.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
                   );
                 }

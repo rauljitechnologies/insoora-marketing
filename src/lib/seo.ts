@@ -80,6 +80,35 @@ const OG_IMAGE = {
   alt: OG_IMAGE_ALT,
 } as const;
 
+/**
+ * The length a meta description has to fit inside.
+ *
+ * ── Why this is a build failure and not a lint note ──────────────────────
+ *
+ * Google renders roughly 920 pixels of description on desktop, which is a
+ * width rather than a character count, so no number here is exactly right.
+ * 165 is a conservative ceiling for Latin text and is used as a ceiling, not
+ * a target — the point is to catch a description somebody wrote as a
+ * paragraph, not to shave characters off a good one.
+ *
+ * It was found by auditing the built HTML rather than by reading the code:
+ * five pages were shipping descriptions of 196 to 217 characters, all of them
+ * truncated in a result, and nothing anywhere said so. A page's description
+ * is written once and then never looked at again, which is exactly the kind
+ * of defect that needs a mechanical check rather than a reviewer's attention.
+ *
+ * The failure is deliberate. Unlike the origin fallback in lib/site-config —
+ * where a blocked deploy is worse than the defect, because nobody may yet
+ * know the final hostname — an over-long description is a content mistake
+ * with an obvious owner and a thirty-second fix, and the error message names
+ * the page and the count.
+ *
+ * The floor is a different kind of mistake: a 40-character description is
+ * usually a placeholder somebody meant to come back to.
+ */
+const DESCRIPTION_MIN = 70;
+const DESCRIPTION_MAX = 165;
+
 interface PageSeo {
   title: string;
   description: string;
@@ -107,6 +136,13 @@ interface PageSeo {
  * the wrong hostname is ranking.
  */
 export function pageMetadata({ title, description, path, image }: PageSeo): Metadata {
+  if (description.length < DESCRIPTION_MIN || description.length > DESCRIPTION_MAX) {
+    throw new Error(
+      `seo: the description for "${path}" is ${description.length} characters. ` +
+        `Keep it between ${DESCRIPTION_MIN} and ${DESCRIPTION_MAX} — see DESCRIPTION_MAX in lib/seo.`,
+    );
+  }
+
   const url = absolute(path);
   const indexable = siteUrlIsConfigured();
   const card = image ? { ...OG_IMAGE, url: image.url, alt: image.alt } : OG_IMAGE;
@@ -139,8 +175,8 @@ export function pageMetadata({ title, description, path, image }: PageSeo): Meta
 // ── JSON-LD ───────────────────────────────────────────────
 //
 // Emitted only where the visible page supports it, which is why
-// `breadcrumbSchema` takes the trail the page actually renders and
-// `faqSchema` is used on the FAQ page alone.
+// `breadcrumbSchema` takes the trail the page actually renders and `faqSchema`
+// is always built from the array the page itself renders.
 
 /** The organisation behind the product. Only fields we can actually fill. */
 export function organizationSchema() {
@@ -231,11 +267,24 @@ export function breadcrumbSchema(trail: { name: string; path: string }[]) {
 }
 
 /**
- * FAQPage, for the FAQ page only.
+ * FAQPage, for any page that visibly renders its own questions.
  *
- * Google's guidelines limit FAQ rich results, and the markup is only valid
- * when every question and answer is visible on the page — so this is built
- * from the same array the page renders, never from a separate list.
+ * It was the FAQ page alone until the twelve landing pages were added, and
+ * the rule that governed that has not changed — it is just satisfied in more
+ * places now. The markup is only valid when every question and answer is
+ * visible on the page carrying it, and all thirteen pages render theirs in
+ * the same accordion, which keeps the text in the server-rendered HTML
+ * whether or not a panel is open (see `faq-accordion.tsx`).
+ *
+ * So the one invariant is the argument of this function: it is always built
+ * from the same array the page renders, never from a separate list that could
+ * drift. A page that wants this schema has to show the questions.
+ *
+ * Note that Google now restricts FAQ RICH RESULTS to a narrow set of
+ * authoritative sites, so this is unlikely to produce stars in a result page.
+ * It is emitted because it is read by answer engines and because it is a
+ * truthful machine-readable description of what the page contains — not as a
+ * ranking tactic.
  */
 export function faqSchema(entries: { q: string; a: string }[]) {
   return {
@@ -314,7 +363,7 @@ export function blogSchema(posts: { slug: string; title: string; published: stri
     "@id": `${absolute("/blog")}#blog`,
     name: `${PRODUCT.name} Blog`,
     description:
-      "Practical guides on organizing insurance policy documents, running an agency, tracking renewals and how policy data extraction works.",
+      "Practical guides on organizing insurance policy documents, running an agency, tracking renewals, choosing insurance software and how policy data extraction works.",
     url: absolute("/blog"),
     publisher: { "@id": `${siteUrl()}/#organization` },
     inLanguage: "en-IN",

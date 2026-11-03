@@ -21,7 +21,7 @@ import { appHref } from "@/lib/site-config";
 export const metadata = pageMetadata({
   title: "How It Works — From Policy PDF to Organized Record",
   description:
-    "The seven steps an insurance policy takes through Insoora: upload the PDF, extract the fields, flag what is unclear, file it under the customer, search it, share it with the policyholder, and track the expiry date.",
+    "The seven steps an insurance policy takes through Insoora: upload, extract, flag what is unclear, file it under the customer, share it, and track the expiry date.",
   path: "/how-it-works",
 });
 

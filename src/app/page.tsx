@@ -29,7 +29,7 @@ export const metadata = {
   ...pageMetadata({
     title: "Insurance Policy Management Software for Agents",
     description:
-      "Insoora turns insurance policy PDFs into organized policy records, customer histories and a renewals list built from the policy's own expiry date — so agents stop re-entering data their documents already contain.",
+      "Insurance policy management software that reads your policy PDFs into organized records, customer histories and a renewals list built from the policy's own expiry.",
     path: "/",
   }),
   title: { absolute: "Insoora — Insurance Policy Management Software for Agents" },

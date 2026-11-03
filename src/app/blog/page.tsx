@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Clock } from "lucide-react";
-import { GradientText, PageHead, Section } from "@/components/marketing/section";
+import { Eyebrow, GradientText, H2, PageHead, Panel, Section } from "@/components/marketing/section";
 import { BandPrimaryAction, BandSecondaryAction, CtaBand } from "@/components/marketing/cta";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { ART_ALT, BlogArt } from "@/components/marketing/blog-art";
-import { ACCENT_CHIP } from "@/lib/accents";
-import { CATEGORIES, POSTS, formatPostDate, readingMinutes } from "@/lib/blog";
+import { ACCENT_CHIP, type Accent } from "@/lib/accents";
+import { CATEGORIES, POSTS, type PostCategory, formatPostDate, postsByCategory, readingMinutes } from "@/lib/blog";
 import { blogSchema, breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
 import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
@@ -19,12 +19,37 @@ import { cn } from "@/lib/utils";
 export const metadata = pageMetadata({
   title: "Blog",
   description:
-    "Practical guides for insurance agents and policyholders: organizing policy documents, running an agency, tracking renewals, and how policy data extraction actually works.",
+    "Guides for insurance agents and policyholders: organizing policy documents, running an agency, tracking renewals, choosing software, and how policy extraction works.",
   path: "/blog",
 });
 
+/** Each shelf's hue, so a group heading and its chip are the same colour —
+ *  the one-hue-per-chapter rule the rest of the site follows. */
+const SHELF_ACCENT: Record<PostCategory, Accent> = {
+  "agent-workflow": "blue",
+  "how-it-works": "teal",
+  "choosing": "red",
+  "policyholder": "green",
+};
+
+/** One line saying who each shelf is for. A heading alone makes the reader
+ *  infer the difference between "For agents" and "How it works"; they can,
+ *  slowly, which is the definition of a label that needed a sentence. */
+const SHELF_LEDE: Record<PostCategory, string> = {
+  "agent-workflow":
+    "The work itself: filing documents so they can be found, keeping a book of business current, and staying ahead of renewal dates.",
+  "how-it-works":
+    "The machinery, explained plainly — what this category of software is, and what actually happens to a policy PDF when something reads it.",
+  "choosing":
+    "Comparisons and evaluation. No ranked lists of products we have not tested; what to test instead, and the questions that separate them.",
+  "policyholder":
+    "For the people whose policies these are. Worth sending to a customer who wants to keep track of their own cover.",
+};
+
 export default function BlogIndexPage() {
-  const [lead, ...rest] = POSTS;
+  const [lead] = POSTS;
+  // The featured article is excluded from its own shelf, so it appears once.
+  const shelves = postsByCategory(lead.slug);
 
   return (
     <>
@@ -49,23 +74,71 @@ export default function BlogIndexPage() {
             Guides for the work <GradientText>after the sale</GradientText>
           </>
         }
-        lede="Filing policy documents, keeping a book of business current, tracking renewals, and understanding what software can and cannot read off a policy PDF. Written to be useful whether or not you ever use Insoora."
+        lede="Filing policy documents, keeping a book of business current, tracking renewals, choosing between the products in this market, and understanding what software can and cannot read off a policy PDF. Written to be useful whether or not you ever use Insoora — including the comparisons, which carry no ranked lists of products we have not tested."
       />
 
       <Section>
-        <h2 className="sr-only">All articles</h2>
+        {/* The newest post gets the wide card: leading with one gives the page
+            a focal point, and the remaining eleven are grouped rather than
+            gridded flat.
 
-        {/* The newest post gets the wide card. With five articles a flat grid
-            of five is a 3 + 2 that leaves a hole; leading with one and
-            gridding the rest fills the row and gives the page a focal point. */}
+            They used to be a flat grid, which was right at five articles and
+            stopped being right at twelve — eleven identical cards in two
+            columns is a wall, and eleven is odd, so it also left a half-empty
+            row at the bottom. Grouping by shelf gives the page four headings,
+            a contents nav, and a way for a reader who arrived on one article
+            to find the two nearest it. */}
+        <h2 className="sr-only">Latest article</h2>
         <PostCard post={lead} featured />
-
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 shell:grid-cols-2">
-          {rest.map((post) => (
-            <PostCard key={post.slug} post={post} />
-          ))}
-        </div>
       </Section>
+
+      <Section tone="surface" className="!pt-0">
+        <Panel className="gap-5 !p-6 sm:!p-8">
+          <Eyebrow accent="blue">On this page</Eyebrow>
+          <nav aria-label="Article categories">
+            <ul className="flex flex-wrap gap-2">
+              {shelves.map((shelf) => (
+                <li key={shelf.id}>
+                  <a
+                    href={`#${shelf.id}`}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border bg-background px-3.5 py-2 text-sm font-medium transition-transform hover:-translate-y-0.5",
+                      ACCENT_CHIP[SHELF_ACCENT[shelf.id]],
+                    )}
+                  >
+                    {shelf.label}
+                    <span className="text-xs opacity-70">{shelf.posts.length}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </Panel>
+      </Section>
+
+      {shelves.map((shelf, i) => (
+        <Section
+          key={shelf.id}
+          id={shelf.id}
+          tone={i % 2 === 0 ? "background" : "surface"}
+          className="border-t border-border !pt-12"
+        >
+          <div className="flex flex-col gap-2.5">
+            <Eyebrow accent={SHELF_ACCENT[shelf.id]}>
+              {shelf.posts.length} {shelf.posts.length === 1 ? "article" : "articles"}
+            </Eyebrow>
+            <H2>{shelf.label}</H2>
+            <p className="max-w-2xl text-pretty text-base leading-relaxed text-foreground/70">
+              {SHELF_LEDE[shelf.id]}
+            </p>
+          </div>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            {shelf.posts.map((post) => (
+              <PostCard key={post.slug} post={post} />
+            ))}
+          </div>
+        </Section>
+      ))}
 
       <CtaBand
         eyebrow="Try it on your own policies"

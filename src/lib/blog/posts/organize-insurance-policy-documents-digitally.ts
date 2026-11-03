@@ -5,7 +5,7 @@ export const post: Post = {
   title: "How to Organize Insurance Policy Documents Digitally",
   metaTitle: "How to Organize Insurance Policy Documents Digitally: A Practical System",
   description:
-    "A working system for storing insurance policy PDFs: what to name files, which fields to record, how to handle renewals and scans, and how to keep the documents findable years later.",
+    "A working system for storing insurance policy PDFs: what to name files, which fields to record, and how to keep the documents findable years later.",
   excerpt:
     "Most policy filing systems fail the same way — they are organized for the person who filed the document, not for the person who has to find it eighteen months later. Here is a system built around retrieval.",
   published: "2026-10-30",
@@ -17,6 +17,7 @@ export const post: Post = {
   related: [
     "track-insurance-policy-renewals-and-important-dates",
     "ocr-in-insurance-how-digital-policy-extraction-works",
+    "reduce-manual-insurance-policy-data-entry",
   ],
   sections: [
     {

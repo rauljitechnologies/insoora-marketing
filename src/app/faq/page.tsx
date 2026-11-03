@@ -12,7 +12,7 @@ import { appHref } from "@/lib/site-config";
 export const metadata = pageMetadata({
   title: "Frequently Asked Questions",
   description:
-    "How Insoora extracts data from insurance policy PDFs, which documents it supports, how bulk upload, policy search, renewal tracking, customer access, exports and document security work.",
+    "How Insoora reads insurance policy PDFs, which documents it supports, and how bulk upload, search, renewal tracking, customer access and document security work.",
   path: "/faq",
 });
 

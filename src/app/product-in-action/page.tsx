@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 export const metadata = pageMetadata({
   title: "Product in Action — Every Screen in Insoora",
   description:
-    "See the Insoora agent dashboard, bulk PDF upload, extracted policy details, review queue, policy list and search, customer portal, renewal tracking and CSV export — every screen, drawn with sample data.",
+    "Every Insoora screen drawn with sample data: the agent dashboard, bulk PDF upload, extracted policy details, the review queue, renewals and the customer portal.",
   path: "/product-in-action",
 });
 
