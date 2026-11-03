@@ -56,7 +56,7 @@ export const FAQS: FaqItem[] = [
   },
   {
     q: "Which insurance documents does Insoora support?",
-    a: "Motor, health, life, travel and home policy PDFs issued by Indian insurers. Layouts differ from insurer to insurer, so accuracy is highest on insurer-issued digital PDFs and lower on photographs of printed policies or poor-quality scans. Insoora does not claim to read every layout correctly on the first attempt.",
+    a: "Policy PDFs issued by Indian insurers, classified into seven lines of business: motor, health, life, travel, property, marine and personal accident. Motor and health are the most thoroughly modelled; marine and commercial property are classified and read as schedules but were not what the product was designed around. Layouts differ from insurer to insurer, so accuracy is highest on insurer-issued digital PDFs and lower on photographs of printed policies or poor-quality scans. Insoora does not claim to read every layout correctly on the first attempt.",
     category: "extraction",
     home: true,
   },

@@ -265,3 +265,36 @@ export function HeaderMenuItem({
   );
 }
 
+
+/**
+ * A labelled group of rows inside a header menu.
+ *
+ * Added when the Product menu grew from three entries to seven. Three pages
+ * describing the product and four describing one portal each are two
+ * different kinds of destination, and an unlabelled list of seven makes the
+ * reader work that out from the names — which they can, slowly, which is the
+ * definition of a menu that is too long.
+ *
+ * `DropdownMenu.Group` with a `DropdownMenu.Label` rather than a plain <div>
+ * and a <p>: that is what makes the label the accessible name of the group
+ * for a screen reader walking the menu, instead of a stray text node between
+ * two items.
+ */
+export function HeaderMenuGroup({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <DropdownMenu.Group className={className}>
+      <DropdownMenu.Label className="px-2.5 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
+        {label}
+      </DropdownMenu.Label>
+      {children}
+    </DropdownMenu.Group>
+  );
+}

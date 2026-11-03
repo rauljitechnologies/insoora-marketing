@@ -5,7 +5,7 @@ export const post: Post = {
   title: "How to Track Insurance Policy Renewals and Important Dates",
   metaTitle: "How to Track Insurance Policy Renewals and Important Dates",
   description:
-    "Which insurance dates actually matter, where to find them on the policy, how far ahead to contact a customer, and how to build a renewal list that does not depend on remembering.",
+    "Which insurance dates actually matter, where to find them on the policy, and how to build a renewal list that does not depend on anybody remembering.",
   excerpt:
     "A lapsed policy is rarely a decision. It is almost always a date nobody was watching — and the fix is less about reminders than about where the date came from in the first place.",
   published: "2026-10-30",
@@ -17,6 +17,7 @@ export const post: Post = {
   related: [
     "insurance-agency-management-practical-guide",
     "how-customers-can-keep-insurance-policies-organized",
+    "manage-multiple-insurance-policies-one-dashboard",
   ],
   sections: [
     {

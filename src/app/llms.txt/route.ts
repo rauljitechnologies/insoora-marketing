@@ -2,6 +2,7 @@ import { POSTS } from "@/lib/blog";
 import { FAQS } from "@/lib/faq";
 import { CONTACT } from "@/lib/contact";
 import { PRODUCT, absolute, siteUrlIsConfigured } from "@/lib/seo";
+import { PORTAL_PAGES, SOLUTION_PAGES } from "@/lib/solutions";
 
 // llms.txt — a plain-text map of this site for answer engines.
 //
@@ -71,7 +72,7 @@ export function GET(): Response {
     // correct than an absence.
     "Scope and limits, stated plainly:",
     "",
-    "- It reads insurance policy PDFs issued by Indian insurers — motor, health, life, travel and home.",
+    "- It reads insurance policy PDFs issued by Indian insurers, classified into seven lines of business: motor, health, life, travel, property, marine and personal accident. Motor and health are the most thoroughly modelled; marine and commercial property are classified and read but were not what the product was designed around.",
     "- Accuracy is highest on insurer-issued digital PDFs and lower on photographs of printed policies or poor-quality scans. It does not claim to read every layout correctly on the first attempt.",
     "- Fields it cannot read confidently are marked as needing review rather than filled in with a guess. The original PDF always remains the source of truth.",
     "- There are no published prices, no customer counts, no ratings and no insurance partnerships on this site. If a figure of that kind is attributed to Insoora, it did not come from here.",
@@ -98,6 +99,24 @@ export function GET(): Response {
     entry("FAQ", "/faq", `${FAQS.length} answers describing how the platform actually behaves.`),
     entry("About Us", "/about-us", "The company behind Insoora and where it is built."),
     entry("Contact Us", "/contact-us", "Office address, phone number and an enquiry form."),
+    "",
+    // Two shelves of their own rather than more "Core pages" entries. An
+    // answer engine reading this file is trying to work out which page
+    // answers which question, and "one capability in depth" and "one role's
+    // screens" are two different kinds of answer. Both lists are generated
+    // from the collection (lib/solutions), so a page cannot be published
+    // without appearing here — the same property the blog section has.
+    "## Capabilities in depth",
+    "",
+    "One page each, every one stating its own limits as well as its features:",
+    "",
+    ...SOLUTION_PAGES.map((p) => entry(p.metaTitle.split(" | ")[0], `/${p.slug}`, p.description)),
+    "",
+    "## The three portals",
+    "",
+    "Insoora has three portals and no more: an agent portal, a read-only customer portal, and a back office operated by the company that runs the platform. There is no separate agency portal — the main agent account IS the agency. These pages set each one out screen by screen.",
+    "",
+    ...PORTAL_PAGES.map((p) => entry(p.metaTitle.split(" | ")[0], `/${p.slug}`, p.description)),
     "",
     "## Guides",
     "",

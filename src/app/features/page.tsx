@@ -18,7 +18,7 @@ import { appHref } from "@/lib/site-config";
 export const metadata = pageMetadata({
   title: "Features — Insurance PDF Extraction, Policy Records and Renewals",
   description:
-    "Every Insoora feature in detail: automated insurance PDF data extraction, bulk upload, policy search, customer-wise histories, renewal tracking, role-based document access and CSV or Excel export.",
+    "Every Insoora feature in detail: insurance PDF extraction, bulk upload, policy search, customer histories, renewal tracking, role-based access and export.",
   path: "/features",
 });
 

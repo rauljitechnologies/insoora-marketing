@@ -2,7 +2,11 @@
 
 import { Accordion } from "radix-ui";
 import { ChevronDown } from "lucide-react";
-import type { FaqItem } from "@/lib/faq";
+// Takes the minimal shape rather than `FaqItem` from lib/faq: it reads `q`
+// and `a` and nothing else, and the twelve solution pages carry their own
+// questions (lib/solutions/types.ts) which have no FAQ category to put on
+// them. Narrowing the prop to what the component actually uses is what lets
+// both callers share one accordion instead of growing a second.
 
 // The website's FAQ.
 //
@@ -20,7 +24,7 @@ import type { FaqItem } from "@/lib/faq";
 // crawler, an answer engine and a Ctrl+F all find the text. That is also what
 // makes the FAQPage schema on this page honest.
 
-export function FaqAccordion({ items }: { items: FaqItem[] }) {
+export function FaqAccordion({ items }: { items: { q: string; a: string }[] }) {
   return (
     <Accordion.Root type="multiple" className="divide-y divide-border">
       {items.map((item, i) => (

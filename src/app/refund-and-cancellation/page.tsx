@@ -19,7 +19,7 @@ import { breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Refund & Cancellation Policy",
   description:
-    "How cancellation and refunds work for Insoora's paid plans and policy credits, including duplicate charges and failed payments. A draft prepared for business approval.",
+    "How cancellation and refunds work for Insoora's paid plans and policy credits, including duplicate charges and failed payments. A draft awaiting approval.",
   path: "/refund-and-cancellation",
 });
 

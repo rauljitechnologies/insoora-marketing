@@ -1,100 +1,31 @@
-import { readdirSync } from "node:fs";
-import path from "node:path";
 import type { MetadataRoute } from "next";
 import { absolute, siteUrlIsConfigured } from "@/lib/seo";
+import { discoverRoutes } from "@/lib/site-routes";
+import { ALL_LANDING_PAGES } from "@/lib/solutions";
 import { POSTS, blogLastModified } from "@/lib/blog";
 
 // The public website's sitemap — DISCOVERED, not hand-listed.
 //
 // ── Why this walks the filesystem ────────────────────────────────────────
 //
-// This used to be an array of seven paths maintained by hand, and that is a
-// list which is correct exactly until someone adds a page. A new page is then
-// live, linked from the footer and crawlable, but absent from the sitemap —
-// and nothing fails, nothing warns, and the omission is invisible until
-// somebody thinks to compare the two by eye. The Refund & Cancellation page
-// was the first to prove it.
-//
-// So the routes are read from `src/app` itself: every directory that contains
-// a `page.tsx` IS a route, which is the App Router's own rule, so the sitemap
-// cannot disagree with what the site actually serves. Add a page and it is in
-// the sitemap on the next build with no edit here.
+// The routes come from `discoverRoutes` in lib/site-routes, which reads
+// `src/app` itself: every directory containing a `page` module IS a route,
+// which is the App Router's own rule, so the sitemap cannot disagree with
+// what the site serves. Add a page and it appears here on the next build with
+// no edit to this file. That module carries the full rationale and the list
+// of what it deliberately skips; it lives there rather than here because
+// lib/solutions also needs it, to check that the internal links on the twelve
+// landing pages point at pages that exist.
 //
 // This runs at build time on the server (the sitemap is static), so reading
 // the directory is free and never happens on a request.
 //
-// ── What is deliberately excluded ────────────────────────────────────────
-//
-// `api/` is a route but not a page. Route GROUPS — `(marketing)` — and
-// dynamic segments — `[id]`, `[...slug]` — are not URLs as written, and the
-// private `_folder` convention is not routable at all. `not-found.tsx` is not
-// a `page.tsx` and so never appears. If a dynamic route is ever added, it has
-// to be enumerated explicitly: a sitemap cannot invent its parameters, and
-// `DYNAMIC_SEGMENT` below makes that a visible skip rather than a wrong URL.
+// Dynamic segments are skipped by discovery — a sitemap cannot invent a
+// parameter — so `/blog/[slug]` contributes nothing on its own and the
+// articles are enumerated from the published collection below.
 //
 // When no real domain is configured the sitemap is empty rather than full of
 // localhost URLs — see robots.ts, which stops advertising it at the same time.
-
-/** The App Router directory this site's routes are read from. */
-const APP_DIR = path.join(process.cwd(), "src", "app");
-
-/** `[id]`, `[...slug]`, `[[...opt]]` — a parameterised segment. */
-const DYNAMIC_SEGMENT = /^\[.*\]$/;
-
-/** `(marketing)` — organises files without appearing in the URL. */
-const ROUTE_GROUP = /^\(.*\)$/;
-
-/** Directory names that are never part of the public page tree. */
-const NOT_A_PAGE = new Set(["api"]);
-
-/**
- * Every static page route under `src/app`, as URL paths.
- *
- * Returns "/" for `src/app/page.tsx` and "/features" for
- * `src/app/features/page.tsx`. A route group contributes nothing to the path
- * but is still descended into, which is how `(marketing)/about-us/page.tsx`
- * would correctly yield "/about-us".
- */
-function discoverRoutes(dir = APP_DIR, prefix = ""): string[] {
-  let entries;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    // The directory not being readable must not fail a build. An empty
-    // sitemap is a recoverable mistake; a failed deploy of an otherwise
-    // correct site is not a trade worth making — the same reasoning as the
-    // origin warning in lib/site-config.
-    return [];
-  }
-
-  const found: string[] = [];
-
-  // A directory is a route only if it holds a page. `.tsx` and `.ts` both
-  // count, because either is a valid page module.
-  if (entries.some((e) => e.isFile() && /^page\.(tsx|ts|jsx|js)$/.test(e.name))) {
-    found.push(prefix === "" ? "/" : prefix);
-  }
-
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const name = entry.name;
-    if (name.startsWith("_") || name.startsWith(".")) continue;
-    if (NOT_A_PAGE.has(name)) continue;
-    // A parameterised route has no single URL, so it is skipped rather than
-    // guessed at. Enumerate it here explicitly if one is ever added.
-    if (DYNAMIC_SEGMENT.test(name)) continue;
-
-    found.push(
-      ...discoverRoutes(
-        path.join(dir, name),
-        // A route group adds a folder but not a path segment.
-        ROUTE_GROUP.test(name) ? prefix : `${prefix}/${name}`,
-      ),
-    );
-  }
-
-  return found;
-}
 
 /**
  * How often a page really changes, and how much it matters, by path.
@@ -118,6 +49,25 @@ const HINTS: Record<string, { changeFrequency: MetadataRoute.Sitemap[number]["ch
   "/terms-and-conditions": { changeFrequency: "yearly", priority: 0.3 },
   "/refund-and-cancellation": { changeFrequency: "yearly", priority: 0.3 },
 };
+
+/**
+ * The twelve landing pages, hinted from the collection rather than listed.
+ *
+ * Twelve more entries typed into `HINTS` by hand would be twelve chances to
+ * mistype a slug, and a mistyped key does not fail — it silently falls
+ * through to `FALLBACK` while looking like it was tuned. Reading them off the
+ * collection also means the next page added gets the right hint for free.
+ *
+ * Solutions sit a notch above portals because a solution page is the one a
+ * search result should land on; a portal tour is a page somebody reaches from
+ * it. Both sit below /features, which is still the shelf they hang from.
+ */
+const LANDING_HINTS = Object.fromEntries(
+  ALL_LANDING_PAGES.map((p) => [
+    `/${p.slug}`,
+    { changeFrequency: "monthly" as const, priority: p.group === "solution" ? 0.8 : 0.75 },
+  ]),
+);
 
 const FALLBACK = { changeFrequency: "monthly" as const, priority: 0.5 };
 
@@ -151,7 +101,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .sort((a, b) => (a === "/" ? -1 : b === "/" ? 1 : a.localeCompare(b)))
     .map((route) => ({
       url: absolute(route),
-      ...(HINTS[route] ?? FALLBACK),
+      ...(HINTS[route] ?? LANDING_HINTS[route] ?? FALLBACK),
       // The listing genuinely changes when a post is added or revised, and
       // nothing else makes it change. That is a real date.
       ...(route === "/blog" ? { lastModified: blogLastModified() } : {}),

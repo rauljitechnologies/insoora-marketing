@@ -5,7 +5,7 @@ export const post: Post = {
   title: "Insurance Agency Management: A Practical Guide for Agents",
   metaTitle: "Insurance Agency Management: A Practical Guide for Agents",
   description:
-    "How a small insurance agency actually runs: the book of business, sub-agent handovers, renewal pipelines, commission tracking and the handful of systems worth having before you grow.",
+    "How a small insurance agency actually runs: the book of business, sub-agent handovers, renewal pipelines, and the systems worth having before you grow.",
   excerpt:
     "The hard part of running an agency is not selling. It is that everything you sold stays your responsibility — and the number of things you are responsible for only ever goes up.",
   published: "2026-10-30",
@@ -17,6 +17,7 @@ export const post: Post = {
   related: [
     "track-insurance-policy-renewals-and-important-dates",
     "organize-insurance-policy-documents-digitally",
+    "best-insurance-management-software-india",
   ],
   sections: [
     {

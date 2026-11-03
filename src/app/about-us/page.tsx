@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 export const metadata = pageMetadata({
   title: "About Us",
   description:
-    "Insoora is insurance policy management software for Indian insurance agents: it reads policy PDFs, files them under the customer and tracks renewals. Built in Godhra, Gujarat, by Raulji Technologies Private Limited.",
+    "Insoora is insurance policy management software for Indian agents, built in Godhra, Gujarat by Raulji Technologies Private Limited.",
   path: "/about-us",
 });
 

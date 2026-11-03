@@ -17,6 +17,7 @@ export const post: Post = {
   related: [
     "organize-insurance-policy-documents-digitally",
     "track-insurance-policy-renewals-and-important-dates",
+    "what-is-insurance-policy-management-software",
   ],
   sections: [
     {

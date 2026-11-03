@@ -113,15 +113,41 @@ export interface Post {
   related: string[];
 }
 
-/** The shelves. Kept to three: a label only earns its place if it actually
- *  divides the collection, and five posts do not support more than this. */
+/** The shelves.
+ *
+ *  Three, until the collection reached twelve articles. A label only earns
+ *  its place if it actually divides the collection, and five posts did not
+ *  support a fourth — but three of the new articles are buyer's guides, which
+ *  is a genuinely different kind of reading from "here is how to do the work"
+ *  and from "here is how the machinery works". Someone comparing options is
+ *  not looking for the same shelf as someone chasing a renewal.
+ *
+ *  Still four and not six. "Choosing software" absorbs the comparisons and
+ *  the evaluation guides; splitting it further would be labelling for its own
+ *  sake, and the group nav on the listing page has to fit on one line. */
 export const CATEGORIES = {
   "agent-workflow": "For agents",
   "policyholder": "For policyholders",
   "how-it-works": "How it works",
+  "choosing": "Choosing software",
 } as const;
 
 export type PostCategory = keyof typeof CATEGORIES;
 
-/** The named original illustrations. One per article. */
-export type PostArt = "filing" | "agency" | "renewals" | "wallet" | "ocr";
+/** The named original illustrations. One per article, and no two articles
+ *  share one — a set of twelve cards where three carry the same drawing is a
+ *  set that looks generated. See `blog-art.tsx` for the figures themselves and
+ *  for why they are drawn rather than photographed. */
+export type PostArt =
+  | "filing"
+  | "agency"
+  | "renewals"
+  | "wallet"
+  | "ocr"
+  | "buying"
+  | "pipeline"
+  | "crm"
+  | "lines"
+  | "keyboard"
+  | "dashboard"
+  | "grid";

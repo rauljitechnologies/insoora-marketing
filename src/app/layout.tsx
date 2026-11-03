@@ -13,6 +13,7 @@ import { Analytics, CookieSettingsButton } from "@/components/marketing/analytic
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
+import { PORTAL_PAGES, SOLUTION_PAGES } from "@/lib/solutions";
 import "./globals.css";
 
 // Site-wide metadata.
@@ -78,74 +79,131 @@ const inter = Inter({
 // design's dark footer. The portals have their own shell
 // (`components/portal/chrome`) and share nothing with this.
 
-// "Resources" is a dropdown because it is the shelf the next few pages go on.
+// ── The header ───────────────────────────────────────────────────────────
 //
-// Its trigger is a button, so none of the child URLs is a link in the header.
-// That is correct for assistive technology, but it means the footer does the
-// crawlable linking for them — every child appears there too.
+// Five top-level entries, which is what it was before twelve pages were
+// added, and the constraint that keeps it at five is physical rather than
+// stylistic. The bar is one non-wrapping flex row and its tightest band is
+// just below `shell` (1000px): five labels plus both actions plus the brand
+// lockup inside 936px of container, which is already why the lockup drops its
+// tagline there (see components/brand.tsx). A sixth label measures about
+// ninety pixels and there are not ninety pixels.
+//
+// So the twelve new pages went into the existing shelves rather than onto the
+// bar. "Product" grew from three entries to seven — the three pages that
+// describe the product, and the four that each describe one portal — and a
+// new "Solutions" shelf carries the eight keyword-led pages in two columns.
+// "About Us" moved into "Company" alongside Blog, the FAQ and the legal
+// documents, which is what paid for "Solutions".
+//
+// A dropdown trigger is a BUTTON, so none of these child URLs is a link in
+// the header. The footer does the crawlable linking for all of them; see
+// FOOTER_COLUMNS and FOOTER_SHELVES below, and the note on `SiteNavItem`.
+
+/** The four portal tours, as header rows. Read from the collection, so a new
+ *  one cannot be added without appearing in the navigation. */
+const PORTAL_LINKS = PORTAL_PAGES.map((p) => ({
+  href: `/${p.slug}`,
+  label: p.nav.label,
+  hint: p.nav.hint,
+  group: "By portal",
+}));
+
+/** The eight solution pages, as header rows. Same reasoning. */
+const SOLUTION_LINKS = SOLUTION_PAGES.map((p) => ({
+  href: `/${p.slug}`,
+  label: p.nav.label,
+  hint: p.nav.hint,
+}));
+
 const NAV: SiteNavItem[] = [
   { href: "/", label: "Home" },
-  // "Product" is a dropdown for the same reason "Resources" is: there are
-  // now three pages describing the product rather than one, and a fifth and
-  // sixth top-level link cannot be bought out of this header's margin (see
-  // the note below). Grouping them keeps the bar at five entries — exactly
-  // what it was — while making /how-it-works and /product-in-action
-  // reachable from every page.
-  //
-  // Its `href` is /features, which is both the shelf's own landing page and
-  // the first child, so the group lights up as current on all three.
   {
+    // `href` is /features, which is both the shelf's own landing page and the
+    // first child, so the group lights up as current on all seven.
     href: "/features",
     label: "Product",
+    menuWidth: "w-[21rem]",
     children: [
-      { href: "/features", label: "Features", hint: "Every capability, and where each one stops" },
-      { href: "/how-it-works", label: "How It Works", hint: "The seven steps a policy PDF takes" },
+      {
+        href: "/features",
+        label: "Features",
+        hint: "Every capability, and where each one stops",
+        group: "Overview",
+      },
+      {
+        href: "/how-it-works",
+        label: "How It Works",
+        hint: "The seven steps a policy PDF takes",
+        group: "Overview",
+      },
       {
         href: "/product-in-action",
         label: "Product in Action",
         hint: "Every screen, drawn with sample data",
+        group: "Overview",
       },
+      ...PORTAL_LINKS,
     ],
   },
   {
-    href: "/faq",
-    label: "Resources",
+    // The shelf's own href is its first child. There is no /solutions index
+    // page: inventing one to sit above eight pages that already link to each
+    // other would be a page with nothing of its own to say, and the brief
+    // rules out pages created to fill a slot.
+    href: `/${SOLUTION_PAGES[0].slug}`,
+    label: "Solutions",
+    // Two columns, because eight rows with hints in one column is about 480px
+    // of panel — taller than the space under the header on a laptop, which is
+    // the point at which a dropdown stops being one.
+    menuWidth: "w-[34rem]",
+    menuColumns: 2,
+    children: SOLUTION_LINKS,
+  },
+  {
+    href: "/about-us",
+    label: "Company",
+    menuWidth: "w-[19rem]",
     children: [
-      // Blog leads the shelf rather than becoming a sixth top-level link.
-      // The header is one non-wrapping flex row, and the band just above
-      // `shell` (1000px) is already its tightest — five links plus both
-      // actions inside 936px of container, which is why the brand lockup
-      // drops its tagline there (see components/brand.tsx). A sixth link
-      // would be bought out of that margin. "Resources" is defined as the
-      // shelf the content pages go on, and a blog is exactly that.
-      { href: "/blog", label: "Blog", hint: "Guides on filing, renewals and extraction" },
-      { href: "/faq", label: "FAQ", hint: "How extraction, access and renewals work" },
-      { href: "/privacy-policy", label: "Privacy Policy", hint: "What is stored and who can reach it" },
-      { href: "/terms-and-conditions", label: "Terms & Conditions", hint: "The terms of using Insoora" },
+      { href: "/about-us", label: "About Us", hint: "The company behind Insoora", group: "Company" },
+      { href: "/blog", label: "Blog", hint: "Guides on filing, renewals and extraction", group: "Learn" },
+      { href: "/faq", label: "FAQ", hint: "How extraction, access and renewals work", group: "Learn" },
+      {
+        href: "/privacy-policy",
+        label: "Privacy Policy",
+        hint: "What is stored and who can reach it",
+        group: "Legal",
+      },
+      {
+        href: "/terms-and-conditions",
+        label: "Terms & Conditions",
+        hint: "The terms of using Insoora",
+        group: "Legal",
+      },
       {
         href: "/refund-and-cancellation",
         label: "Refund & Cancellation",
         hint: "Cancelling a plan, and how refunds are handled",
+        group: "Legal",
       },
     ],
   },
-  { href: "/about-us", label: "About Us" },
   { href: "/contact-us", label: "Contact Us" },
 ];
 
 // Footer columns, from the design.
 //
-// Five of the design's links still point at pages that do not exist — Blog,
-// Help centre, Getting started guide, Pricing, Data security. They are left
-// out rather than pointed at a placeholder: a footer link that 404s is worse
-// than a shorter footer, and inventing those pages to fill the slots would be
-// inventing content.
+// Three of the design's links still point at pages that do not exist — Help
+// centre, Getting started guide, Pricing. They are left out rather than
+// pointed at a placeholder: a footer link that 404s is worse than a shorter
+// footer, and inventing those pages to fill the slots would be inventing
+// content. Pricing in particular cannot be written, because no price is
+// published anywhere on this site.
 //
-// Refund Policy was the sixth, and it is now real: the product takes money, so
-// a paid service with no published cancellation terms was a genuine gap rather
-// than a slot in a template. It is a page written against what the platform
-// actually does, and it says on its face that its commercial terms are still
-// awaiting business approval.
+// Blog and Refund Policy were on that list and are now real, and Data
+// security has been answered by a different route: the security section on
+// the home page and the privacy policy carry it, and /admin-portal now sets
+// out who operates the platform and what they can reach.
 const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
   {
     t: "Product",
@@ -190,6 +248,35 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
       { href: "/terms-and-conditions", label: "Terms & Conditions" },
       { href: "/refund-and-cancellation", label: "Refund & Cancellation" },
     ],
+  },
+];
+
+/**
+ * The long tail, as two wrapped rows rather than two more columns.
+ *
+ * Twelve more links had to become crawlable somewhere, because every one of
+ * them is a child of a header dropdown whose trigger is a button — see the
+ * note above NAV. Two more columns was the obvious move and the wrong one:
+ * the column band is deliberately flat (nothing in it is taller than its
+ * neighbours, which is why the office is a column of plain text rather than
+ * a card), and a column of eight links beside columns of three would put a
+ * 130px hole under half the footer.
+ *
+ * So they get a band of their own below the columns: a small label and a
+ * wrapped row of links, which costs about forty pixels per row and keeps the
+ * grid above it intact. Both rows are read from the collection, so a page
+ * cannot be published without a crawlable link to it.
+ */
+const FOOTER_SHELVES: { t: string; tone: string; links: { href: string; label: string }[] }[] = [
+  {
+    t: "Solutions",
+    tone: "text-[#7DD3FC]",
+    links: SOLUTION_PAGES.map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
+  },
+  {
+    t: "Portals",
+    tone: "text-[#FDE68A]",
+    links: PORTAL_PAGES.map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
   },
 ];
 
@@ -347,7 +434,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           {/* Four link columns of ~177px — enough for "Terms & Conditions" —
               and a wider fifth so the landmark line of the address does not
               wrap. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-9 sm:grid-cols-3 shell:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.25fr)] shell:gap-x-8">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 pb-7 pt-9 sm:grid-cols-3 shell:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.25fr)] shell:gap-x-8">
             {FOOTER_COLUMNS.map((c) => (
               <nav key={c.t} aria-label={c.t} className="flex min-w-0 flex-col gap-3">
                 <strong className={cn("text-[13px] uppercase tracking-[0.08em]", c.tone)}>{c.t}</strong>
@@ -419,6 +506,33 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 <ArrowRight className="size-3.5" />
               </a>
             </address>
+          </div>
+
+          {/* The long-tail shelves. One label and a wrapped row each, divided
+              from the columns above by the same hairline the other bands use.
+              `w-max` on each link keeps the tap target the width of the label
+              rather than letting the row's gap become part of it — the same
+              rule as FOOTER_LINK, for the same WCAG 2.2 reason. */}
+          <div className="flex flex-col gap-4 border-t border-white/10 pt-6">
+            {FOOTER_SHELVES.map((shelf) => (
+              <nav key={shelf.t} aria-label={shelf.t} className="flex flex-col gap-2 sm:flex-row sm:gap-5">
+                <strong
+                  className={cn(
+                    "flex-none text-[13px] uppercase tracking-[0.08em] sm:w-24 sm:pt-0.5",
+                    shelf.tone,
+                  )}
+                >
+                  {shelf.t}
+                </strong>
+                <span className="flex flex-wrap gap-x-5 gap-y-2">
+                  {shelf.links.map((l) => (
+                    <Link key={l.href} href={l.href} className={FOOTER_LINK}>
+                      {l.label}
+                    </Link>
+                  ))}
+                </span>
+              </nav>
+            ))}
           </div>
 
           {/* The four controls as one rule-to-rule strip: spread across the

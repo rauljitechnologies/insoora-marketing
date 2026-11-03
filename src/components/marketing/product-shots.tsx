@@ -1,4 +1,4 @@
-import { Check, Download, FileText, Minus, Search, ShieldCheck, TriangleAlert, Upload } from "lucide-react";
+import { Bell, Check, Clock, Download, FileText, Minus, Search, ShieldCheck, TriangleAlert, Upload, UsersRound } from "lucide-react";
 import { SampleTag } from "@/components/marketing/section";
 import { cn } from "@/lib/utils";
 
@@ -902,5 +902,263 @@ export function CustomerMobileShot({ className }: { className?: string }) {
         <SampleTag />
       </figcaption>
     </figure>
+  );
+}
+
+// ── The third set ────────────────────────────────────────────────────────
+//
+// Added for the four portal pages (/agent-portal, /customer-portal,
+// /agency-management-portal, /admin-portal). The existing fourteen screens
+// cover what a policy does; these cover who is looking at it — a team, a
+// back office, a policyholder's own renewal list.
+//
+// Same rules as the two sets above: hand-built from the tokens, `aria-hidden`
+// inside a labelled `Frame`, every value invented, the same cast of fictional
+// customers, and each one shaped like the thing it is rather than being the
+// policy table with different headings.
+//
+// On the admin screen specifically: it shows counts, queues and agency names,
+// and deliberately shows NO infrastructure. No storage bucket, no gateway
+// key, no provider endpoint, no internal hostname. The brief rules those out
+// of public marketing material and they would be a genuine disclosure rather
+// than a design choice — the back office has screens for all of them and
+// none of them belongs on a public page.
+
+const TEAM: { name: string; initials: string; role: string; caps: string[]; uploads: string }[] = [
+  { name: "Asha Mehta", initials: "AM", role: "Main agent", caps: ["Everything"], uploads: "412" },
+  { name: "Vikram Joshi", initials: "VJ", role: "Sub-agent", caps: ["Upload", "Export"], uploads: "168" },
+  { name: "Sneha Patel", initials: "SP", role: "Sub-agent", caps: ["Upload"], uploads: "93" },
+  { name: "Imran Shaikh", initials: "IS", role: "Sub-agent", caps: ["View only"], uploads: "0" },
+];
+
+/**
+ * The agency's team screen.
+ *
+ * Drawn with the capability chips visible, because the chips ARE the screen:
+ * a sub-agent row without them is just a name, and what an agency actually
+ * decides here is who may upload and who may export. The fourth row carries
+ * "View only" on purpose — an agency that cannot grant read-only access has
+ * not really delegated anything.
+ */
+export function SubAgentTeamShot() {
+  return (
+    <Frame label="Agent portal — Sub-Agents">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+          <UsersRound className="size-3.5 text-primary" />
+          4 people on this agency
+        </span>
+        <span className="ml-auto rounded-lg px-2.5 py-1 text-[10px] font-bold text-white" style={{ backgroundImage: "var(--gradient-brand)" }}>
+          Add sub-agent
+        </span>
+      </div>
+      <ul className="divide-y divide-border">
+        {TEAM.map((m) => (
+          <li key={m.name} className="flex items-center gap-3 px-4 py-2.5">
+            <span className="grid size-8 flex-none place-items-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">
+              {m.initials}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[12px] font-semibold text-foreground">{m.name}</span>
+              <span className="block text-[10px] text-muted">{m.role}</span>
+            </span>
+            <span className="hidden flex-none gap-1 sm:flex">
+              {m.caps.map((c) => (
+                <span
+                  key={c}
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[9px] font-semibold",
+                    c === "View only" ? "bg-surface text-muted" : "bg-secondary-soft text-[#075985]",
+                  )}
+                >
+                  {c}
+                </span>
+              ))}
+            </span>
+            <span className="w-12 flex-none text-right text-[11px] tabular-nums text-muted">{m.uploads}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="border-t border-border px-4 py-2.5 text-[10px] leading-relaxed text-muted">
+        Every policy a sub-agent uploads belongs to the agency, and the plan and credits are the
+        agency&apos;s. A sub-agent has no plan of its own.
+      </p>
+    </Frame>
+  );
+}
+
+const ADMIN_TILES: { label: string; value: string; sub: string; tone: string }[] = [
+  { label: "Agencies", value: "38", sub: "6 added this month", tone: "text-primary" },
+  { label: "Policies processed", value: "14,206", sub: "all agencies, all time", tone: "text-foreground" },
+  { label: "Awaiting review", value: "47", sub: "fields a human must confirm", tone: "text-warning" },
+  { label: "Website enquiries", value: "9", sub: "unanswered", tone: "text-secondary" },
+];
+
+const ADMIN_QUEUE: { agency: string; note: string; state: string; cls: string }[] = [
+  { agency: "Mehta Insurance Services", note: "3 documents borderline — accept or reject", state: "Validation", cls: "bg-warning-soft text-warning" },
+  { agency: "Shree Associates", note: "New insurer layout, 11 corrections by hand", state: "Template", cls: "bg-primary-soft text-primary" },
+  { agency: "Patel & Sons", note: "Plan renews in 8 days", state: "Billing", cls: "bg-secondary-soft text-[#075985]" },
+];
+
+/**
+ * The back office, as an operator sees it.
+ *
+ * Tiles and a work queue, not a policy table: an administrator is not
+ * managing a book of business, they are deciding which of 38 agencies needs
+ * something done today. That is a different shape of screen and drawing it
+ * as the agent list with more rows would have misrepresented the job.
+ */
+export function AdminConsoleShot() {
+  return (
+    <Frame label="Admin — Business overview">
+      <div className="grid grid-cols-2 gap-2 border-b border-border p-3 sm:grid-cols-4">
+        {ADMIN_TILES.map((t) => (
+          <div key={t.label} className="rounded-xl border border-border bg-surface p-2.5">
+            <span className="block text-[9px] font-semibold uppercase tracking-[0.06em] text-muted">
+              {t.label}
+            </span>
+            <span className={cn("mt-1 block text-[17px] font-extrabold leading-none tabular-nums", t.tone)}>
+              {t.value}
+            </span>
+            <span className="mt-1 block text-[9px] leading-snug text-muted">{t.sub}</span>
+          </div>
+        ))}
+      </div>
+      <div className="p-3">
+        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.06em] text-muted">
+          <Clock className="size-3" />
+          Needs an operator
+        </span>
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {ADMIN_QUEUE.map((q) => (
+            <li key={q.agency} className="flex items-start gap-2.5 rounded-xl border border-border p-2.5">
+              <span className={cn("flex-none rounded-full px-2 py-0.5 text-[9px] font-semibold", q.cls)}>
+                {q.state}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[11px] font-semibold text-foreground">{q.agency}</span>
+                <span className="block text-[9px] leading-snug text-muted">{q.note}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2.5 text-[9px] leading-relaxed text-muted">
+          Agency names, counts and queues are invented. Platform configuration, storage and payment
+          settings are back-office screens and are not shown on this website.
+        </p>
+      </div>
+    </Frame>
+  );
+}
+
+const CUSTOMER_ALERTS: { t: string; sub: string; chip: string; cls: string; bar: string; pct: number }[] = [
+  { t: "Car · Bajaj Allianz", sub: "GJ06KQ9835 · expires 19 Dec 2026", chip: "45 days", cls: "bg-danger-soft text-danger", bar: "bg-[#DC2626]", pct: 88 },
+  { t: "Health · Niva Bupa", sub: "Family floater · expires 14 Jul 2027", chip: "252 days", cls: "bg-success-soft text-success", bar: "bg-[#16A34A]", pct: 31 },
+  { t: "Term · HDFC Life", sub: "Annual · expires 10 Jan 2027", chip: "67 days", cls: "bg-warning-soft text-warning", bar: "bg-[#EA580C]", pct: 72 },
+];
+
+/**
+ * What the policyholder's own renewal view looks like.
+ *
+ * The agent's renewals screen is a 30-day working list; this is the other
+ * side of the same fact, and it is not a list of tasks — a customer cannot
+ * renew anything here. It shows how long each cover has left and which
+ * document it came from, which is the whole of what a read-only portal can
+ * honestly offer.
+ */
+export function CustomerRenewalsShot() {
+  return (
+    <Frame label="Customer portal — Renewals & alerts">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+          <Bell className="size-3.5 text-accent-orange" />
+          3 policies, 1 expiring soon
+        </span>
+        <span className="ml-auto hidden rounded-lg border border-border px-2.5 py-1 text-[10px] font-medium text-muted sm:inline-flex">
+          Expiring in 30 days
+        </span>
+      </div>
+      <ul className="divide-y divide-border">
+        {CUSTOMER_ALERTS.map((a) => (
+          <li key={a.t} className="px-4 py-3">
+            <span className="flex items-center gap-2">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[12px] font-semibold text-foreground">{a.t}</span>
+                <span className="block truncate text-[10px] text-muted">{a.sub}</span>
+              </span>
+              <span className={cn("flex-none rounded-full px-2 py-0.5 text-[9px] font-bold", a.cls)}>
+                {a.chip} left
+              </span>
+            </span>
+            <span className="mt-2 block h-1 overflow-hidden rounded-full bg-border">
+              <span className={cn("block h-full rounded-full", a.bar)} style={{ width: `${a.pct}%` }} />
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="border-t border-border px-4 py-2.5 text-[10px] leading-relaxed text-muted">
+        Every date is read off the policy document itself. The portal is read-only — renewing is
+        still a conversation with your agent.
+      </p>
+    </Frame>
+  );
+}
+
+const CUSTOMER_ROWS: { name: string; mobile: string; policies: string; portal: "active" | "invited" | "none" }[] = [
+  { name: "Rahul Mehta", mobile: "+91 •••• ••3312", policies: "4 policies", portal: "active" },
+  { name: "Kiran Rao", mobile: "+91 •••• ••8847", policies: "2 policies", portal: "invited" },
+  { name: "Priya Shah", mobile: "+91 •••• ••1206", policies: "6 policies", portal: "active" },
+  { name: "Nikhil Desai", mobile: "+91 •••• ••9574", policies: "1 policy", portal: "none" },
+];
+
+const PORTAL_STATE: Record<"active" | "invited" | "none", { text: string; cls: string }> = {
+  active: { text: "Portal active", cls: "bg-success-soft text-success" },
+  invited: { text: "Not signed in yet", cls: "bg-warning-soft text-warning" },
+  none: { text: "No login", cls: "bg-surface text-muted" },
+};
+
+/**
+ * The customer list — the CRM half of the product.
+ *
+ * Drawn with the portal state on each row rather than an address and an email,
+ * because that column is the thing an agent acts on: a policyholder with no
+ * login is a policyholder who still rings you for a copy of their own policy.
+ *
+ * The mobile numbers are masked in the drawing even though they are invented.
+ * A public page showing a full phone number next to a named individual teaches
+ * a reader that this product displays phone numbers that way, and the habit is
+ * worth more than the four digits.
+ */
+export function AgentCustomersShot() {
+  return (
+    <Frame label="Agent portal — Customers">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <span className="flex h-8 flex-1 items-center gap-2 rounded-lg border border-border bg-surface px-2.5 text-xs text-muted">
+          <Search className="size-3.5" />
+          Search by name or mobile number
+        </span>
+        <span className="hidden h-8 items-center rounded-lg border border-border px-2.5 text-xs font-medium text-muted sm:inline-flex">
+          Portal: any
+        </span>
+      </div>
+      <ul className="divide-y divide-border">
+        {CUSTOMER_ROWS.map((c) => (
+          <li key={c.name} className="flex items-center gap-3 px-4 py-2.5">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[12px] font-semibold text-foreground">{c.name}</span>
+              <span className="block font-mono text-[10px] text-muted">{c.mobile}</span>
+            </span>
+            <span className="hidden flex-none text-[11px] text-muted sm:block">{c.policies}</span>
+            <span className={cn("flex-none rounded-full px-2 py-0.5 text-[9px] font-semibold", PORTAL_STATE[c.portal].cls)}>
+              {PORTAL_STATE[c.portal].text}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="border-t border-border px-4 py-2.5 text-[10px] leading-relaxed text-muted">
+        The mobile number is how an uploaded policy finds its customer, and how a policyholder
+        registers for their own portal.
+      </p>
+    </Frame>
   );
 }

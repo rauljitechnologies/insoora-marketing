@@ -1,9 +1,16 @@
-import type { Post, PostBlock } from "./types";
+import { CATEGORIES, type Post, type PostBlock, type PostCategory } from "./types";
 import { post as organizing } from "./posts/organize-insurance-policy-documents-digitally";
 import { post as agency } from "./posts/insurance-agency-management-practical-guide";
 import { post as renewals } from "./posts/track-insurance-policy-renewals-and-important-dates";
 import { post as policyholders } from "./posts/how-customers-can-keep-insurance-policies-organized";
 import { post as ocr } from "./posts/ocr-in-insurance-how-digital-policy-extraction-works";
+import { post as buyersGuide } from "./posts/best-insurance-management-software-india";
+import { post as whatIsIt } from "./posts/what-is-insurance-policy-management-software";
+import { post as crmGuide } from "./posts/best-crm-software-for-insurance-agents-india";
+import { post as generalFeatures } from "./posts/general-insurance-management-software-features";
+import { post as dataEntry } from "./posts/reduce-manual-insurance-policy-data-entry";
+import { post as oneDashboard } from "./posts/manage-multiple-insurance-policies-one-dashboard";
+import { post as excelVsCrm } from "./posts/excel-vs-insurance-crm-software";
 
 export * from "./types";
 
@@ -19,14 +26,29 @@ export * from "./types";
 //
 // Adding a post is two steps: write the file, add it below.
 
-const ALL: Post[] = [organizing, agency, renewals, policyholders, ocr];
+const ALL: Post[] = [
+  organizing,
+  agency,
+  renewals,
+  policyholders,
+  ocr,
+  buyersGuide,
+  whatIsIt,
+  crmGuide,
+  generalFeatures,
+  dataEntry,
+  oneDashboard,
+  excelVsCrm,
+];
 
 /**
  * Every published post, newest first.
  *
- * Ties are broken by title so the order is stable between builds — these five
- * were published on the same day, and an unstable sort would reshuffle the
- * listing page and the sitemap on every deploy for no reason.
+ * Ties are broken by title so the order is stable between builds. That is
+ * load-bearing rather than tidy: the first five were published on one day and
+ * the next seven on another, so without the tie-break the listing page and the
+ * sitemap would reshuffle on every deploy for no reason — and a sitemap that
+ * changes while nothing changed tells a crawler nothing.
  */
 export const POSTS: Post[] = [...ALL].sort(
   (a, b) => b.published.localeCompare(a.published) || a.title.localeCompare(b.title),
@@ -150,6 +172,35 @@ export function readingMinutes(post: Post): number {
 
   const words = text.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 220));
+}
+
+/**
+ * The collection grouped onto its shelves, in `CATEGORIES` order.
+ *
+ * Added when the collection reached twelve. Five articles are a list; twelve
+ * are a list nobody scans, and the listing page was leading with one featured
+ * card and then eleven identical ones in a flat grid — which also left a
+ * half-empty row at the bottom, because eleven is odd.
+ *
+ * Grouping solves both. It gives a reader arriving from a search result a way
+ * to find the two articles near the one they came for, and it gives the page
+ * four headings and a contents nav instead of one undifferentiated wall.
+ *
+ * `exclude` drops the featured post, so the article at the top of the page
+ * does not also appear in its shelf below. Empty groups are dropped rather
+ * than rendered as a heading with nothing under it, so a category can be
+ * declared before it has articles.
+ */
+export function postsByCategory(
+  exclude?: string,
+): { id: PostCategory; label: string; posts: Post[] }[] {
+  return (Object.keys(CATEGORIES) as PostCategory[])
+    .map((id) => ({
+      id,
+      label: CATEGORIES[id],
+      posts: POSTS.filter((p) => p.category === id && p.slug !== exclude),
+    }))
+    .filter((group) => group.posts.length > 0);
 }
 
 /** A date as a reader should see it: "30 October 2026". */
