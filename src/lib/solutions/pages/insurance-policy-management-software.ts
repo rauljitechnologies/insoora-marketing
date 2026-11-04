@@ -29,6 +29,7 @@ export const page: SolutionPage = {
     label: "Policy management",
     hint: "Policy records built from the document itself",
   },
+  footerColumn: "product",
   primaryKeyword: "Insurance Policy Management Software",
   secondaryKeywords: [
     "Insurance Policy Management System",

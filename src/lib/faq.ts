@@ -19,11 +19,11 @@ import type { Accent } from "@/lib/accents";
 /**
  * The shelves the FAQ page groups its answers onto.
  *
- * Fourteen questions in one undivided accordion is a list nobody scans: a
- * reader who came to find out where their data is stored has to read past
- * four answers about extraction to discover whether the question is even
- * answered. Five groups is enough to divide sixteen questions and few
- * enough that the group nav fits on one line.
+ * A long undivided accordion is a list nobody scans: a reader who came to
+ * find out where their data is stored has to read past four answers about
+ * extraction to discover whether the question is even answered. Five groups
+ * is enough to divide the current set and few enough that the group nav fits
+ * on one line.
  *
  * Each carries its own accent, so the FAQ page follows the same
  * one-hue-per-chapter rule as every other page on the site.
@@ -107,6 +107,22 @@ export const FAQS: FaqItem[] = [
     // taken to keep its data in India, and it does not.
     q: "Where is my data stored?",
     a: "Insoora's application, database and document storage run outside India — the application and database are hosted in Singapore, and uploaded PDFs are held in Cloudflare's object storage. We say so plainly because a product built in India for Indian insurers is often assumed to store its data in India. The Privacy Policy sets out the providers involved and what each one does.",
+    category: "privacy",
+  },
+  {
+    // These two answers are the part of the retired /admin-portal page worth
+    // keeping. That page was a public tour of a back office no visitor can
+    // sign into, which is a page that should not exist — but the disclosures
+    // on it were real, and an agency deciding whether to put its book of
+    // business on a platform is entitled to them. The FAQ is where someone
+    // looks for them anyway.
+    q: "Who operates Insoora, and can your staff see my customers' policies?",
+    a: "The platform is operated by Raulji Technologies Private Limited, and yes — staff with the right role can see policy records and documents, because reviewing a failed or borderline extraction is the work that keeps the platform running. Being honest about the shape of it: a back-office session is not scoped to one agency the way an agent session is. The controls on that are role separation rather than a promise — there are five staff roles with genuinely different reach, only one of them can reach payment credentials or change another account's role, revealing a masked customer contact number is a separate permission rather than something every staff account has, and nobody can read your password, which is stored hashed.",
+    category: "privacy",
+  },
+  {
+    q: "Is there a record of what your staff did to my account?",
+    a: "Privileged actions are written to an audit log, and reading that log is itself a separate permission rather than something every staff role holds. Two honest caveats: a log is a record and not a prevention — it tells you after the fact that something happened, and role separation is what narrows who could have done it — and Insoora holds no security certification, has not been penetration tested, and does not yet offer multi-factor authentication on any account.",
     category: "privacy",
   },
   {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Clock } from "lucide-react";
 import { Breadcrumb, Container } from "@/components/marketing/section";
 import { BandPrimaryAction, BandSecondaryAction, ChipLink, CtaBand } from "@/components/marketing/cta";
+import { ExploreLinks, productLinksForCategory } from "@/components/marketing/explore-links";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { ART_ALT, BlogArt } from "@/components/marketing/blog-art";
 import { BlogProse, inline, sectionId } from "@/components/marketing/blog-prose";
@@ -274,6 +275,37 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </Container>
         </section>
       )}
+
+      {/* Where the article's subject lives in the product.
+          
+          Articles linked to other articles and to /features through the CTA
+          band, and to none of the pages that actually cover their subject.
+          Chosen by the article's category rather than per post — see the note
+          in `explore-links`. Two or three links, not a wall: an article that
+          ends in eleven product links has stopped being an article. */}
+      <section className="border-t border-border py-12 sm:py-14">
+        <Container>
+          <h2 className="text-[22px] font-bold tracking-[-0.025em] text-foreground sm:text-[26px]">
+            Where this happens in Insoora
+          </h2>
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
+            The product pages covering what this article is about, each with its own limits stated.
+          </p>
+          <ExploreLinks
+            className="mt-6"
+            items={productLinksForCategory(post.category)}
+            columns={3}
+          />
+          <p className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+            <Link href="/features" className="inline-flex min-h-6 items-center font-semibold text-primary hover:underline">
+              Every feature, with its limits
+            </Link>
+            <Link href="/contact-us" className="inline-flex min-h-6 items-center font-semibold text-primary hover:underline">
+              Ask us a question
+            </Link>
+          </p>
+        </Container>
+      </section>
 
       <CtaBand
         eyebrow="Insoora"

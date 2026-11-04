@@ -277,9 +277,9 @@ export const page: SolutionPage = {
       text: "All nine destinations, including the six that are not agency-specific.",
     },
     {
-      href: "/admin-portal",
-      label: "The back office",
-      text: "The third portal, and what an operator there can see of an agency.",
+      href: "/faq",
+      label: "Who operates the platform",
+      text: "What the back office is, and what an operator there can see of an agency.",
     },
     {
       href: "/insurance-agent-management-software",

@@ -38,9 +38,10 @@ export const page: SolutionPage = {
   ],
   heroShot: "agentDashboard",
   nav: {
-    label: "For solo agents",
+    label: "Agent management",
     hint: "Running a book of business on your own",
   },
+  footerColumn: "solutions",
   primaryKeyword: "Insurance Agent Management Software",
   secondaryKeywords: [
     "Software for Insurance Agents",

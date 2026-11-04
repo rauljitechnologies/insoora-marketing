@@ -68,7 +68,6 @@ export type ShotName =
   | "templateRule"
   | "customerMobile"
   | "subAgentTeam"
-  | "adminConsole"
   | "customerRenewals"
   | "agentCustomers";
 
@@ -220,6 +219,24 @@ export interface SolutionPage {
   heroShot: ShotName;
   /** How this page is named in the header dropdown and the footer. */
   nav: { label: string; hint: string };
+  /**
+   * Which footer column a solution page sits in.
+   *
+   * The footer splits the eight across Product and Solutions rather than
+   * listing them as one column of eight, which would tower over its
+   * neighbours — the column band is deliberately flat. "product" is for the
+   * three that describe the core record (what a policy record is, how it
+   * gets created, how it is organised by customer); "solutions" is for the
+   * five that describe a job done around it.
+   *
+   * Declared per page rather than derived from the array's order. A footer
+   * that changes because somebody reordered an import list is a footer that
+   * will one day be wrong without anybody editing it.
+   *
+   * Required on a solution page, meaningless on a portal tour — the portals
+   * have a column of their own.
+   */
+  footerColumn?: "product" | "solutions";
   /**
    * The one query this page is written to answer.
    *

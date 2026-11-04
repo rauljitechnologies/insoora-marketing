@@ -41,6 +41,7 @@ export const page: SolutionPage = {
     label: "Agency management",
     hint: "One book of business across a team",
   },
+  footerColumn: "solutions",
   primaryKeyword: "Insurance Agency Management Software",
   secondaryKeywords: [
     "Insurance Agency Management System",

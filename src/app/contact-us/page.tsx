@@ -1,11 +1,11 @@
 import { ArrowRight, AtSign, Clock, MapPin, Phone, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
-import { Card, GradientText, PageHead, Section } from "@/components/marketing/section";
+import { Card, Eyebrow, GradientText, H2, PageHead, Section } from "@/components/marketing/section";
 import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
-import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
+import { CONTACT, addressLines, addressOneLine, mapsSearchHref } from "@/lib/contact";
 import { EnquiryForm } from "@/components/marketing/enquiry-form";
 import { SocialLinkList } from "@/components/marketing/social-links";
 import { appHref } from "@/lib/site-config";
@@ -184,6 +184,95 @@ export default function ContactPage() {
               </a>
             </Card>
           </div>
+        </div>
+      </Section>
+
+      {/* ── Company Information ──
+
+          Who you are actually dealing with, in one block, below the form
+          rather than above it: somebody who came here to send a message
+          should reach the form first, and somebody checking whether this is a
+          real business reads to the bottom anyway.
+
+          A definition list, because that is what this is — six label/value
+          pairs — and a <dl> gives a screen reader the pairing that a grid of
+          <div>s only implies. Every value is read from lib/contact, the same
+          module the footer, the Organization schema and the legal documents
+          read, so none of them can drift from the others.
+
+          What is deliberately NOT here: a CIN, a GSTIN, a registered-office
+          claim or a designation for the contact person. None of those has
+          been verified, and the legal documents carry a review flag naming
+          exactly which are still outstanding. A wrong company identifier on a
+          public page is worse than an absent one. */}
+      <Section id="company" tone="surface" className="border-t border-border">
+        <div className="grid gap-8 rail:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] rail:gap-12">
+          <div className="flex flex-col gap-2.5">
+            <Eyebrow accent="purple">Company Information</Eyebrow>
+            <H2>Who you are dealing with</H2>
+            <p className="text-pretty text-base leading-relaxed text-foreground/70">
+              Insoora is managed by {CONTACT.legalEntity}.
+            </p>
+          </div>
+
+          <Card className="p-0 sm:p-0">
+            <dl className="divide-y divide-border">
+              {[
+                { t: "Company", v: CONTACT.legalEntity },
+                { t: "Product", v: "Insoora — Insurance Management Software" },
+                { t: "Contact person", v: CONTACT.contactPerson },
+              ].map((row) => (
+                <div key={row.t} className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4 sm:px-6">
+                  <dt className="text-[13px] font-semibold uppercase tracking-[0.06em] text-muted">
+                    {row.t}
+                  </dt>
+                  <dd className="text-[15px] font-medium text-foreground">{row.v}</dd>
+                </div>
+              ))}
+
+              <div className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4 sm:px-6">
+                <dt className="text-[13px] font-semibold uppercase tracking-[0.06em] text-muted">
+                  Location
+                </dt>
+                <dd className="text-[15px] leading-relaxed text-foreground">
+                  <address className="not-italic">{addressOneLine()}.</address>
+                </dd>
+              </div>
+
+              <div className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4 sm:px-6">
+                <dt className="text-[13px] font-semibold uppercase tracking-[0.06em] text-muted">
+                  Phone
+                </dt>
+                <dd>
+                  <a
+                    href={CONTACT.phoneHref}
+                    className="inline-flex min-h-6 items-center text-[15px] font-semibold text-primary hover:underline"
+                  >
+                    {CONTACT.phone}
+                  </a>
+                </dd>
+              </div>
+
+              <div className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4 sm:px-6">
+                <dt className="text-[13px] font-semibold uppercase tracking-[0.06em] text-muted">
+                  Company website
+                </dt>
+                <dd>
+                  {/* `rel="noopener noreferrer"` on every outbound link — see
+                      the note on `companyUrl` in lib/contact. */}
+                  <a
+                    href={CONTACT.companyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-6 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline"
+                  >
+                    rauljitechnologies.com
+                    <ArrowRight aria-hidden className="size-3.5" />
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </Card>
         </div>
       </Section>
     </>
