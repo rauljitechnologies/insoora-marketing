@@ -1,8 +1,21 @@
 # Insoora — marketing site
 
-The seven public pages (`/`, `/features`, `/faq`, `/about-us`, `/contact-us`,
-`/privacy-policy`, `/terms-and-conditions`), as their own Next.js app so they
-can be deployed and scaled apart from the product.
+The public website, as its own Next.js app so it can be deployed and scaled
+apart from the product. Twenty-three static pages plus twelve articles:
+
+| Shelf | Pages |
+| --- | --- |
+| Core | `/`, `/features`, `/how-it-works`, `/product-in-action`, `/faq`, `/about-us`, `/contact-us` |
+| Solutions | `/insurance-policy-management-software`, `/insurance-policy-entry-software`, `/insurance-crm-software`, `/general-insurance-management-software`, `/insurance-renewal-management-software`, `/insurance-document-management-software`, `/insurance-agency-management-software`, `/insurance-agent-management-software` |
+| Portals | `/agent-portal`, `/customer-portal`, `/agency-management-portal`, `/admin-portal` |
+| Blog | `/blog` and twelve articles |
+| Legal | `/privacy-policy`, `/terms-and-conditions`, `/refund-and-cancellation` |
+
+Nothing in that list is hand-maintained anywhere else. The sitemap discovers
+routes from `src/app` (`lib/site-routes`), `llms.txt` is generated from the
+same collections the pages render, and the header and footer read the
+Solutions and Portals shelves from `lib/solutions` — so a page cannot be
+published without appearing in all three.
 
 It lives inside the product's repository but shares nothing with it at build
 time: its own `package.json`, its own `node_modules`, its own `tsconfig.json`
@@ -16,8 +29,8 @@ lints or type-checks the other.
 
 Every page is **statically rendered** — nothing reads a cookie, a session or a
 database, and there is no Prisma client, no S3, no OCR and no AI dependency.
-That is the point of the split: these seven pages are the ones a stranger
-hits, and they are now plain static files on a CDN.
+That is the point of the split: these are the pages a stranger hits, and they
+are plain static files on a CDN.
 
 There is exactly one dynamic route: `app/api/enquiries/route.ts`, which
 **relays** the Contact Us form to the product's `/api/enquiries` server-side.
@@ -70,7 +83,7 @@ An empty or whitespace-only value counts as unset.
 The build deliberately does **not** fail on a missing origin. That was the
 first attempt — a failed deploy is read in a log, a dead link is found by a
 customer — and it is the wrong trade: it blocks every deploy of a site whose
-seven pages are otherwise correct and whose only defect is one link's
+pages are otherwise correct and whose only defect is one link's
 destination, and it blocks it hardest while nobody yet knows the product's
 final hostname. So: warn loudly, deploy anyway, never emit localhost.
 
@@ -94,8 +107,8 @@ merely on the resolved URL being non-localhost:
   indexable.
 
 **Set it only once the domain actually resolves.** Setting it to a domain
-whose DNS is not live yet makes seven indexable pages whose canonical points
-at nothing.
+whose DNS is not live yet makes thirty-five indexable URLs whose canonicals
+point at nothing.
 
 ## Deploying to Vercel
 
@@ -125,11 +138,14 @@ Two things are deliberately unfinished and visible on the page:
   review" callouts with a draft banner at the top of the document. Complete
   the review, then set `LEGAL_REVIEW_FLAGS=off`. Nothing was invented to fill
   those gaps, which is why they are visible rather than silent.
-- **There are no product screenshots.** Every product visual on the site is
-  drawn in markup from an invented policy and labelled as sample data. A real
-  screenshot of a signed-in screen would carry a real policyholder's name,
-  number and premium. Replace them with cleared screenshots when there are
-  some.
+- **There are no product screenshots.** All eighteen product visuals on the
+  site are drawn in markup (`components/marketing/product-shots.tsx`) from an
+  invented policy and labelled "Sample data". A real screenshot of a
+  signed-in screen would carry a real policyholder's name, number and
+  premium. To swap in cleared screenshots later, repoint the `SHOTS` table in
+  `components/marketing/solution-sections.tsx` and the component bodies in
+  `product-shots.tsx` — no page or content module names a component, only a
+  screen name, so nothing else changes.
 
 ## Local development
 
@@ -147,6 +163,46 @@ npm run build      # production build
 npm run typecheck
 npm run lint
 ```
+
+## Content collections, and what they refuse to ship
+
+Three bodies of content are typed modules rather than CMS records or MDX, for
+the reasons set out at the top of each: `lib/legal/content.ts`, `lib/blog` and
+`lib/solutions`. The point of the type is not tidiness — it is that each
+collection validates itself **at build time**, so the defects below fail
+`next build` instead of being found by a search audit months later.
+
+`lib/blog` (twelve articles) rejects a duplicate slug, a slug that is not a
+clean URL segment, an invalid or impossible date, a `related` link to an
+article that does not exist, and a table row that does not match its columns.
+
+`lib/solutions` (the eight Solutions and four Portals pages) rejects all of
+the above plus:
+
+- a slug with no matching directory under `src/app` — the canonical URL is
+  built from the slug, so a mismatch would publish a canonical pointing at a
+  404;
+- a duplicate `<title>` or meta description;
+- **two pages claiming the same primary keyword.** This is the one check that
+  is a judgement rather than a defect, and it is the most valuable: two pages
+  on one query split the signal and both rank worse, and nothing about either
+  page looks wrong. The brief this shelf was built from assigned "Insurance
+  Agent Management Software" to two URLs and "Insurance Agency Management
+  Software" to two more; this check is what forced those four pages into four
+  distinct queries and four genuinely different angles;
+- a page without **exactly one** `limits` section. Every page on this site
+  states what the product does not do, and that is enforced rather than
+  trusted;
+- two pages with the same **sequence of section kinds**. Twelve pages built
+  from one skeleton is the template repetition the brief rules out, and this
+  makes it checkable;
+- an internal link — in "where to go next", in a CTA, or on a use case — that
+  points at a page or an article that does not exist.
+
+`pageMetadata` in `lib/seo` enforces one more rule for **every** page on the
+site: a meta description between 70 and 165 characters. Twelve pages were
+shipping descriptions of 169 to 217 characters, all truncated in a result
+snippet, and nothing anywhere said so.
 
 ## Known duplication
 

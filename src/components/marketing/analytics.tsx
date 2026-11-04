@@ -197,7 +197,24 @@ function ConsentBanner({ onChoose }: { onChoose: (choice: ConsentChoice) => void
       aria-describedby={body}
       // `pb-[env(safe-area-inset-bottom)]` so it clears a phone's home
       // indicator rather than sitting under it.
-      className="anim-rise fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-pop backdrop-blur-[12px]"
+      //
+      // ── Why z-30 and not z-50 ────────────────────────────────────────
+      //
+      // It was z-50, which put it above the sticky header (z-40) and
+      // therefore above the mobile drawer, which lives inside the header's
+      // stacking context. On a phone the drawer's pinned action bar — the
+      // Sign in doors and Get Started, the two things a visitor opens that
+      // menu to find — sat directly behind this banner, so a first-time
+      // visitor who opened the menu before answering the cookie question
+      // could not reach either. Found by screenshotting the drawer at 390px,
+      // which is also the only way it would ever have been found.
+      //
+      // Lowering it is the smaller change than restructuring the drawer. The
+      // banner is `fixed bottom-0` and the header is `sticky top-0`: they
+      // never meet except through the drawer, so the banner only has to
+      // out-rank page content, and z-30 does that. The header's dropdowns
+      // are portaled at z-50 and are unaffected, as is the skip link.
+      className="anim-rise fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-pop backdrop-blur-[12px]"
     >
       <Container className="flex flex-col gap-4 py-4 shell:flex-row shell:items-center shell:justify-between shell:gap-8 shell:py-5">
         <div className="flex items-start gap-3">
