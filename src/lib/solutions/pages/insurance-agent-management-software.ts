@@ -69,12 +69,14 @@ export const page: SolutionPage = {
           situation:
             "You run an agency with sellers under you and want one shared book, with each person's access decided rather than assumed.",
           outcome: "The agency page covers that, including what can and cannot be delegated.",
+          href: "/insurance-agency-management-software",
         },
         {
           who: "Just the screens, please",
           situation:
             "You have read enough description and want to see what the product actually looks like before deciding anything.",
           outcome: "The agent portal page is a screen-by-screen tour with sample data.",
+          href: "/agent-portal",
         },
       ],
     },

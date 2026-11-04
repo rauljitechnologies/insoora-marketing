@@ -1,5 +1,6 @@
+import Link from "next/link";
 import {
-  BarChart3, BellRing, Building2, Car, CheckCircle2, Clock, Download, Eye,
+  ArrowRight, BarChart3, BellRing, Building2, Car, CheckCircle2, Clock, Download, Eye,
   FileText, FolderClock, FolderOpen, HeartPulse, Keyboard, Link2, Lock,
   ScanText, Search, Settings2, ShieldCheck, Smartphone, Table2, Upload,
   Users, UsersRound, type LucideIcon,
@@ -283,7 +284,23 @@ export function SolutionBand({
       return (
         <Section id={section.id} tone={tone} className="border-t border-border">
           <Head section={section} />
-          <div className="mt-7 overflow-x-auto rounded-2xl border border-border bg-background">
+          {/* `tabIndex={0}` with a role and a name is not decoration: a
+              region that scrolls must be reachable by keyboard, and a div
+              with `overflow-x-auto` is not focusable by default — so a
+              keyboard-only reader could see the clipped column and have no
+              way to reach it. Naming the region from the section heading is
+              what stops a screen reader announcing an unlabelled "region".
+
+              The hint below it is for everyone else: on a phone the table is
+              cut off at the container edge with no affordance saying it
+              moves, and a reader who does not try is simply missing a
+              column. */}
+          <div
+            role="region"
+            aria-label={section.heading}
+            tabIndex={0}
+            className="mt-7 overflow-x-auto rounded-2xl border border-border bg-background focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+          >
             <table className="w-full min-w-[40rem] border-collapse text-left">
               <thead>
                 <tr className="border-b border-border bg-surface">
@@ -317,33 +334,70 @@ export function SolutionBand({
               </tbody>
             </table>
           </div>
+          <p className="mt-2.5 text-[13px] text-muted rail:hidden" aria-hidden>
+            Scroll the table sideways to see every column.
+          </p>
           {section.note && <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">{section.note}</p>}
         </Section>
       );
 
     // ── A gallery of screens ───────────────────────────────────────────
-    case "screens":
+    //
+    // Two per row, never three, and an odd one out goes wide with its
+    // caption beside it — the same arrangement /product-in-action uses.
+    //
+    // Three-up was the first attempt and it was wrong for a reason worth
+    // recording. These previews are built from the product's own components,
+    // so their internal breakpoints are VIEWPORT media queries: at a desktop
+    // width the policy table renders all five of its columns regardless of
+    // how narrow the column it has been placed in is. In a three-up grid on
+    // a 1440px screen that column is about 390px, and the status column was
+    // simply clipped by the frame's `overflow-hidden`. A container query
+    // would be the proper fix and would mean rewriting fourteen previews; two
+    // columns gives each shot ~560px, which is what they were drawn for.
+    case "screens": {
+      const rows: (typeof section.shots)[] = [];
+      for (let i = 0; i < section.shots.length; i += 2) {
+        rows.push(section.shots.slice(i, i + 2));
+      }
       return (
         <Section id={section.id} tone={tone} className="border-t border-border">
           <Head section={section} />
-          <div
-            className={cn(
-              "mt-8 grid gap-6",
-              section.shots.length === 2 ? "rail:grid-cols-2" : "rail:grid-cols-3",
-            )}
-          >
-            {section.shots.map((s) => (
-              <div key={s.title} className="flex min-w-0 flex-col gap-3">
-                <Shot name={s.shot} />
-                <div>
-                  <h3 className="text-[15px] font-semibold text-foreground">{s.title}</h3>
-                  <p className="mt-1 text-[13px] leading-relaxed text-muted">{s.text}</p>
+          <div className="mt-8 flex flex-col gap-10">
+            {rows.map((row, r) =>
+              row.length === 2 ? (
+                <div key={r} className="grid gap-8 rail:grid-cols-2 rail:gap-10">
+                  {row.map((s) => (
+                    // `min-w-0`: a grid item defaults to `min-width: auto` and
+                    // grows its track rather than letting a wide child shrink.
+                    <figure key={s.title} className="m-0 flex min-w-0 flex-col gap-3">
+                      <Shot name={s.shot} />
+                      <figcaption>
+                        <h3 className="text-[15px] font-semibold text-foreground">{s.title}</h3>
+                        <p className="mt-1 text-[13px] leading-relaxed text-muted">{s.text}</p>
+                      </figcaption>
+                    </figure>
+                  ))}
                 </div>
-              </div>
-            ))}
+              ) : (
+                <figure
+                  key={r}
+                  className="m-0 grid gap-6 rail:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] rail:items-center rail:gap-10"
+                >
+                  <figcaption className="rail:order-1">
+                    <h3 className="text-[17px] font-semibold text-foreground">{row[0].title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted">{row[0].text}</p>
+                  </figcaption>
+                  <div className="min-w-0 rail:order-2">
+                    <Shot name={row[0].shot} />
+                  </div>
+                </figure>
+              ),
+            )}
           </div>
         </Section>
       );
+    }
 
     // ── Use cases ──────────────────────────────────────────────────────
     //
@@ -370,9 +424,24 @@ export function SolutionBand({
                   {c.who}
                 </span>
                 <p className="text-[13px] leading-relaxed text-muted">{c.situation}</p>
-                <p className="mt-auto border-t border-border pt-3 text-sm font-medium leading-relaxed text-foreground">
-                  {c.outcome}
-                </p>
+                {c.href ? (
+                  <p className="mt-auto border-t border-border pt-3 text-sm font-medium leading-relaxed">
+                    <Link
+                      href={c.href}
+                      className="group inline-flex items-start gap-1.5 text-foreground hover:text-primary"
+                    >
+                      {c.outcome}
+                      <ArrowRight
+                        aria-hidden
+                        className="mt-0.5 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5"
+                      />
+                    </Link>
+                  </p>
+                ) : (
+                  <p className="mt-auto border-t border-border pt-3 text-sm font-medium leading-relaxed text-foreground">
+                    {c.outcome}
+                  </p>
+                )}
               </div>
             ))}
           </div>

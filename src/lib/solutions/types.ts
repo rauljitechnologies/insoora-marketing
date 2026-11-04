@@ -149,7 +149,20 @@ export type SolutionSection =
   /** Who this is for and what changes for them. Three or four. */
   | (SectionBase & {
       kind: "usecases";
-      cases: { who: string; situation: string; outcome: string }[];
+      cases: {
+        who: string;
+        situation: string;
+        outcome: string;
+        /** Makes the outcome a link.
+         *
+         *  Added for the section at the top of
+         *  /insurance-agent-management-software, whose entire job is to send
+         *  two of its three readers to a different page. Telling someone the
+         *  agency page covers their case and then making them scroll to the
+         *  foot of the wrong page to find it is not routing them anywhere.
+         *  Validated against the real route set like every other link. */
+        href?: string;
+      }[];
     })
   /** The limits, collected. Every page has exactly one of these, enforced in
    *  index.ts: a landing page that lists only strengths is the kind this site

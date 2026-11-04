@@ -262,7 +262,15 @@ function validate(pages: SolutionPage[]): void {
     // with none: the page looks maintained and is not. Checked against the
     // real route tree plus the published articles.
     if (routes.size > 0) {
-      const outbound = [...p.related.map((r) => r.href), p.cta.secondary.href];
+      const outbound = [
+        ...p.related.map((r) => r.href),
+        p.cta.secondary.href,
+        // A use case may route the reader onward; those links get the same
+        // treatment as the ones in the "where to go next" block.
+        ...p.sections.flatMap((s) =>
+          s.kind === "usecases" ? s.cases.map((c) => c.href).filter((h) => h !== undefined) : [],
+        ),
+      ];
       for (const href of outbound) {
         if (!href.startsWith("/")) {
           fail(`"${p.slug}" links to "${href}", which is not a path on this site. External links do not belong in this block.`);
