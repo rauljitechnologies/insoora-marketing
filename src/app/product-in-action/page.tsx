@@ -14,6 +14,7 @@ import {
   ReviewFlagShot, RoleAccessShot, SearchExportShot, UploadQueueShot,
 } from "@/components/marketing/product-shots";
 import { ProductTabs } from "@/components/marketing/product-tabs";
+import { ExploreLinks, portalLinks } from "@/components/marketing/explore-links";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema } from "@/lib/seo";
 import { ACCENT_TILE, type Accent } from "@/lib/accents";
@@ -381,6 +382,19 @@ export default function ProductInActionPage() {
           </Link>{" "}
           sets out what each capability does and where it stops.
         </p>
+      </Section>
+
+      {/* The gallery above is organised by what happens to a policy. The
+          portal tours are the same screens organised by who is looking at
+          them, which is the question most visitors actually arrive with. */}
+      <Section tone="surface" className="border-t border-border">
+        <SectionHead
+          eyebrow="By who is using it"
+          accent="blue"
+          title="The same screens, one role at a time"
+          lede="Each tour walks one portal end to end — what the person sees, what they can do, and what they cannot."
+        />
+        <ExploreLinks className="mt-8" items={portalLinks()} columns={3} />
       </Section>
 
       <CtaBand

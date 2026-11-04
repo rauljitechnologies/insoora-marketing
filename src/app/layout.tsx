@@ -13,7 +13,7 @@ import { Analytics, CookieSettingsButton } from "@/components/marketing/analytic
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
-import { PORTAL_PAGES, SOLUTION_PAGES } from "@/lib/solutions";
+import { PORTAL_PAGES, SOLUTION_PAGES, solutionsInColumn } from "@/lib/solutions";
 import "./globals.css";
 
 // Site-wide metadata.
@@ -191,92 +191,83 @@ const NAV: SiteNavItem[] = [
   { href: "/contact-us", label: "Contact Us" },
 ];
 
-// Footer columns, from the design.
+// ── The footer ───────────────────────────────────────────────────────────
 //
-// Three of the design's links still point at pages that do not exist — Help
-// centre, Getting started guide, Pricing. They are left out rather than
-// pointed at a placeholder: a footer link that 404s is worse than a shorter
-// footer, and inventing those pages to fill the slots would be inventing
-// content. Pricing in particular cannot be written, because no price is
-// published anywhere on this site.
+// Five columns: the brand and the office, then four link lists.
 //
-// Blog and Refund Policy were on that list and are now real, and Data
-// security has been answered by a different route: the security section on
-// the home page and the privacy policy carry it, and /admin-portal now sets
-// out who operates the platform and what they can reach.
-const FOOTER_COLUMNS: { t: string; tone: string; links: SiteNavItem[] }[] = [
+// It was four link columns, plus a tall brand band above them with its own
+// pair of buttons, plus a two-row "long tail" band below them for the twelve
+// pages that had nowhere else to go, plus a trust strip, plus a closing bar.
+// Six stacked bands, each padded as if it were a section of the page, which
+// on a wide screen read as several strips of empty navy with some links
+// floating in them — and the links themselves occupied maybe half the width
+// available to them.
+//
+// Now there is one grid. The brand, the description, the two calls to action
+// and the office are column one; the twelve pages that needed a home are
+// distributed across columns two to four instead of getting a band of their
+// own. Nothing below the grid but a compact trust row and the closing bar.
+//
+// Three columns are generated from `lib/solutions`, so a page cannot be
+// published without a crawlable link to it — which matters more here than
+// anywhere, because every one of those URLs is a child of a header dropdown
+// whose trigger is a BUTTON, and a button is not a link a crawler can follow.
+// `footerColumn` on each page decides which column it lands in, and
+// `lib/solutions` fails the build if a page declares none.
+//
+// Three links from the original design are still absent — Help centre,
+// Getting started guide, Pricing. A footer link that 404s is worse than a
+// shorter footer, and Pricing in particular cannot be written because no
+// price is published anywhere on this site.
+
+/** A link in one of the four list columns. */
+interface FooterLink {
+  href: string;
+  label: string;
+  /** An absolute URL into the product: a plain <a>, never a <Link>. */
+  external?: boolean;
+}
+
+const FOOTER_COLUMNS: { t: string; tone: string; links: FooterLink[] }[] = [
   {
     t: "Product",
     tone: "text-[#93C5FD]",
     links: [
       { href: "/features", label: "Features" },
       // These were `/#how-it-works` and `/#product` — anchors a third of the
-      // way down the home page. Both are now pages of their own, with the
-      // seven-step workflow and the full screen gallery the home page's
-      // summaries only gesture at. The anchors still exist and still work;
-      // the footer simply points at the longer answer.
+      // way down the home page. Both are pages of their own now.
       { href: "/how-it-works", label: "How it works" },
       { href: "/product-in-action", label: "Product in action" },
+      ...solutionsInColumn("product").map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
+    ],
+  },
+  {
+    t: "Solutions",
+    tone: "text-[#7DD3FC]",
+    links: solutionsInColumn("solutions").map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
+  },
+  {
+    // Three, not four. The admin tour is retired — see the note in
+    // lib/solutions and the redirect in next.config.
+    t: "Portals",
+    tone: "text-[#FDE68A]",
+    links: [
+      ...PORTAL_PAGES.map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
       { href: appHref("/agent/login"), label: "Sign in", external: true },
     ],
   },
   {
-    t: "Resources",
-    tone: "text-[#FCA5A5]",
-    links: [
-      // Every child of a header dropdown needs a plain crawlable link
-      // somewhere, because the dropdown trigger is a button and none of its
-      // URLs are links in the header. The footer is where that happens.
-      { href: "/blog", label: "Blog" },
-      { href: "/faq", label: "FAQ" },
-      { href: "/contact-us", label: "Help & support" },
-    ],
-  },
-  {
-    t: "Company",
+    t: "Resources & company",
     tone: "text-[#C4B5FD]",
     links: [
+      { href: "/blog", label: "Blog" },
+      { href: "/faq", label: "FAQ" },
       { href: "/about-us", label: "About Us" },
       { href: "/contact-us", label: "Contact Us" },
-    ],
-  },
-  {
-    t: "Legal",
-    tone: "text-[#86EFAC]",
-    links: [
       { href: "/privacy-policy", label: "Privacy Policy" },
       { href: "/terms-and-conditions", label: "Terms & Conditions" },
       { href: "/refund-and-cancellation", label: "Refund & Cancellation" },
     ],
-  },
-];
-
-/**
- * The long tail, as two wrapped rows rather than two more columns.
- *
- * Twelve more links had to become crawlable somewhere, because every one of
- * them is a child of a header dropdown whose trigger is a button — see the
- * note above NAV. Two more columns was the obvious move and the wrong one:
- * the column band is deliberately flat (nothing in it is taller than its
- * neighbours, which is why the office is a column of plain text rather than
- * a card), and a column of eight links beside columns of three would put a
- * 130px hole under half the footer.
- *
- * So they get a band of their own below the columns: a small label and a
- * wrapped row of links, which costs about forty pixels per row and keeps the
- * grid above it intact. Both rows are read from the collection, so a page
- * cannot be published without a crawlable link to it.
- */
-const FOOTER_SHELVES: { t: string; tone: string; links: { href: string; label: string }[] }[] = [
-  {
-    t: "Solutions",
-    tone: "text-[#7DD3FC]",
-    links: SOLUTION_PAGES.map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
-  },
-  {
-    t: "Portals",
-    tone: "text-[#FDE68A]",
-    links: PORTAL_PAGES.map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
   },
 ];
 
@@ -397,166 +388,161 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             down the scale; nothing moved and nothing was removed, the footer
             is just ~60px shorter and the rules sit closer to what they
             separate. */}
-        <Container className="relative py-10 shell:py-12">
-          {/* Four bands, each the full width of the column.
+        <Container className="relative py-10 shell:py-11">
+          {/* ONE grid, not six stacked bands.
 
-              The earlier footer hung a tall office card beside four two-item
-              link lists, so whatever filled one side left a hole on the
-              other. Nothing here is taller than its neighbours: the office is
-              a fifth link column of plain text rather than a card, which puts
-              every column within ~20px of the next and leaves the row flat. */}
-          <div className="flex flex-col gap-6 border-b border-white/10 pb-8 shell:flex-row shell:items-end shell:justify-between shell:gap-12">
-            <div className="flex min-w-0 flex-col gap-4">
+              Column one is the brand, the description, the two calls to
+              action and the office. Columns two to five are link lists. On a
+              wide screen the brand column is 1.5 tracks and the lists are one
+              each, which is what lets "Refund & Cancellation" sit on one line
+              in the last column while the description keeps a readable
+              measure in the first.
+
+              Below `shell` it becomes two columns, and below `sm` one — the
+              brand column spans the full width at both, because a 150px-wide
+              address is unreadable and the two buttons under it would stack
+              into a strip. */}
+          <div className="grid grid-cols-1 gap-x-8 gap-y-9 pb-9 sm:grid-cols-2 shell:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] shell:gap-x-10">
+            {/* ── Column one: who this is, and where ── */}
+            <div className="flex min-w-0 flex-col gap-4 sm:col-span-2 shell:col-span-1">
               <BrandLogo tone="dark" variant="stacked" />
-              <p className="max-w-xl text-[15px] leading-[1.6] text-[#94A3B8]">
+              <p className="max-w-sm text-sm leading-[1.65] text-[#94A3B8]">
                 Insurance policy management made simple. Turn policy PDFs into organized, searchable
                 records and never miss a renewal.
               </p>
-            </div>
-            <div className="flex flex-none flex-wrap items-center gap-3">
-              <a
-                href={appHref("/agent/register")}
-                className="flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold text-white shadow-[0_8px_18px_-8px_rgba(124,58,237,.8)] transition-transform hover:-translate-y-px"
-                style={{ backgroundImage: "var(--gradient-brand)" }}
-              >
-                Get Started
-              </a>
-              <Link
-                href="/contact-us"
-                className="flex h-11 items-center gap-1.5 rounded-md border border-white/15 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-              >
-                Talk to us
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </div>
-          </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <a
+                  href={appHref("/agent/register")}
+                  className="flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold text-white shadow-[0_8px_18px_-8px_rgba(124,58,237,.8)] transition-transform hover:-translate-y-px"
+                  style={{ backgroundImage: "var(--gradient-brand)" }}
+                >
+                  Get Started
+                </a>
+                <Link
+                  href="/contact-us"
+                  className="flex h-10 items-center gap-1.5 rounded-md border border-white/15 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                >
+                  Contact Us
+                  <ArrowRight aria-hidden className="size-3.5" />
+                </Link>
+              </div>
 
-          {/* Four link columns of ~177px — enough for "Terms & Conditions" —
-              and a wider fifth so the landmark line of the address does not
-              wrap. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 pb-7 pt-9 sm:grid-cols-3 shell:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.25fr)] shell:gap-x-8">
+              {/* The office moved out of a column of its own and in under the
+                  brand, which is where it belongs: it is part of saying who
+                  this is, not a fifth navigation list. It also has to stay
+                  visible somewhere — it is the address the Organization
+                  schema publishes, and markup that claims a postal address
+                  the page does not show is markup the page does not back up. */}
+              <address className="mt-1 flex flex-col gap-2 not-italic">
+                <span className="flex items-start gap-2 text-sm leading-[1.6] text-[#94A3B8]">
+                  <MapPin aria-hidden className="mt-0.5 size-3.5 flex-none text-[#FDBA74]" />
+                  <span className="flex flex-col">
+                    {addressLines().map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </span>
+                </span>
+                <span className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                  <a
+                    href={CONTACT.phoneHref}
+                    className="inline-flex min-h-6 items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#FCA5A5]"
+                  >
+                    <Phone aria-hidden className="size-3.5 text-[#FCA5A5]" />
+                    {CONTACT.phone}
+                  </a>
+                  {/* A maps search by address rather than a place ID — see
+                      `mapsSearchHref`. Built from lib/contact, so a corrected
+                      address cannot leave this pointing at the old one. */}
+                  <a
+                    href={mapsSearchHref()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-6 items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
+                  >
+                    Get directions
+                    <ArrowRight aria-hidden className="size-3.5" />
+                  </a>
+                </span>
+              </address>
+            </div>
+
+            {/* ── Columns two to five: the link lists ── */}
             {FOOTER_COLUMNS.map((c) => (
-              <nav key={c.t} aria-label={c.t} className="flex min-w-0 flex-col gap-3">
+              <nav key={c.t} aria-label={c.t} className="flex min-w-0 flex-col gap-2.5">
                 <strong className={cn("text-[13px] uppercase tracking-[0.08em]", c.tone)}>{c.t}</strong>
                 {c.links.map((l) =>
-                  // An absolute URL into the product gets a plain anchor —
-                  // see SiteNavItem.external.
+                  // An absolute URL into the product gets a plain anchor:
+                  // there is no client-side route across an origin.
                   //
                   // `inline-flex min-h-6 items-center w-max`: these are
                   // stacked navigation links, not links inside a sentence, so
-                  // WCAG 2.2's 24px minimum target size applies to them with
-                  // no inline exception to fall back on. At `text-sm` the
-                  // line box is 20px, which is what every one of them
-                  // measured. The `gap-3` on the column already provides the
-                  // spacing, so raising each link to 24px costs no layout —
-                  // and `w-max` keeps the target the width of the label
-                  // rather than the whole column, so the gap between two
-                  // links does not become part of either one.
+                  // WCAG 2.2's 24px minimum target size applies with no
+                  // inline exception to fall back on. At `text-sm` the line
+                  // box is 20px. The column's own gap provides the spacing,
+                  // so raising each link to 24px costs no layout — and
+                  // `w-max` keeps the target the width of the label rather
+                  // than the whole column, so the gap between two links does
+                  // not become part of either one.
                   l.external ? (
-                    <a
-                      key={l.href + l.label}
-                      href={l.href}
-                      className={FOOTER_LINK}
-                    >
+                    <a key={l.href + l.label} href={l.href} className={FOOTER_LINK}>
                       {l.label}
                     </a>
                   ) : (
-                    <Link
-                      key={l.href + l.label}
-                      href={l.href}
-                      className={FOOTER_LINK}
-                    >
+                    <Link key={l.href + l.label} href={l.href} className={FOOTER_LINK}>
                       {l.label}
                     </Link>
                   ),
                 )}
               </nav>
             ))}
-
-            {/* The office, from the one definition in lib/contact — a column
-                like the others, not a card that towers over them. */}
-            <address className="col-span-2 flex min-w-0 flex-col gap-3 not-italic shell:col-span-1">
-              <strong className="flex items-center gap-1.5 text-[13px] uppercase tracking-[0.08em] text-[#FDBA74]">
-                <MapPin className="size-3.5" />
-                Visit us
-              </strong>
-              <span className="flex flex-col gap-0.5 text-sm leading-[1.6] text-[#CBD5E1]">
-                {addressLines().map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-              </span>
-              <a
-                href={CONTACT.phoneHref}
-                className="inline-flex min-h-6 w-max items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#FCA5A5]"
-              >
-                <Phone className="size-3.5 text-[#FCA5A5]" />
-                {CONTACT.phone}
-              </a>
-              {/* A maps search by address rather than a place ID — see
-                  `mapsSearchHref`. Built from lib/contact rather than written
-                  out here, so a corrected address cannot leave the directions
-                  link pointing at the old one. */}
-              <a
-                href={mapsSearchHref()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-6 w-max items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
-              >
-                Get directions
-                <ArrowRight className="size-3.5" />
-              </a>
-            </address>
-          </div>
-
-          {/* The long-tail shelves. One label and a wrapped row each, divided
-              from the columns above by the same hairline the other bands use.
-              `w-max` on each link keeps the tap target the width of the label
-              rather than letting the row's gap become part of it — the same
-              rule as FOOTER_LINK, for the same WCAG 2.2 reason. */}
-          <div className="flex flex-col gap-4 border-t border-white/10 pt-6">
-            {FOOTER_SHELVES.map((shelf) => (
-              <nav key={shelf.t} aria-label={shelf.t} className="flex flex-col gap-2 sm:flex-row sm:gap-5">
-                <strong
-                  className={cn(
-                    "flex-none text-[13px] uppercase tracking-[0.08em] sm:w-24 sm:pt-0.5",
-                    shelf.tone,
-                  )}
-                >
-                  {shelf.t}
-                </strong>
-                <span className="flex flex-wrap gap-x-5 gap-y-2">
-                  {shelf.links.map((l) => (
-                    <Link key={l.href} href={l.href} className={FOOTER_LINK}>
-                      {l.label}
-                    </Link>
-                  ))}
-                </span>
-              </nav>
-            ))}
           </div>
 
           {/* The four controls as one rule-to-rule strip: spread across the
-              full width, they close the band instead of clustering left. */}
-          <ul className="grid gap-x-6 gap-y-3 border-y border-white/10 py-4 min-[420px]:grid-cols-2 shell:grid-cols-4">
+              full width, they close the grid instead of clustering left. */}
+          <ul className="grid gap-x-6 gap-y-2.5 border-y border-white/10 py-3.5 min-[420px]:grid-cols-2 shell:grid-cols-4">
             {TRUST.map((t) => (
               <li key={t.t} className="flex items-center gap-2.5 text-[13px] font-medium text-[#E2E8F0]">
-                <span aria-hidden className="grid size-8 flex-none place-items-center rounded-md bg-white/[0.06]">
-                  <t.icon className={cn("size-4", t.tone)} />
+                <span aria-hidden className="grid size-7 flex-none place-items-center rounded-md bg-white/[0.06]">
+                  <t.icon className={cn("size-3.5", t.tone)} />
                 </span>
                 {t.t}
               </li>
             ))}
           </ul>
 
-          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-5 text-[13px] text-[#94A3B8]">
+          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-4 text-[13px] leading-relaxed text-[#94A3B8]">
             {/* The company attribution belongs on every page, not only in the
                 legal documents: "Insoora" is a product name and a visitor is
-                entitled to know which company stands behind it. One string,
-                from lib/contact, shared with the Privacy Policy and the Terms
-                so the three cannot disagree. */}
-            <span>
-              © {new Date().getFullYear()} Insoora. All rights reserved. {CONTACT.managedBy}. Made in
-              Godhra, Gujarat.
+                entitled to know which company stands behind it — and to be
+                able to go and check. The name is read from lib/contact and
+                shared with the Privacy Policy and the Terms, so the three
+                cannot disagree, and it links to the company's own site.
+
+                Three sentences on their own line each below `sm`, because at
+                phone width they ran together into one grey paragraph in
+                which the one piece of information a reader is looking for —
+                who is behind this — was the middle clause of the second
+                sentence.
+
+                `rel="noopener noreferrer"` on the outbound link: `noopener`
+                because a `target="_blank"` tab can otherwise reach back
+                through `window.opener`. Insoora stays the dominant name —
+                this is an attribution line, not a second brand. */}
+            <span className="flex flex-col gap-0.5 sm:block">
+              <span>© {new Date().getFullYear()} Insoora. All rights reserved.</span>{" "}
+              <span>
+                Managed by{" "}
+                <a
+                  href={CONTACT.companyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-[#CBD5E1] underline decoration-white/25 underline-offset-2 transition-colors hover:text-white hover:decoration-white/60"
+                >
+                  {CONTACT.legalEntity}
+                </a>
+                .
+              </span>{" "}
+              <span>Made in Godhra, Gujarat, India.</span>
             </span>
             <div className="flex flex-wrap items-center gap-4">
               {/* The social profiles sit in the closing bar, beside Privacy

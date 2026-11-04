@@ -2,7 +2,10 @@ import {
   BellRing, FileSearch, FileStack, FolderClock, Layers, Lock,
   SlidersHorizontal, Table2, Users, type LucideIcon,
 } from "lucide-react";
-import { Eyebrow, GradientText, PageHead, Panel, Section } from "@/components/marketing/section";
+import {
+  Eyebrow, GradientText, PageHead, Panel, Section, SectionHead,
+} from "@/components/marketing/section";
+import { ExploreLinks, solutionLinks } from "@/components/marketing/explore-links";
 import { BandPrimaryAction, BandSecondaryAction, CtaBand } from "@/components/marketing/cta";
 import { ACCENT_CHIP, ACCENT_TILE, type Accent } from "@/lib/accents";
 import {
@@ -291,6 +294,21 @@ export default function FeaturesPage() {
           </Section>
         );
       })}
+
+      {/* Each feature above has a page of its own that goes further: the
+          workflow around it, the use cases, the comparison and the FAQs this
+          list has no room for. The solution pages all link back here, and
+          this is the other half of that — without it they were reachable
+          from the header and the footer and nowhere else. */}
+      <Section tone="surface" className="border-t border-border">
+        <SectionHead
+          eyebrow="Go further"
+          accent="teal"
+          title="Each capability, at length"
+          lede="One page per job, with its workflow, its use cases and its limits set out in full."
+        />
+        <ExploreLinks className="mt-8" items={solutionLinks()} />
+      </Section>
 
       <CtaBand
         eyebrow="Get started today"

@@ -39,6 +39,7 @@ export const page: SolutionPage = {
     label: "Insurance CRM",
     hint: "One record per policyholder, with every policy",
   },
+  footerColumn: "product",
   primaryKeyword: "Insurance CRM Software India",
   secondaryKeywords: [
     "CRM Software for Insurance Agents",

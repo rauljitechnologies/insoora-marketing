@@ -43,6 +43,7 @@ export const page: SolutionPage = {
     label: "Document management",
     hint: "Where the policy PDFs live, and who can reach them",
   },
+  footerColumn: "solutions",
   primaryKeyword: "Insurance Document Management Software",
   secondaryKeywords: [
     "Insurance Policy Document Storage",

@@ -91,11 +91,29 @@ const securityHeaders = [
 // The public pages moved to descriptive URLs (/about → /about-us and so on).
 // 308s rather than 307s: the move is permanent, and a crawler that caches the
 // redirect stops asking for the old path.
+//
+// /admin-portal is a RETIREMENT rather than a move. It was a public tour of
+// the back office, and the back office is operated by this company rather
+// than by an agency — so the page was marketing a portal no visitor can ever
+// sign into, and every public link to it has been removed.
+//
+// A 308 and not a 404, because the page was live, indexed and listed in the
+// sitemap: a 404 discards whatever signal the URL had accumulated and breaks
+// any link already pointing at it. /agency-management-portal is the nearest
+// honest destination — it is the page about how administration actually
+// works for an agency, and it is a marketing page rather than the
+// authenticated application, which is the thing a retired admin URL must
+// never redirect a stranger into.
+//
+// The page module and its route are deleted rather than left behind a
+// redirect, so the sitemap (which discovers routes from the filesystem) and
+// llms.txt (which reads the page collection) both drop it with no edit.
 const MOVED_PAGES: { source: string; destination: string }[] = [
   { source: "/about", destination: "/about-us" },
   { source: "/contact", destination: "/contact-us" },
   { source: "/privacy", destination: "/privacy-policy" },
   { source: "/terms", destination: "/terms-and-conditions" },
+  { source: "/admin-portal", destination: "/agency-management-portal" },
 ];
 
 const nextConfig: NextConfig = {

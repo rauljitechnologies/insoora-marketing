@@ -16,6 +16,9 @@ import { FeatureCards } from "@/components/marketing/feature-cards";
 import { AudienceCards } from "@/components/marketing/audience-cards";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { ProductTabs } from "@/components/marketing/product-tabs";
+import {
+  ExploreLinks, portalLinks, solutionLinks,
+} from "@/components/marketing/explore-links";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { HOME_FAQS } from "@/lib/faq";
@@ -331,6 +334,44 @@ export default function HomePage() {
           consented testimonial is added — which is the intent. See
           lib/testimonials. */}
       <Testimonials />
+
+      {/* ── Where to go next ──
+
+          The home page linked to six pages and the site has thirty-four. The
+          other shelves were reachable only from the header (whose dropdown
+          triggers are buttons, not links) and the footer, which is a thin
+          structure for a third of the content. This band is the home page
+          pointing down into both shelves in the reader's own terms.
+
+          Generated from lib/solutions, so it cannot fall behind the
+          collection — and could not keep pointing at the retired admin tour
+          even if somebody wanted it to. */}
+      <Section id="explore">
+        <SectionHead
+          eyebrow="Explore the platform"
+          accent="pink"
+          title="Find the page for the question you came with."
+          lede="Each one covers a single capability in depth and states where it stops — and each portal tour is drawn screen by screen with sample data."
+        />
+        <div className="mt-8 flex flex-col gap-7">
+          <div>
+            <Eyebrow accent="blue">By capability</Eyebrow>
+            <ExploreLinks className="mt-3.5" items={solutionLinks()} />
+          </div>
+          <div>
+            <Eyebrow accent="teal">By who is using it</Eyebrow>
+            <ExploreLinks className="mt-3.5" items={portalLinks()} />
+          </div>
+        </div>
+        <p className="mt-6 text-sm text-muted">
+          <Link
+            href="/blog"
+            className="inline-flex min-h-6 items-center font-semibold text-primary hover:underline"
+          >
+            Or read the guides — twelve of them, on filing, renewals, extraction and choosing software
+          </Link>
+        </p>
+      </Section>
 
       {/* ── Security and trust ── */}
       <Section id="security" className="!pt-0">

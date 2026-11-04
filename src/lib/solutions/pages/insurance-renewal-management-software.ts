@@ -38,6 +38,7 @@ export const page: SolutionPage = {
     label: "Renewal management",
     hint: "A list built from the policy's own expiry date",
   },
+  footerColumn: "solutions",
   primaryKeyword: "Insurance Renewal Management Software",
   secondaryKeywords: [
     "Insurance Renewal Reminder Software",

@@ -24,7 +24,7 @@
 // advice, and publishing it does not make the business compliant with the
 // DPDP Act, the SPDI Rules or the Consumer Protection Act.
 
-import { CONTACT } from "@/lib/contact";
+import { CONTACT, addressOneLine } from "@/lib/contact";
 
 export interface LegalSection {
   heading: string;
@@ -304,9 +304,20 @@ export const TERMS: LegalDocument = {
       body: [
         `${OPERATOR}. These Terms are between you and that company.`,
         "By creating an account or using Insoora you agree to them. If you are using Insoora for an agency or a business, you confirm you are authorized to accept these Terms on its behalf, and “you” then means that organisation as well as you personally.",
+        // The contracting party has to be contactable from the document that
+        // names it. Built from lib/contact, the same module the footer and
+        // the Contact page read, so the three cannot disagree about who the
+        // counterparty is or how to reach them.
+        //
+        // Carefully NOT called a registered office. It is the office address
+        // this business publishes for correspondence; the registered office,
+        // the CIN and the GSTIN are unverified here and stay in the review
+        // note below rather than being asserted in the body.
+        `You can reach that company for anything to do with these Terms at ${addressOneLine()}, or on ${CONTACT.phone}. Its own website is ${CONTACT.companyUrl.replace(/^https:\/\/|\/$/g, "")}, and the Contact Us page on this site carries the same details alongside an enquiry form.`,
+        "That address is the office published for correspondence. It is not stated here as the company's registered office, and no company identification number or tax registration is asserted anywhere in this document — see the note on this section.",
       ],
       review:
-        "Insert the contracting company's full registered name, CIN, registered office and GSTIN once confirmed, and state the governing law and the courts or forum for disputes. None of those is asserted here.",
+        "Insert the contracting company's CIN, registered office and GSTIN once confirmed, and state the governing law and the courts or forum for disputes. The full company name and a correspondence address are now stated in the body; none of the rest is asserted here.",
     },
     {
       heading: "What Insoora is — and what it is not",

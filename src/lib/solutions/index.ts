@@ -13,7 +13,6 @@ import { page as soloAgent } from "./pages/insurance-agent-management-software";
 import { page as agentPortal } from "./pages/agent-portal";
 import { page as customerPortal } from "./pages/customer-portal";
 import { page as agencyPortal } from "./pages/agency-management-portal";
-import { page as adminPortal } from "./pages/admin-portal";
 
 export * from "./types";
 
@@ -47,12 +46,31 @@ const SOLUTIONS: SolutionPage[] = [
   soloAgent,
 ];
 
-/** The four role tours. */
-const PORTALS: SolutionPage[] = [agentPortal, customerPortal, agencyPortal, adminPortal];
+/**
+ * The role tours.
+ *
+ * Three, not four. There was an /admin-portal tour and it has been retired
+ * from the public site: the back office is operated by this company rather
+ * than by an agency, so a marketing page for it was describing a portal no
+ * visitor can ever sign into. `next.config.ts` redirects the old URL to the
+ * agency tour permanently — the page was live and in the sitemap, so a 404
+ * would have been the wrong answer.
+ *
+ * The disclosures that page carried were the valuable part and have not been
+ * dropped: who operates the platform, that its queries are not tenant-scoped,
+ * the five staff roles and the audit log are now answers in lib/faq, which is
+ * where a reader looks for them anyway.
+ */
+const PORTALS: SolutionPage[] = [agentPortal, customerPortal, agencyPortal];
 
 export const SOLUTION_PAGES: SolutionPage[] = SOLUTIONS;
 export const PORTAL_PAGES: SolutionPage[] = PORTALS;
 export const ALL_LANDING_PAGES: SolutionPage[] = [...SOLUTIONS, ...PORTALS];
+
+/** The solution pages that belong in one footer column. See `footerColumn`. */
+export function solutionsInColumn(column: "product" | "solutions"): SolutionPage[] {
+  return SOLUTIONS.filter((p) => p.footerColumn === column);
+}
 
 /** One page by slug, or undefined. */
 export function landingPageBySlug(slug: string): SolutionPage | undefined {
@@ -189,6 +207,13 @@ function validate(pages: SolutionPage[]): void {
     if (p.related.length < 3) {
       fail(`"${p.slug}" has ${p.related.length} outbound links; a page that links nowhere is a dead end.`);
     }
+    // A solution page with no footer column is a page with no footer link,
+    // which is the orphan this file's link checks exist to prevent — and it
+    // would be invisible, because the page itself renders perfectly.
+    if (p.group === "solution" && p.footerColumn === undefined) {
+      fail(`"${p.slug}" has no footerColumn, so nothing in the footer would link to it.`);
+    }
+
     if (p.checks.length > 4) {
       fail(`"${p.slug}" has ${p.checks.length} hero checks; the hero lays them out two-up and four is the most that fits.`);
     }

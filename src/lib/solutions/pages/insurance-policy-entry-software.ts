@@ -37,6 +37,7 @@ export const page: SolutionPage = {
     label: "Policy entry",
     hint: "The schedule read instead of retyped",
   },
+  footerColumn: "product",
   primaryKeyword: "Insurance Policy Entry Software",
   secondaryKeywords: [
     "Insurance Policy Data Entry Software",

@@ -1,4 +1,4 @@
-import { Bell, Check, Clock, Download, FileText, Minus, Search, ShieldCheck, TriangleAlert, Upload, UsersRound } from "lucide-react";
+import { Bell, Check, Download, FileText, Minus, Search, ShieldCheck, TriangleAlert, Upload, UsersRound } from "lucide-react";
 import { SampleTag } from "@/components/marketing/section";
 import { cn } from "@/lib/utils";
 
@@ -907,22 +907,23 @@ export function CustomerMobileShot({ className }: { className?: string }) {
 
 // ── The third set ────────────────────────────────────────────────────────
 //
-// Added for the four portal pages (/agent-portal, /customer-portal,
-// /agency-management-portal, /admin-portal). The existing fourteen screens
-// cover what a policy does; these cover who is looking at it — a team, a
-// back office, a policyholder's own renewal list.
+// Added for the portal pages (/agent-portal, /customer-portal,
+// /agency-management-portal). The existing fourteen screens cover what a
+// policy does; these cover who is looking at it — a team, a policyholder's
+// own renewal list, a book of customers.
 //
 // Same rules as the two sets above: hand-built from the tokens, `aria-hidden`
 // inside a labelled `Frame`, every value invented, the same cast of fictional
 // customers, and each one shaped like the thing it is rather than being the
 // policy table with different headings.
 //
-// On the admin screen specifically: it shows counts, queues and agency names,
-// and deliberately shows NO infrastructure. No storage bucket, no gateway
-// key, no provider endpoint, no internal hostname. The brief rules those out
-// of public marketing material and they would be a genuine disclosure rather
-// than a design choice — the back office has screens for all of them and
-// none of them belongs on a public page.
+// There was a fourth, an admin business-overview console, drawn for the
+// /admin-portal page. Both are gone: the back office is operated by this
+// company rather than by an agency, so a public marketing page for it was
+// describing a portal no visitor can sign into. Nothing in the back office
+// is drawn on this website now, which is also the right answer for its
+// configuration screens — a picture of a payment or storage settings form is
+// reconnaissance rather than marketing.
 
 const TEAM: { name: string; initials: string; role: string; caps: string[]; uploads: string }[] = [
   { name: "Asha Mehta", initials: "AM", role: "Main agent", caps: ["Everything"], uploads: "412" },
@@ -983,70 +984,6 @@ export function SubAgentTeamShot() {
         Every policy a sub-agent uploads belongs to the agency, and the plan and credits are the
         agency&apos;s. A sub-agent has no plan of its own.
       </p>
-    </Frame>
-  );
-}
-
-const ADMIN_TILES: { label: string; value: string; sub: string; tone: string }[] = [
-  { label: "Agencies", value: "38", sub: "6 added this month", tone: "text-primary" },
-  { label: "Policies processed", value: "14,206", sub: "all agencies, all time", tone: "text-foreground" },
-  { label: "Awaiting review", value: "47", sub: "fields a human must confirm", tone: "text-warning" },
-  { label: "Website enquiries", value: "9", sub: "unanswered", tone: "text-secondary" },
-];
-
-const ADMIN_QUEUE: { agency: string; note: string; state: string; cls: string }[] = [
-  { agency: "Mehta Insurance Services", note: "3 documents borderline — accept or reject", state: "Validation", cls: "bg-warning-soft text-warning" },
-  { agency: "Shree Associates", note: "New insurer layout, 11 corrections by hand", state: "Template", cls: "bg-primary-soft text-primary" },
-  { agency: "Patel & Sons", note: "Plan renews in 8 days", state: "Billing", cls: "bg-secondary-soft text-[#075985]" },
-];
-
-/**
- * The back office, as an operator sees it.
- *
- * Tiles and a work queue, not a policy table: an administrator is not
- * managing a book of business, they are deciding which of 38 agencies needs
- * something done today. That is a different shape of screen and drawing it
- * as the agent list with more rows would have misrepresented the job.
- */
-export function AdminConsoleShot() {
-  return (
-    <Frame label="Admin — Business overview">
-      <div className="grid grid-cols-2 gap-2 border-b border-border p-3 sm:grid-cols-4">
-        {ADMIN_TILES.map((t) => (
-          <div key={t.label} className="rounded-xl border border-border bg-surface p-2.5">
-            <span className="block text-[9px] font-semibold uppercase tracking-[0.06em] text-muted">
-              {t.label}
-            </span>
-            <span className={cn("mt-1 block text-[17px] font-extrabold leading-none tabular-nums", t.tone)}>
-              {t.value}
-            </span>
-            <span className="mt-1 block text-[9px] leading-snug text-muted">{t.sub}</span>
-          </div>
-        ))}
-      </div>
-      <div className="p-3">
-        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.06em] text-muted">
-          <Clock className="size-3" />
-          Needs an operator
-        </span>
-        <ul className="mt-2 flex flex-col gap-1.5">
-          {ADMIN_QUEUE.map((q) => (
-            <li key={q.agency} className="flex items-start gap-2.5 rounded-xl border border-border p-2.5">
-              <span className={cn("flex-none rounded-full px-2 py-0.5 text-[9px] font-semibold", q.cls)}>
-                {q.state}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[11px] font-semibold text-foreground">{q.agency}</span>
-                <span className="block text-[9px] leading-snug text-muted">{q.note}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2.5 text-[9px] leading-relaxed text-muted">
-          Agency names, counts and queues are invented. Platform configuration, storage and payment
-          settings are back-office screens and are not shown on this website.
-        </p>
-      </div>
     </Frame>
   );
 }

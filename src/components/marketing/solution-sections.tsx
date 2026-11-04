@@ -6,7 +6,7 @@ import {
   Users, UsersRound, type LucideIcon,
 } from "lucide-react";
 import {
-  AdminConsoleShot, AgentCustomersShot, AgentDashboardShot, CustomerMatchShot,
+  AgentCustomersShot, AgentDashboardShot, CustomerMatchShot,
   CustomerMobileShot, CustomerRenewalsShot, CustomerVaultShot, ExportBuilderShot,
   ExtractedDetailsShot, PolicyHistoryShot, PolicyListShot, RenewalTimelineShot,
   ReviewFlagShot, RoleAccessShot, SearchExportShot, SubAgentTeamShot,
@@ -95,7 +95,6 @@ const SHOTS: Record<ShotName, (props: { className?: string }) => React.ReactElem
   templateRule: TemplateRuleShot,
   customerMobile: CustomerMobileShot,
   subAgentTeam: SubAgentTeamShot,
-  adminConsole: AdminConsoleShot,
   customerRenewals: CustomerRenewalsShot,
   agentCustomers: AgentCustomersShot,
 };
@@ -380,9 +379,16 @@ export function SolutionBand({
                   ))}
                 </div>
               ) : (
+                // Capped and not full-bleed. The odd-one-out row is often the
+                // phone mockup, which is an intrinsically narrow drawing —
+                // stretched across a 1216px track it sat alone in the middle
+                // of a few hundred pixels of nothing on either side, which is
+                // exactly the blank area a wide row is supposed to avoid. A
+                // 64rem cap keeps the caption and the figure within reading
+                // distance of each other whatever the shot's natural width.
                 <figure
                   key={r}
-                  className="m-0 grid gap-6 rail:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] rail:items-center rail:gap-10"
+                  className="m-0 grid gap-6 rail:max-w-4xl rail:grid-cols-[minmax(0,19rem)_minmax(0,1fr)] rail:items-center rail:gap-10"
                 >
                   <figcaption className="rail:order-1">
                     <h3 className="text-[17px] font-semibold text-foreground">{row[0].title}</h3>
@@ -415,9 +421,18 @@ export function SolutionBand({
                 key={c.who}
                 className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-5 shadow-card"
               >
+                {/* `max-w-full` is load-bearing. `w-max` sizes the chip to
+                    its max-content width — the label on ONE line, however
+                    long — and a flex child's default `min-width: auto` then
+                    refuses to shrink below it. "An owner who has to do all
+                    the uploading" at 11px uppercase with letter-spacing is
+                    about 300px, which is wider than a 360px phone's content
+                    column: the card grew past the viewport and took the page
+                    sideways with it. Capping the chip lets the label wrap,
+                    which is what it should have done. */}
                 <span
                   className={cn(
-                    "w-max rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em]",
+                    "w-max max-w-full rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase leading-snug tracking-[0.06em]",
                     ACCENT_CHIP[section.accent],
                   )}
                 >

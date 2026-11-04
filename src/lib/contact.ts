@@ -28,6 +28,24 @@ export const CONTACT = {
   managedBy: "Managed by Raulji Technologies Private Limited",
 
   /**
+   * The operating company's own website.
+   *
+   * Linked from the footer attribution and from the Contact page's company
+   * block, so a visitor can verify for themselves which company stands
+   * behind the product rather than taking a sentence's word for it.
+   *
+   * External, so every link to it carries `rel="noopener noreferrer"`:
+   * `noopener` because a tab opened with `target="_blank"` can otherwise
+   * reach back through `window.opener`, and `noreferrer` because the
+   * referrer adds nothing here. It is deliberately NOT in the Organization
+   * schema's `sameAs` — that field means "other profiles of this same
+   * entity", and the operating company is a different entity from the
+   * product. Claiming otherwise would merge two things an answer engine
+   * should keep apart.
+   */
+  companyUrl: "https://www.rauljitechnologies.com/",
+
+  /**
    * The person the business asked us to name as its contact.
    *
    * A CONTACT PERSON and nothing more. The business confirmed the name may be

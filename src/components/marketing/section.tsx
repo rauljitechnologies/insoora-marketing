@@ -11,9 +11,27 @@ import { ACCENT_CHIP, ACCENT_TEXT, heroWash, type Accent } from "@/lib/accents";
 // colours, radii and type scale are the same tokens, so the two still read as
 // one product.
 //
-// Spacing rule for the site: 80px between sections on desktop, 56px on a
+// Spacing rule for the site: 80px BETWEEN sections on desktop, 56px on a
 // phone, and a 1280px content column. Applied here once so no page can drift
 // — the header, every section and the footer all measure from this one value.
+//
+// ── The doubling bug ─────────────────────────────────────────────────────
+//
+// That rule was written as `shell:py-20`, which is 80px of padding on EACH
+// side. Two adjacent sections therefore produced 160px between one band of
+// content and the next — twice what the rule says — and a page of seven
+// sections carried about 1,400px of scroll with nothing in it.
+//
+// It was invisible in the code, because 80 is the number the rule names and
+// `py-20` is 80. It was found by measuring the gap between the last painted
+// pixel of one band and the first of the next, across every page: a steady
+// 161px on every solution page and 221px on /features.
+//
+// The values below are per-side, so adjacent sections now give 64px on a
+// phone, 80px from `sm`, and 96px from `shell`. Slightly over the stated
+// 80px at desktop on purpose: a band here is often a full-width tinted panel
+// or a bordered rule, and those need a little more air than a plain run of
+// text does.
 
 /** The centred content column every section shares. */
 export function Container({ className, ...p }: React.ComponentProps<"div">) {
@@ -41,7 +59,10 @@ export function Section({
     <section
       id={id}
       className={cn(
-        "py-14 sm:py-16 shell:py-20",
+        // Per-side. See the doubling note at the top of this file before
+        // changing these — the number in the spacing rule is the gap BETWEEN
+        // two sections, which is twice whatever is written here.
+        "py-8 sm:py-10 shell:py-12",
         tone === "surface" && "bg-surface",
         tone === "dark" && "bg-sidebar text-white",
         // A section with an id is a scroll target: offset it so the sticky
