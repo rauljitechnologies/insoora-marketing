@@ -15,7 +15,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "agent-portal",
   group: "portal",
-  metaTitle: "Agent Portal — Every Screen an Insurance Agent Works In | Insoora",
+  metaTitle: "Agent Portal — Every Screen an Insurance Agent Works In",
   description:
     "A screen-by-screen tour of the Insoora agent portal: dashboard, upload, policies, customers, sub-agents, exports and profile, drawn with sample data.",
   accent: "blue",

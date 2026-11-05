@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 // new post is a deploy, which is also what puts it in the sitemap.
 
 export const metadata = pageMetadata({
-  title: "Blog",
+  title: "Insurance Software Guides for Agents and Agencies",
   description:
     "Guides for insurance agents and policyholders: organizing policy documents, running an agency, tracking renewals, choosing software, and how policy extraction works.",
   path: "/blog",

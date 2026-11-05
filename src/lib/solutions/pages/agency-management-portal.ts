@@ -20,7 +20,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "agency-management-portal",
   group: "portal",
-  metaTitle: "Agency Management Portal — Sub-Agents and One Shared Book | Insoora",
+  metaTitle: "Agency Management Portal — Sub-Agents and One Shared Book",
   description:
     "How agency management works in Insoora: no separate agency portal, one agent account holding the book, and sub-agents with capabilities granted one at a time.",
   accent: "purple",

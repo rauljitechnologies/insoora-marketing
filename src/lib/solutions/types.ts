@@ -222,12 +222,18 @@ export interface SolutionPage {
   /**
    * Which footer column a solution page sits in.
    *
-   * The footer splits the eight across Product and Solutions rather than
-   * listing them as one column of eight, which would tower over its
-   * neighbours — the column band is deliberately flat. "product" is for the
-   * three that describe the core record (what a policy record is, how it
-   * gets created, how it is organised by customer); "solutions" is for the
-   * five that describe a job done around it.
+   * The split is by WHAT THE PAGE IS ABOUT, not by how many links each
+   * column needs. "product" is a capability of the software — what a policy
+   * record is, how it gets created, how documents are stored, how renewals
+   * are tracked. "solutions" is a kind of business using it: an agent
+   * working alone, or an agency with sub-agents. A reader scanning the
+   * footer is asking one of those two questions, and the columns answer
+   * them separately.
+   *
+   * It was cut three/five on column-balance grounds, which is a layout
+   * reason masquerading as an editorial one — "Renewal management" is a
+   * feature of the product however tall the column gets. The footer handles
+   * the uneven result in CSS instead.
    *
    * Declared per page rather than derived from the array's order. A footer
    * that changes because somebody reordered an import list is a footer that

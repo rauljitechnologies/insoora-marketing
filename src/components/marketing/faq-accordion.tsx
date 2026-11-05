@@ -19,10 +19,42 @@ import { ChevronDown } from "lucide-react";
 // — on a help page people open two answers to compare them, and a
 // single-open accordion closes the one they were reading.
 //
-// The answers are in the server-rendered HTML whether or not a panel is open:
-// Radix renders collapsed content and hides it with CSS and `hidden`, so a
-// crawler, an answer engine and a Ctrl+F all find the text. That is also what
-// makes the FAQPage schema on this page honest.
+// ── Why `forceMount` ─────────────────────────────────────────────────────
+//
+// This comment used to claim the answers were in the server-rendered HTML
+// whether or not a panel was open. They were not, and the claim was load
+// bearing — thirteen pages emit FAQPage structured data built from the same
+// array this component renders, and that markup is only legal when the
+// answers are actually on the page carrying it.
+//
+// Radix's `Accordion.Content` renders `isOpen && children` (see
+// `CollapsibleContentImpl` in @radix-ui/react-collapsible). Every panel is
+// closed on first render, so the server emitted eighteen questions on /faq,
+// thirteen on the home page and six on each of the eleven landing pages —
+// and not one answer. Stripping the `<script>` blocks out of /faq left 470
+// visible words where the questions and answers together are about 2,500.
+//
+// Two things were broken by that, and the second is the expensive one:
+//
+//   1. The FAQPage markup described content the page did not contain. That
+//      is the structured-data policy violation, not a technicality.
+//   2. Every answer engine that reads HTML without executing JavaScript and
+//      clicking saw a list of questions with no answers. These answers are
+//      written to be quoted standalone (see the note in lib/faq.ts) — they
+//      are the most quotable prose on the site, and they were invisible to
+//      exactly the readers they were written for.
+//
+// `forceMount` makes Radix render the children unconditionally. It also
+// stops Radix applying its own `hidden`, because `isOpen` is then always
+// true — so the collapsed state has to be hidden here instead, which is what
+// `data-[state=closed]:hidden` does. `display:none` is deliberate over a
+// height-0 clip: a screen reader must not read eighteen answers the reader
+// has not opened, and Google has always indexed text hidden behind an
+// accordion, so nothing is lost by hiding it properly.
+//
+// The cost is the 0.18s closing animation, which `display:none` cuts short.
+// The opening one still plays. That is a fair price for ninety-seven answers
+// that are now in the HTML.
 
 export function FaqAccordion({ items }: { items: { q: string; a: string }[] }) {
   return (
@@ -39,7 +71,10 @@ export function FaqAccordion({ items }: { items: { q: string; a: string }[] }) {
               <ChevronDown className="size-4 shrink-0 text-muted transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </Accordion.Trigger>
           </Accordion.Header>
-          <Accordion.Content className="overflow-hidden data-[state=closed]:anim-acc-up data-[state=open]:anim-acc-down">
+          <Accordion.Content
+            forceMount
+            className="overflow-hidden data-[state=closed]:hidden data-[state=open]:anim-acc-down"
+          >
             <p className="max-w-3xl px-4 pb-5 text-[15px] leading-relaxed text-muted sm:px-5">{item.a}</p>
           </Accordion.Content>
         </Accordion.Item>

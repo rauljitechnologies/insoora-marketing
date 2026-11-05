@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 
 export const metadata = pageMetadata({
-  title: "Features — Insurance PDF Extraction, Policy Records and Renewals",
+  title: "Features — Insurance PDF Extraction, Records, Renewals",
   description:
     "Every Insoora feature in detail: insurance PDF extraction, bulk upload, policy search, customer histories, renewal tracking, role-based access and export.",
   path: "/features",

@@ -19,7 +19,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "insurance-agency-management-software",
   group: "solution",
-  metaTitle: "Insurance Agency Management Software for Teams in India | Insoora",
+  metaTitle: "Insurance Agency Management Software for Teams in India",
   description:
     "Agency management software for insurance teams: one shared book of business, sub-agents with granted capabilities, and the agency's plan covering every upload.",
   accent: "purple",

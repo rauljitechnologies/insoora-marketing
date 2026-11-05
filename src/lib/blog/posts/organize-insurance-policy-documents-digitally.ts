@@ -3,7 +3,7 @@ import type { Post } from "../types";
 export const post: Post = {
   slug: "organize-insurance-policy-documents-digitally",
   title: "How to Organize Insurance Policy Documents Digitally",
-  metaTitle: "How to Organize Insurance Policy Documents Digitally: A Practical System",
+  metaTitle: "How to Organize Insurance Policy Documents Digitally",
   description:
     "A working system for storing insurance policy PDFs: what to name files, which fields to record, and how to keep the documents findable years later.",
   excerpt:

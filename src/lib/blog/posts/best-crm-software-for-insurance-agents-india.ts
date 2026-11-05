@@ -11,7 +11,7 @@ import type { Post } from "../types";
 export const post: Post = {
   slug: "best-crm-software-for-insurance-agents-india",
   title: "Best CRM Software for Insurance Agents in India: How to Choose",
-  metaTitle: "Best CRM Software for Insurance Agents in India — How to Choose",
+  metaTitle: "CRM Software for Insurance Agents in India — How to Choose",
   description:
     "Two different products are sold as insurance CRM. How to tell which one your agency needs, what to test, and the questions that separate them.",
   excerpt:

@@ -421,18 +421,27 @@ export function SolutionBand({
                 key={c.who}
                 className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-5 shadow-card"
               >
-                {/* `max-w-full` is load-bearing. `w-max` sizes the chip to
-                    its max-content width — the label on ONE line, however
-                    long — and a flex child's default `min-width: auto` then
-                    refuses to shrink below it. "An owner who has to do all
-                    the uploading" at 11px uppercase with letter-spacing is
-                    about 300px, which is wider than a 360px phone's content
-                    column: the card grew past the viewport and took the page
-                    sideways with it. Capping the chip lets the label wrap,
-                    which is what it should have done. */}
+                {/* `self-start`, NOT `w-max`.
+                
+                    Both shrink the chip to its label instead of letting it
+                    stretch the card's width, and they differ in the one way
+                    that matters here: `w-max` sets the width to max-content —
+                    the label on a single line, however long — and that
+                    becomes the card's min-content contribution, which a grid
+                    track cannot go below. "An owner who has to do all the
+                    uploading" at 11px uppercase with letter-spacing is about
+                    300px, so at 360px the card measured 361px against a 320px
+                    column and took the whole page sideways with it.
+                
+                    Adding `max-w-full` did not fix it: a percentage max-width
+                    resolves against a containing block whose width is still
+                    being computed during intrinsic sizing, so it does not
+                    constrain min-content at all. `align-self: flex-start`
+                    does, because the item is then sized by fit-content, whose
+                    min-content is the longest WORD rather than the phrase. */}
                 <span
                   className={cn(
-                    "w-max max-w-full rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase leading-snug tracking-[0.06em]",
+                    "max-w-full self-start rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase leading-snug tracking-[0.06em]",
                     ACCENT_CHIP[section.accent],
                   )}
                 >

@@ -109,6 +109,51 @@ const OG_IMAGE = {
 const DESCRIPTION_MIN = 70;
 const DESCRIPTION_MAX = 165;
 
+/**
+ * The length a page title has to fit inside, BEFORE the layout's template
+ * appends " · Insoora".
+ *
+ * ── Why this exists, and why 60 ──────────────────────────────────────────
+ *
+ * The description has been checked since the audit that found five
+ * paragraph-length ones in the built HTML. The title was not, and the same
+ * audit run again found the same class of defect in the other half of the
+ * snippet: eleven landing-page titles between 74 and 83 rendered characters,
+ * every one of them cut off in a result.
+ *
+ * 60 is the raw ceiling because the root layout's template adds ten
+ * characters (" · Insoora") to everything that passes through here, which
+ * puts the rendered title at 70 — about 600px of Latin text, which is
+ * roughly what Google shows. Like `DESCRIPTION_MAX` it is a ceiling and not
+ * a target: a 42-character title that says the right thing is better than a
+ * 59-character one padded to reach it.
+ *
+ * A floor is deliberately NOT set. "Blog" and "About Us" are four and eight
+ * characters and both are correct — a navigational page's title is its name,
+ * and a minimum here would only invite someone to pad them.
+ */
+const TITLE_MAX = 60;
+
+/**
+ * The brand, as it may not appear in a title passed to `pageMetadata`.
+ *
+ * The root layout templates every title as `"%s · Insoora"`, so a title that
+ * ends in its own brand suffix gets a second one. That is not hypothetical:
+ * all eleven landing pages carried `metaTitle` values ending "| Insoora",
+ * and every one of them shipped as
+ * "… Insurance Software | Insoora · Insoora" — in the tab, in the Open
+ * Graph card and in every search result.
+ *
+ * It survived review because nothing renders the template and the title
+ * together except the built HTML, and nobody reads the built HTML. So it is
+ * checked here, where the two finally meet.
+ *
+ * The home page is not affected and does not need an exemption: it sets
+ * `title.absolute` to escape the template, and the string it passes through
+ * this function carries no brand of its own.
+ */
+const BRAND_IN_TITLE = /\b(insoora)\b/i;
+
 interface PageSeo {
   title: string;
   description: string;
@@ -140,6 +185,23 @@ export function pageMetadata({ title, description, path, image }: PageSeo): Meta
     throw new Error(
       `seo: the description for "${path}" is ${description.length} characters. ` +
         `Keep it between ${DESCRIPTION_MIN} and ${DESCRIPTION_MAX} — see DESCRIPTION_MAX in lib/seo.`,
+    );
+  }
+
+  if (title.length > TITLE_MAX) {
+    throw new Error(
+      `seo: the title for "${path}" is ${title.length} characters, and the layout appends ` +
+        `" · Insoora" to make it ${title.length + 10}. Keep it to ${TITLE_MAX} or fewer — ` +
+        `see TITLE_MAX in lib/seo.`,
+    );
+  }
+
+  if (BRAND_IN_TITLE.test(title)) {
+    throw new Error(
+      `seo: the title for "${path}" already contains "Insoora", and the layout's template ` +
+        `appends " · Insoora" to it — the page would ship with the brand twice. Drop the ` +
+        `brand from the title, or set \`title.absolute\` on the page to opt out of the ` +
+        `template. See BRAND_IN_TITLE in lib/seo.`,
     );
   }
 

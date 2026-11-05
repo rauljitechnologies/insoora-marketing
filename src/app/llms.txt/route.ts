@@ -106,17 +106,22 @@ export function GET(): Response {
     // screens" are two different kinds of answer. Both lists are generated
     // from the collection (lib/solutions), so a page cannot be published
     // without appearing here — the same property the blog section has.
+    // `metaTitle` is used whole. It used to be split on " | " to drop a
+    // brand suffix every landing page carried — a suffix that also gave
+    // each page a second " · Insoora" from the layout's title template,
+    // which is why it was removed. A split left behind would silently
+    // truncate the first title that legitimately contains a pipe.
     "## Capabilities in depth",
     "",
     "One page each, every one stating its own limits as well as its features:",
     "",
-    ...SOLUTION_PAGES.map((p) => entry(p.metaTitle.split(" | ")[0], `/${p.slug}`, p.description)),
+    ...SOLUTION_PAGES.map((p) => entry(p.metaTitle, `/${p.slug}`, p.description)),
     "",
     "## The three portals",
     "",
     "Insoora has three portals and no more: an agent portal, a read-only customer portal, and a back office operated by the company that runs the platform. There is no separate agency portal — the main agent account IS the agency. These pages set each one out screen by screen.",
     "",
-    ...PORTAL_PAGES.map((p) => entry(p.metaTitle.split(" | ")[0], `/${p.slug}`, p.description)),
+    ...PORTAL_PAGES.map((p) => entry(p.metaTitle, `/${p.slug}`, p.description)),
     "",
     "## Guides",
     "",

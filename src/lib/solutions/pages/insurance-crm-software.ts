@@ -17,7 +17,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "insurance-crm-software",
   group: "solution",
-  metaTitle: "Insurance CRM Software for Agents in India — Client Records | Insoora",
+  metaTitle: "Insurance CRM Software for Agents in India — Client Records",
   description:
     "A client-record CRM for insurance agents: every policyholder with every policy they hold, their documents, their renewal dates and their own portal login.",
   accent: "teal",

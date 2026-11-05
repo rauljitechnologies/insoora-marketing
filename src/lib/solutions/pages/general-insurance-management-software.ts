@@ -15,7 +15,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "general-insurance-management-software",
   group: "solution",
-  metaTitle: "General Insurance Management Software — Motor, Health, Property | Insoora",
+  metaTitle: "General Insurance Management Software — Motor and Health",
   description:
     "General insurance software that models what each line actually carries: IDV and NCB on motor, sum insured and TPA on health, and the full premium breakdown.",
   accent: "green",
@@ -37,7 +37,7 @@ export const page: SolutionPage = {
     label: "General insurance",
     hint: "What each line of business actually carries",
   },
-  footerColumn: "solutions",
+  footerColumn: "product",
   primaryKeyword: "General Insurance Management Software",
   secondaryKeywords: [
     "General Insurance Software",

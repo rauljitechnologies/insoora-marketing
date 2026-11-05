@@ -22,7 +22,7 @@ import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
-  title: "Product in Action — Every Screen in Insoora",
+  title: "Product in Action — Every Screen, with Sample Data",
   description:
     "Every Insoora screen drawn with sample data: the agent dashboard, bulk PDF upload, extracted policy details, the review queue, renewals and the customer portal.",
   path: "/product-in-action",
