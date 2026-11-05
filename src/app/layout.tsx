@@ -298,17 +298,18 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: FooterLink[] }[] = [
       { href: appHref("/agent/register"), label: "Get Started", external: true },
     ],
   },
-  {
-    // Its own column rather than the tail of a mixed one.
-    t: "Legal",
-    tone: "text-[#FDE68A]",
-    links: [
-      { href: "/privacy-policy", label: "Privacy Policy" },
-      { href: "/terms-and-conditions", label: "Terms & Conditions" },
-      { href: "/refund-and-cancellation", label: "Refund & Cancellation Policy" },
-    ],
-  },
 ];
+
+// The fifth column is NOT in the array above, because it is not a list of
+// links — it is the office, the phone and the social profiles, rendered as
+// a block. It had been sitting under the brand in column one, which made
+// column one the tallest thing in the footer and left the right-hand end of
+// the grid empty from about the third link down. Moving it to the end
+// balances the row and fills the space that was showing.
+//
+// What used to be here was a Legal column, and it was a duplicate: all
+// three of those documents are in the closing bar, two rows below. One of
+// the two had to go, and the bar is where a reader looks for them.
 
 /** One footer column link. See the note at the call site for why the height
  *  floor is here rather than left to the line box.
@@ -326,12 +327,18 @@ const FOOTER_COLUMNS: { t: string; tone: string; links: FooterLink[] }[] = [
 const FOOTER_LINK =
   "inline-flex min-h-6 w-max max-w-full items-center text-sm text-[#CBD5E1] transition-colors hover:text-white";
 
-/** The three the closing bar repeats, for a reader who has scrolled past the
- *  grid and still expects to find them at the very bottom. */
+/** The legal documents, which live ONLY here now.
+ *
+ *  Contact Us is deliberately not among them any more: the whole Contact
+ *  column sits directly above, with the address and the phone number in it,
+ *  and a bar link to the same page under a block that already carries the
+ *  details is a link nobody needs twice. Refund & Cancellation takes the
+ *  slot, which also means the bar carries all three legal documents rather
+ *  than two of them. */
 const BAR_LINKS: { href: string; label: string }[] = [
   { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/terms-and-conditions", label: "Terms & Conditions" },
-  { href: "/contact-us", label: "Contact Us" },
+  { href: "/refund-and-cancellation", label: "Refund & Cancellation Policy" },
 ];
 
 /**
@@ -482,52 +489,6 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
               >
                 www.insoora.com
               </Link>
-
-              {/* The office. It stays in the footer because the Organization
-                  schema publishes this postal address on every page that
-                  carries it, and markup claiming an address the page does not
-                  show is markup the page does not back up. */}
-              <address className="flex flex-col gap-2 not-italic">
-                <span className="flex items-start gap-2 text-sm leading-[1.6] text-[#94A3B8]">
-                  <MapPin aria-hidden className="mt-0.5 size-3.5 flex-none text-[#FDBA74]" />
-                  <span className="flex flex-col">
-                    {addressLines().map((line) => (
-                      <span key={line}>{line}</span>
-                    ))}
-                  </span>
-                </span>
-                <span className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                  <a
-                    href={CONTACT.phoneHref}
-                    className="inline-flex min-h-6 items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#FCA5A5]"
-                  >
-                    <Phone aria-hidden className="size-3.5 text-[#FCA5A5]" />
-                    {CONTACT.phone}
-                  </a>
-                  {/* A maps search by address rather than a place ID — see
-                      `mapsSearchHref`. Built from lib/contact, so a corrected
-                      address cannot leave this pointing at the old one. */}
-                  <a
-                    href={mapsSearchHref()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-6 items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
-                  >
-                    Get directions
-                    <ArrowRight aria-hidden className="size-3.5" />
-                  </a>
-                </span>
-              </address>
-
-              {/* The profiles the Organization schema lists in `sameAs`. Both
-                  read lib/contact, so the markup cannot claim a profile the
-                  footer does not link to. They moved up out of the closing bar
-                  because that bar is now three links and a copyright, and a
-                  row of icons in it unbalanced the one thing it has to say. */}
-              <SocialLinks
-                className="mt-0.5 gap-2"
-                linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:border-white/30 hover:bg-white/10 hover:text-white"
-              />
             </div>
 
             {/* ── Columns two to five: the link lists ──
@@ -563,6 +524,69 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 )}
               </nav>
             ))}
+
+            {/* ── Column five: how to reach a person ──
+
+                Not a `nav`, because it is not navigation — it is an address,
+                a phone number and three profile links. Giving it a fifth
+                navigation landmark would have made the footer announce five
+                of them to a screen reader, one of which contains no site
+                links at all.
+
+                One track at every width, including the phone. Spanning two
+                on a phone reads better in isolation — the address stops
+                wrapping — but it pushes Resources into a row of its own and
+                leaves the track beside it empty, which is the hole this
+                whole pass is about. A wrapped address line costs less than a
+                visible gap. */}
+            <div className="flex min-w-0 flex-col gap-3">
+              <strong className="text-[13px] uppercase tracking-[0.08em] text-[#FDE68A]">
+                Contact Us
+              </strong>
+
+              <address className="flex flex-col gap-2.5 not-italic">
+                <span className="flex items-start gap-2 text-sm leading-[1.6] text-[#94A3B8]">
+                  <MapPin aria-hidden className="mt-0.5 size-3.5 flex-none text-[#FDBA74]" />
+                  <span className="flex flex-col">
+                    {addressLines().map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </span>
+                </span>
+                <a
+                  href={CONTACT.phoneHref}
+                  className="inline-flex w-max min-h-6 items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#FCA5A5]"
+                >
+                  <Phone aria-hidden className="size-3.5 flex-none text-[#FCA5A5]" />
+                  {CONTACT.phone}
+                </a>
+                {/* No email address. There is no published mailbox anywhere
+                    on this site — the Contact page says so in as many words,
+                    and an address that bounces is worse than none. When a
+                    real one exists it belongs here, beside the phone, and in
+                    lib/contact so the Contact page and this agree. */}
+                {/* A maps search by address rather than a place ID — see
+                    `mapsSearchHref`. Built from lib/contact, so a corrected
+                    address cannot leave this pointing at the old one. */}
+                <a
+                  href={mapsSearchHref()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-max min-h-6 items-center gap-1.5 text-sm font-semibold text-[#FCA5A5] transition-colors hover:text-white"
+                >
+                  Get directions
+                  <ArrowRight aria-hidden className="size-3.5" />
+                </a>
+              </address>
+
+              {/* The profiles the Organization schema lists in `sameAs`. Both
+                  read lib/contact, so the markup cannot claim a profile the
+                  footer does not link to. */}
+              <SocialLinks
+                className="mt-0.5 gap-2"
+                linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:border-white/30 hover:bg-white/10 hover:text-white"
+              />
+            </div>
           </div>
 
           {/* ── The closing bar ──
