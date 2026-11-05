@@ -8,8 +8,8 @@ export const post: Post = {
     "How a small insurance agency actually runs: the book of business, sub-agent handovers, renewal pipelines, and the systems worth having before you grow.",
   excerpt:
     "The hard part of running an agency is not selling. It is that everything you sold stays your responsibility — and the number of things you are responsible for only ever goes up.",
-  published: "2026-10-30",
-  updated: "2026-10-30",
+  published: "2026-10-15",
+  updated: "2026-10-15",
   accent: "purple",
   category: "agent-workflow",
   art: "agency",

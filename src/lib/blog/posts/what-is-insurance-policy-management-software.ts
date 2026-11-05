@@ -15,8 +15,8 @@ export const post: Post = {
     "What insurance policy management software is, the five things it has to do, and how a policy PDF becomes a searchable record with a renewal date attached.",
   excerpt:
     "A plain explanation of the category: what a policy record is, the five jobs the software has to do, how a PDF becomes one, and the three places these systems usually fail.",
-  published: "2026-11-04",
-  updated: "2026-11-04",
+  published: "2026-10-23",
+  updated: "2026-10-23",
   accent: "blue",
   category: "how-it-works",
   art: "pipeline",

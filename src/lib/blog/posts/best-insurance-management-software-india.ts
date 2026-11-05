@@ -27,8 +27,8 @@ export const post: Post = {
     "How to judge insurance management software for an Indian agency: the seven questions that separate the products, and a two-hour test that settles it.",
   excerpt:
     "There is no ranked list in this article, and that is deliberate. Here is what to test instead, in what order, and the questions that actually separate one of these products from another.",
-  published: "2026-11-04",
-  updated: "2026-11-04",
+  published: "2026-11-02",
+  updated: "2026-11-02",
   accent: "red",
   category: "choosing",
   art: "buying",

@@ -15,8 +15,8 @@ export const post: Post = {
     "What general insurance software has to model per line of business — motor IDV and NCB, health sums insured, travel periods — and the features that follow.",
   excerpt:
     "A general insurance book is not one shape. The features worth paying for are the ones that model a motor schedule as a motor schedule instead of flattening every line into insurer, number and date.",
-  published: "2026-11-04",
-  updated: "2026-11-04",
+  published: "2026-10-29",
+  updated: "2026-10-29",
   accent: "green",
   category: "choosing",
   art: "lines",

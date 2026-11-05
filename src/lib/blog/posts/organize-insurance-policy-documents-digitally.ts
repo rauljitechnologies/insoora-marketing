@@ -8,8 +8,8 @@ export const post: Post = {
     "A working system for storing insurance policy PDFs: what to name files, which fields to record, and how to keep the documents findable years later.",
   excerpt:
     "Most policy filing systems fail the same way — they are organized for the person who filed the document, not for the person who has to find it eighteen months later. Here is a system built around retrieval.",
-  published: "2026-10-30",
-  updated: "2026-10-30",
+  published: "2026-10-19",
+  updated: "2026-10-19",
   accent: "blue",
   category: "agent-workflow",
   art: "filing",
@@ -18,6 +18,7 @@ export const post: Post = {
     "track-insurance-policy-renewals-and-important-dates",
     "ocr-in-insurance-how-digital-policy-extraction-works",
     "reduce-manual-insurance-policy-data-entry",
+    "insurance-policy-details-explained",
   ],
   sections: [
     {

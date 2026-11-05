@@ -8,8 +8,8 @@ export const post: Post = {
     "Which insurance dates actually matter, where to find them on the policy, and how to build a renewal list that does not depend on anybody remembering.",
   excerpt:
     "A lapsed policy is rarely a decision. It is almost always a date nobody was watching — and the fix is less about reminders than about where the date came from in the first place.",
-  published: "2026-10-30",
-  updated: "2026-10-30",
+  published: "2026-10-17",
+  updated: "2026-10-17",
   accent: "orange",
   category: "agent-workflow",
   art: "renewals",
@@ -18,6 +18,7 @@ export const post: Post = {
     "insurance-agency-management-practical-guide",
     "how-customers-can-keep-insurance-policies-organized",
     "manage-multiple-insurance-policies-one-dashboard",
+    "insurance-policy-details-explained",
   ],
   sections: [
     {
@@ -111,7 +112,7 @@ export const post: Post = {
         },
         {
           kind: "text",
-          text: "A date read off the policy schedule is the fact itself. When the document changes, re-reading it gives the new answer. This is why an expiry date extracted from the PDF is worth more than the same date typed into a calendar — not because typing is error-prone, though it is, but because the typed version has no connection to the source and cannot be re-checked.",
+          text: "A date read off the policy schedule is the fact itself. When the document changes, re-reading it gives the new answer. This is why an expiry date extracted from the PDF is worth more than the same date typed into a calendar — not because typing is error-prone, though it is, but because the typed version has no connection to the source and cannot be re-checked. It is also why [knowing where the expiry date sits on a schedule](/blog/insurance-policy-details-explained) matters: it is commonly printed with a time, and as the second half of a period-of-insurance line rather than as a field of its own.",
         },
         {
           kind: "h3",

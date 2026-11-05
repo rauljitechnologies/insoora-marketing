@@ -8,8 +8,8 @@ export const post: Post = {
     "What OCR does to an insurance policy PDF, why a text layer matters more than image quality, and how to judge whether a system's output can be trusted.",
   excerpt:
     "\"The software reads the policy\" covers two completely different operations with different failure modes. Knowing which one is happening tells you how much to trust the result.",
-  published: "2026-10-30",
-  updated: "2026-10-30",
+  published: "2026-10-13",
+  updated: "2026-10-13",
   accent: "teal",
   category: "how-it-works",
   art: "ocr",
@@ -18,6 +18,7 @@ export const post: Post = {
     "organize-insurance-policy-documents-digitally",
     "insurance-agency-management-practical-guide",
     "reduce-manual-insurance-policy-data-entry",
+    "insurance-policy-details-explained",
   ],
   sections: [
     {
@@ -77,7 +78,7 @@ export const post: Post = {
         },
         {
           kind: "text",
-          text: "The output is text plus, usually, a confidence score per region. That score is the most useful thing in the whole pipeline, and it is the thing a good system surfaces rather than hides.",
+          text: "The output is text plus, usually, a confidence score per region. That score is the most useful thing in the whole pipeline, and it is the thing a good system surfaces rather than hides. What the engine is trying to find is the set of fields a schedule carries — [the fifteen a policy document actually contains](/blog/insurance-policy-details-explained) are worth knowing before you judge whether an extraction got them right.",
         },
         {
           kind: "h3",

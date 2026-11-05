@@ -600,6 +600,75 @@ function Grid({ c }: FigureProps) {
   );
 }
 
+/**
+ * A policy schedule with one field under a magnifier — "what each of these
+ * fields means".
+ *
+ * The thirteenth, and deliberately not another variation on `ocr`: that one
+ * is about a document being READ BY SOFTWARE and resolving into values, so it
+ * shows a scan pass and a column of machine output. This one is about a human
+ * understanding a document they already have, so it shows the schedule itself,
+ * whole and legible, with attention on one row. The magnifier is the only one
+ * in the set.
+ */
+function Schedule({ c }: FigureProps) {
+  const rows = [0, 1, 2, 3, 4];
+  /** The row under the lens — the one the article is pointing at. */
+  const focus = 2;
+  return (
+    <>
+      {/* The schedule. */}
+      <rect x={58} y={28} width={244} height={170} rx="12" fill="#FFFFFF" stroke={c.soft} strokeWidth="2" />
+      {/* Its header band. The square patch under the rounded rect keeps the
+          bottom two corners of the band square where it meets the table. */}
+      <rect x={58} y={28} width={244} height={30} rx="12" fill={c.deep} />
+      <rect x={58} y={46} width={244} height={12} fill={c.deep} />
+      <rect x={72} y={38} width={92} height="8" rx="4" fill="#FFFFFF" opacity="0.9" />
+      <rect x={262} y={38} width={26} height="8" rx="4" fill="#FFFFFF" opacity="0.45" />
+
+      {/* Label / value pairs — the shape a schedule actually has. */}
+      {rows.map((i) => {
+        const y = 74 + i * 25;
+        const on = i === focus;
+        return (
+          <g key={i}>
+            <rect x={72} y={y} width={i % 2 ? 62 : 74} height="8" rx="4" fill={c.soft} />
+            <rect
+              x={196}
+              y={y - 3}
+              width={i % 2 ? 76 : 92}
+              height="14"
+              rx="7"
+              fill={on ? c.deep : c.mid}
+              opacity={on ? 1 : 0.32}
+            />
+            {i < rows.length - 1 && (
+              <rect x={72} y={y + 17} width={216} height="1.5" fill={c.soft} opacity="0.6" />
+            )}
+          </g>
+        );
+      })}
+
+      {/* The lens over the row in focus. */}
+      <circle cx={244} cy={74 + focus * 25 + 4} r="34" fill="#FFFFFF" opacity="0.18" />
+      <circle
+        cx={244}
+        cy={74 + focus * 25 + 4}
+        r="34"
+        fill="none"
+        stroke={c.deep}
+        strokeWidth="4"
+      />
+      <path
+        d={`M${244 + 24} ${74 + focus * 25 + 28} L${244 + 44} ${74 + focus * 25 + 48}`}
+        stroke={c.deep}
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+    </>
+  );
+}
+
 const FIGURES: Record<PostArt, (p: FigureProps) => React.ReactElement> = {
   filing: Filing,
   agency: Agency,
@@ -613,6 +682,7 @@ const FIGURES: Record<PostArt, (p: FigureProps) => React.ReactElement> = {
   keyboard: Keyboard,
   dashboard: Dashboard,
   grid: Grid,
+  schedule: Schedule,
 };
 
 /**
@@ -646,4 +716,6 @@ export const ART_ALT: Record<PostArt, string> = {
     "Three scattered windows resolving into a single screen of summary tiles",
   grid:
     "A spreadsheet grid with an empty cell and a struck-out one, beside a structured record with its document attached",
+  schedule:
+    "An insurance policy schedule of label and value pairs, with a magnifier over one of the values",
 };

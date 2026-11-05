@@ -11,6 +11,7 @@ import { post as generalFeatures } from "./posts/general-insurance-management-so
 import { post as dataEntry } from "./posts/reduce-manual-insurance-policy-data-entry";
 import { post as oneDashboard } from "./posts/manage-multiple-insurance-policies-one-dashboard";
 import { post as excelVsCrm } from "./posts/excel-vs-insurance-crm-software";
+import { post as policyDetails } from "./posts/insurance-policy-details-explained";
 
 export * from "./types";
 
@@ -39,6 +40,7 @@ const ALL: Post[] = [
   dataEntry,
   oneDashboard,
   excelVsCrm,
+  policyDetails,
 ];
 
 /**

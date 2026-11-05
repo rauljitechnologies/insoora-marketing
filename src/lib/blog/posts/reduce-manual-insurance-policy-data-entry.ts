@@ -16,8 +16,8 @@ export const post: Post = {
     "Where policy data entry time actually goes, four habits that cut it without new software, and what reading documents instead of typing them changes.",
   excerpt:
     "Most advice about data entry is about typing faster. The work that disappears is the work you stop doing at all — and four of the five ways to do that need no software.",
-  published: "2026-11-04",
-  updated: "2026-11-04",
+  published: "2026-10-25",
+  updated: "2026-10-25",
   accent: "purple",
   category: "agent-workflow",
   art: "keyboard",
@@ -26,6 +26,7 @@ export const post: Post = {
     "what-is-insurance-policy-management-software",
     "ocr-in-insurance-how-digital-policy-extraction-works",
     "organize-insurance-policy-documents-digitally",
+    "insurance-policy-details-explained",
   ],
   sections: [
     {

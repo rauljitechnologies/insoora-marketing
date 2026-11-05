@@ -8,8 +8,8 @@ export const post: Post = {
     "A simple way to keep track of your own insurance: what to save, what to write down, how to find a policy quickly in an emergency, and what your family needs to know.",
   excerpt:
     "Most people find out their insurance paperwork is disorganised at the worst possible moment. An hour of setup now is the difference between a claim that is straightforward and one that is not.",
-  published: "2026-10-30",
-  updated: "2026-10-30",
+  published: "2026-10-21",
+  updated: "2026-10-21",
   accent: "green",
   category: "policyholder",
   art: "wallet",
@@ -18,6 +18,7 @@ export const post: Post = {
     "organize-insurance-policy-documents-digitally",
     "track-insurance-policy-renewals-and-important-dates",
     "what-is-insurance-policy-management-software",
+    "insurance-policy-details-explained",
   ],
   sections: [
     {
