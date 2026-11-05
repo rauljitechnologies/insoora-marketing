@@ -150,4 +150,5 @@ export type PostArt =
   | "lines"
   | "keyboard"
   | "dashboard"
-  | "grid";
+  | "grid"
+  | "schedule";

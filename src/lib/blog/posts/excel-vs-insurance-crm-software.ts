@@ -16,8 +16,8 @@ export const post: Post = {
     "An honest comparison for insurance agents: what a spreadsheet does better, where it breaks, and the four signals that say it is time to move.",
   excerpt:
     "Below a certain size a spreadsheet is the right answer, and it is worth saying so on a software company's website. Here is where the line actually is, and what crossing it looks like.",
-  published: "2026-11-04",
-  updated: "2026-11-04",
+  published: "2026-10-31",
+  updated: "2026-10-31",
   accent: "orange",
   category: "choosing",
   art: "grid",

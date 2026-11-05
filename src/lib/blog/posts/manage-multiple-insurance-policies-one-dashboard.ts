@@ -16,8 +16,8 @@ export const post: Post = {
     "What has to be true before one dashboard can show a whole insurance book, which five numbers are worth putting on it, and which are decoration.",
   excerpt:
     "A single dashboard is not a design problem. It is a consequence of every policy having been read into the same shape — and of resisting the four numbers that look useful and are not.",
-  published: "2026-11-04",
-  updated: "2026-11-04",
+  published: "2026-10-27",
+  updated: "2026-10-27",
   accent: "teal",
   category: "agent-workflow",
   art: "dashboard",
