@@ -10,6 +10,7 @@ import { SiteNav, type SiteNavItem } from "@/components/marketing/site-nav";
 import { SignInLinks, SignInMenu } from "@/components/marketing/sign-in-menu";
 import { SocialLinks } from "@/components/marketing/social-links";
 import { Analytics, CookieSettingsButton } from "@/components/marketing/analytics";
+import { LanguageTranslate } from "@/components/marketing/language-translate";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 import { PRODUCT, siteUrl } from "@/lib/seo";
@@ -586,6 +587,21 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 className="mt-0.5 gap-2"
                 linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:border-white/30 hover:bg-white/10 hover:text-white"
               />
+
+              {/* Google's Website Translator — now just its dropdown; the
+                  heading, the language list and the credit have all been
+                  taken out to save footer space.
+
+                  It sits at the foot of the Contact column rather than in
+                  the closing bar: the control is 40px tall and the bar is a
+                  single row of 13px text, so putting it there would have
+                  deepened the bar on every page.
+
+                  Read the header of language-translate.tsx before changing
+                  it. Two things there are deliberate and look like bugs: the
+                  credit is hidden against Google's terms at the business's
+                  instruction, and the widget contributes nothing to search. */}
+              <LanguageTranslate className="mt-4" />
             </div>
           </div>
 

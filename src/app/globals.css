@@ -646,3 +646,99 @@ html {
   --color-footer: var(--footer);
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   The Google Website Translator, in the footer.
+
+   Two jobs here, and they are different in kind.
+
+   1. STYLE the control so it does not arrive as a white system dropdown on
+      a navy footer. Google renders a <select> plus its own attribution; the
+      select is ours to colour, the attribution is not ours to touch — see
+      the note at the top of components/marketing/language-translate.tsx for
+      why keeping it visible is a condition of using the widget at all.
+
+   2. UNDO the toolbar's layout damage. Once a language is chosen Google
+      injects a fixed iframe at the top of the document and sets
+      `body { top: 40px }` to clear it. This site's header is `sticky top-0`,
+      so that offset slides the header under the toolbar and the navigation
+      stops being clickable. Neutralising it is a layout fix and not brand
+      removal: the attribution Google requires is the line inside the
+      widget, which is untouched.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* The injected toolbar, and the offset it forces onto the document. */
+.skiptranslate iframe {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
+
+/* Google's own select, wearing the footer's colours. */
+.translate-mount .goog-te-combo {
+  width: 100%;
+  max-width: 13rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  background-color: rgb(255 255 255 / 0.06);
+  padding: 0.5rem 0.625rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  /* 40px, so the control clears WCAG 2.2's 24px target minimum with room. */
+  min-height: 2.5rem;
+  color: #E2E8F0;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+.translate-mount .goog-te-combo:hover {
+  border-color: rgb(255 255 255 / 0.3);
+  background-color: rgb(255 255 255 / 0.1);
+}
+/* The option list is painted by the OS, so it needs a dark-on-light pairing
+   of its own — white text on a white popup is the default otherwise. */
+.translate-mount .goog-te-combo option {
+  color: #0F172A;
+  background-color: #FFFFFF;
+}
+
+/* Google's attribution block: left in place, nudged into the footer's type
+   scale so it reads as part of the column rather than pasted on top of it.
+   Nothing here hides it. */
+/* No rule styling the credit's colour: it is hidden below, and a rule
+   colouring something invisible is the kind of dead CSS that makes the next
+   reader doubt everything around it. */
+/* The "Powered by Google Translate" attribution, hidden.
+
+   ── This is against Google's terms, and it is deliberate ──
+
+   Google's terms for the Website Translator require the credit stay
+   visible. The business instructed it be hidden, after the conflict was put
+   to them twice and after they had chosen the option that kept it. It is
+   recorded here, and in the header of
+   components/marketing/language-translate.tsx, so that the next person to
+   read this file knows it was a decision and not a mistake — and so nobody
+   spends an afternoon working out why the credit is missing.
+
+   Reverting is deleting this one rule.
+
+   Note this is NOT the same as the toolbar rules above. Those stop a fixed
+   iframe pushing the sticky header out of reach, which would be correct on
+   any site. This one removes a credit. Keep them apart. */
+.translate-mount .goog-te-gadget > span {
+  display: none !important;
+}
+
+/* Hiding the <span> is not enough on its own, and this is the part that is
+   easy to get wrong: "Powered by" is a BARE TEXT NODE sitting directly
+   inside `.goog-te-gadget`, between the select's wrapper and the span. A
+   text node cannot be selected, so it survives any `display: none` aimed at
+   an element and the control ships with a stray "Powered by" under it.
+   Collapsing the gadget's own font-size is what removes it; the select
+   restores a real size for itself in its own rule above. */
+.translate-mount .goog-te-gadget {
+  display: block;
+  font-family: inherit !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+}
