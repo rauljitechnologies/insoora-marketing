@@ -646,3 +646,93 @@ html {
   --color-footer: var(--footer);
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   The Google Website Translator, in the footer.
+
+   Two jobs here, and they are different in kind.
+
+   1. STYLE the control so it does not arrive as a white system dropdown on
+      a navy footer. Google renders a <select> plus its own attribution; the
+      select is ours to colour, the attribution is not ours to touch — see
+      the note at the top of components/marketing/language-translate.tsx for
+      why keeping it visible is a condition of using the widget at all.
+
+   2. UNDO the toolbar's layout damage. Once a language is chosen Google
+      injects a fixed iframe at the top of the document and sets
+      `body { top: 40px }` to clear it. This site's header is `sticky top-0`,
+      so that offset slides the header under the toolbar and the navigation
+      stops being clickable. Neutralising it is a layout fix and not brand
+      removal: the attribution Google requires is the line inside the
+      widget, which is untouched.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* The injected toolbar, and the offset it forces onto the document. */
+.skiptranslate iframe {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
+
+/* Google's own select, wearing the footer's colours. */
+.translate-mount .goog-te-combo {
+  width: 100%;
+  max-width: 13rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  background-color: rgb(255 255 255 / 0.06);
+  padding: 0.5rem 0.625rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  /* 40px, so the control clears WCAG 2.2's 24px target minimum with room. */
+  min-height: 2.5rem;
+  color: #E2E8F0;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+.translate-mount .goog-te-combo:hover {
+  border-color: rgb(255 255 255 / 0.3);
+  background-color: rgb(255 255 255 / 0.1);
+}
+/* The option list is painted by the OS, so it needs a dark-on-light pairing
+   of its own — white text on a white popup is the default otherwise. */
+.translate-mount .goog-te-combo option {
+  color: #0F172A;
+  background-color: #FFFFFF;
+}
+
+/* Google's attribution block: left in place, nudged into the footer's type
+   scale so it reads as part of the column rather than pasted on top of it.
+   Nothing here hides it. */
+.translate-mount .goog-logo-link,
+.translate-mount .goog-logo-link:link,
+.translate-mount .goog-logo-link:visited {
+  color: #94A3B8 !important;
+}
+.translate-mount .goog-te-gadget {
+  font-family: inherit !important;
+  font-size: 0.75rem !important;
+  line-height: 1.5 !important;
+  color: #94A3B8 !important;
+}
+/* The attribution sits in a <span> after the select: the words "Powered by",
+   then a link holding the Google logo <img> and the word "Translate". Given
+   its own line under the control. */
+.translate-mount .goog-te-gadget > span {
+  display: block;
+  margin-top: 0.375rem;
+}
+
+/* Tailwind's preflight sets `img { display: block }`, which broke Google's
+   logo out of the sentence it belongs to and left the attribution stacked
+   three lines tall — "Powered by" / logo / "Translate". Putting the image
+   back inline is what keeps the credit reading as one line, which is also
+   the form Google's terms describe. */
+.translate-mount img {
+  display: inline-block;
+  vertical-align: middle;
+}
+.translate-mount .goog-te-gadget > span a {
+  white-space: nowrap;
+  text-decoration: none;
+}

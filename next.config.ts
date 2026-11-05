@@ -55,17 +55,78 @@ const isProduction = process.env.NODE_ENV === "production";
 /** Where the GA4 and Tag Manager scripts are served from. */
 const GOOGLE_TAGS = "https://www.googletagmanager.com";
 
+// ── The Website Translator ───────────────────────────────────────────────
+//
+// The footer carries Google's Website Translator (see
+// components/marketing/language-translate.tsx), which is a THIRD-PARTY
+// SCRIPT THAT REWRITES THE PAGE. That is a materially bigger grant than the
+// analytics tags above: GA4 reads the page and phones home, whereas this
+// one loads code that edits the DOM and ships the page's text to Google to
+// be translated.
+//
+// It is listed as exact origins and only the ones it actually asks for,
+// each of which was found by loading the widget and reading the violations
+// rather than by guessing from documentation:
+//
+//   translate.google.com        the loader, and the toolbar iframe
+//   translate.googleapis.com    the translation calls and the widget's CSS
+//   translate-pa.googleapis.com the supported-language list. A SEPARATE
+//                               host from the one above, fetched by
+//                               injecting a <script> (JSONP) — so it needs
+//                               script-src, not just connect-src. Blocked,
+//                               the control renders with zero options: a
+//                               dropdown that opens onto nothing.
+//   www.gstatic.com             the widget's static assets and sprites
+//   fonts.gstatic.com           serves the Translate product logo as an SVG
+//                               IMAGE as well as font faces, so it is on
+//                               img-src and font-src both.
+//
+// Deliberately NOT added: 'unsafe-eval'. It turned out not to be needed —
+// the widget loads, lists its languages and translates the page without it.
+// If a future version does need it, the right answer is to drop the widget
+// rather than allow arbitrary string evaluation on every page of the site.
+//
+// ── Three things stay blocked, on purpose ────────────────────────────────
+//
+// Translating a page still produces a handful of CSP refusals in the
+// console, and they are all TELEMETRY rather than function. Translation
+// works correctly with every one of them blocked, verified in a browser:
+//
+//   www.google.com/images/cleardot.gif   a 1x1 tracking pixel
+//   translate.google.com/gen204?…        a logging beacon, requested over
+//                                        plain HTTP — which on an HTTPS
+//                                        site is mixed content a browser
+//                                        would refuse anyway, and which no
+//                                        policy here should invite
+//
+// Allowing them would widen the policy to buy Google better analytics about
+// our visitors, which is the opposite of what the consent gate above exists
+// for. The refusals in the console are the policy working, not a defect —
+// do not "fix" them by adding the origins.
+const GOOGLE_TRANSLATE = [
+  "https://translate.google.com",
+  "https://translate.googleapis.com",
+  "https://translate-pa.googleapis.com",
+  "https://www.gstatic.com",
+].join(" ");
+
+/** Hosts the widget pulls images and faces from. */
+const GOOGLE_STATIC = "https://fonts.gstatic.com";
+
 /** Where GA4 sends measurement beacons. The wildcard covers the regional
  *  collection hosts (`region1.`, `region2.`, …) GA4 routes visitors to. */
 const GOOGLE_COLLECT = "https://*.google-analytics.com https://www.google-analytics.com";
 
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' ${GOOGLE_TAGS}${isProduction ? "" : " 'unsafe-eval'"}`,
-  "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: ${GOOGLE_TAGS} ${GOOGLE_COLLECT}`,
-  "font-src 'self' data:",
-  `connect-src 'self' ${GOOGLE_TAGS} ${GOOGLE_COLLECT}`,
+  `script-src 'self' 'unsafe-inline' ${GOOGLE_TAGS} ${GOOGLE_TRANSLATE}${isProduction ? "" : " 'unsafe-eval'"}`,
+  `style-src 'self' 'unsafe-inline' ${GOOGLE_TRANSLATE}`,
+  `img-src 'self' data: ${GOOGLE_TAGS} ${GOOGLE_COLLECT} ${GOOGLE_TRANSLATE} ${GOOGLE_STATIC}`,
+  `font-src 'self' data: ${GOOGLE_STATIC}`,
+  `connect-src 'self' ${GOOGLE_TAGS} ${GOOGLE_COLLECT} ${GOOGLE_TRANSLATE}`,
+  // The translated-page toolbar is an iframe Google injects into this
+  // document. `frame-ancestors 'none'` below still stops anyone framing US.
+  `frame-src ${GOOGLE_TRANSLATE}`,
   "form-action 'self'",
   "object-src 'none'",
   "base-uri 'self'",
