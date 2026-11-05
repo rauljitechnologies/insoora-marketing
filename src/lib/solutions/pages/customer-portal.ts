@@ -17,7 +17,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "customer-portal",
   group: "portal",
-  metaTitle: "Insurance Customer Portal — What Your Policyholders See | Insoora",
+  metaTitle: "Insurance Customer Portal — What Your Policyholders See",
   description:
     "A read-only insurance customer portal: every policy their agent shared, days left on each cover, and the original documents — and nothing they can change.",
   accent: "teal",

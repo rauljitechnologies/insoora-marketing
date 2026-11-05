@@ -3,7 +3,7 @@ import type { Post } from "../types";
 export const post: Post = {
   slug: "ocr-in-insurance-how-digital-policy-extraction-works",
   title: "OCR in Insurance: How Digital Policy Extraction Works",
-  metaTitle: "OCR in Insurance: How Digital Policy Extraction Actually Works",
+  metaTitle: "OCR in Insurance: How Policy Extraction Actually Works",
   description:
     "What OCR does to an insurance policy PDF, why a text layer matters more than image quality, and how to judge whether a system's output can be trusted.",
   excerpt:

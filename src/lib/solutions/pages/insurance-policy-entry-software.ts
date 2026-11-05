@@ -15,7 +15,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "insurance-policy-entry-software",
   group: "solution",
-  metaTitle: "Insurance Policy Entry Software — Stop Retyping Schedules | Insoora",
+  metaTitle: "Insurance Policy Entry Software — Stop Retyping Schedules",
   description:
     "Policy entry software that reads the schedule instead of asking you to type it: deterministic rules first, OCR for scans, and a human confirming every record.",
   accent: "red",

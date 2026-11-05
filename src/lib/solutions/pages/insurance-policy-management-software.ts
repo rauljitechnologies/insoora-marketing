@@ -7,7 +7,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "insurance-policy-management-software",
   group: "solution",
-  metaTitle: "Insurance Policy Management Software for Indian Agents | Insoora",
+  metaTitle: "Insurance Policy Management Software for Indian Agents",
   description:
     "Insurance policy management software that reads policy PDFs, files each one under its customer and builds a renewal list from the policy's own expiry date.",
   accent: "blue",

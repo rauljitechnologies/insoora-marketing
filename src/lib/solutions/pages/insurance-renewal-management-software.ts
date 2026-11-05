@@ -16,7 +16,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "insurance-renewal-management-software",
   group: "solution",
-  metaTitle: "Insurance Renewal Management Software — Expiry Tracking | Insoora",
+  metaTitle: "Insurance Renewal Management Software — Expiry Tracking",
   description:
     "Renewal management that reads the expiry date off the policy schedule and builds a thirty-day list, so a lapse is visible before it happens rather than after.",
   accent: "orange",

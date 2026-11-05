@@ -10,7 +10,7 @@ import type { Post } from "../types";
 export const post: Post = {
   slug: "general-insurance-management-software-features",
   title: "General Insurance Management Software: Features Every Agency Needs",
-  metaTitle: "General Insurance Management Software: The Features That Matter",
+  metaTitle: "General Insurance Software: The Features That Matter",
   description:
     "What general insurance software has to model per line of business — motor IDV and NCB, health sums insured, travel periods — and the features that follow.",
   excerpt:

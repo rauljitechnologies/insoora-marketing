@@ -326,10 +326,10 @@ table,
    cost nothing at runtime and never delay first paint: the markup is already
    correct, the animation only reveals it. `--delay` staggers a list.
 
-   Only the four this deployment actually uses are kept — see the note at the
-   top of the file about what was dropped from the product's copy. `anim-rise`
-   is the mobile drawer, `anim-pop` the header dropdowns, and the two
-   `anim-acc-*` the FAQ accordion.
+   Only the three this deployment actually uses are kept — see the note at
+   the top of the file about what was dropped from the product's copy.
+   `anim-rise` is the mobile drawer, `anim-pop` the header dropdowns, and
+   `anim-acc-down` the FAQ accordion opening.
    ─────────────────────────────────────────────────────────────────────────── */
 
 @keyframes pr-rise {
@@ -341,20 +341,23 @@ table,
   to { opacity: 1; transform: none; }
 }
 /* Radix Accordion: the height is published by the primitive as a custom
-   property, so the open/close can be animated without measuring in JS. */
+   property, so the opening can be animated without measuring in JS.
+
+   There is no matching `up` keyframe. The accordion mounts its panels
+   unconditionally so the answers sit in the server-rendered HTML (see
+   components/marketing/faq-accordion.tsx for why), which means a closed
+   panel is hidden with `display:none` rather than unmounted — and
+   `display:none` applies immediately, so a closing animation would never be
+   seen. A rule nothing references is dead CSS, and dead CSS in a file this
+   size is how the next reader learns to distrust the comments. */
 @keyframes pr-acc-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }
-}
-@keyframes pr-acc-up {
-  from { height: var(--radix-accordion-content-height); }
-  to { height: 0; }
 }
 
 .anim-rise { animation: pr-rise 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
 .anim-pop { animation: pr-pop 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
 .anim-acc-down { animation: pr-acc-down 0.22s ease-out; }
-.anim-acc-up { animation: pr-acc-up 0.18s ease-in; }
 
 /* Small lift on interactive cards. */
 .card-hover {

@@ -21,7 +21,7 @@ import type { SolutionPage } from "../types";
 export const page: SolutionPage = {
   slug: "insurance-document-management-software",
   group: "solution",
-  metaTitle: "Insurance Document Management Software — Policy PDF Storage | Insoora",
+  metaTitle: "Insurance Document Management Software — Policy PDF Storage",
   description:
     "Insurance document management that keeps every policy PDF in private storage, named for the policy it belongs to, reachable only by people with access to it.",
   accent: "pink",

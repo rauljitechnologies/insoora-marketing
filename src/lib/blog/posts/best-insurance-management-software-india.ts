@@ -22,7 +22,7 @@ import type { Post } from "../types";
 export const post: Post = {
   slug: "best-insurance-management-software-india",
   title: "Best Insurance Management Software in India: A Buyer's Guide for 2026",
-  metaTitle: "Best Insurance Management Software in India — Buyer's Guide (2026)",
+  metaTitle: "Best Insurance Management Software in India: Buyer's Guide",
   description:
     "How to judge insurance management software for an Indian agency: the seven questions that separate the products, and a two-hour test that settles it.",
   excerpt:

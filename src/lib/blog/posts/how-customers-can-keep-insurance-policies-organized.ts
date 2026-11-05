@@ -3,7 +3,7 @@ import type { Post } from "../types";
 export const post: Post = {
   slug: "how-customers-can-keep-insurance-policies-organized",
   title: "How Customers Can Keep Their Insurance Policies Organized",
-  metaTitle: "How to Keep Your Insurance Policies Organized: A Guide for Policyholders",
+  metaTitle: "How Policyholders Can Keep Insurance Policies Organized",
   description:
     "A simple way to keep track of your own insurance: what to save, what to write down, how to find a policy quickly in an emergency, and what your family needs to know.",
   excerpt:
