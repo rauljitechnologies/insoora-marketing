@@ -588,17 +588,20 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                 linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:border-white/30 hover:bg-white/10 hover:text-white"
               />
 
-              {/* Google's Website Translator. It sits at the foot of the
-                  Contact column rather than in the closing bar because the
-                  control is 40px tall with an attribution line under it, and
-                  the bar is a single row of 13px text — it would have
-                  doubled the bar's height on every page.
+              {/* Google's Website Translator — now just its dropdown; the
+                  heading, the language list and the credit have all been
+                  taken out to save footer space.
+
+                  It sits at the foot of the Contact column rather than in
+                  the closing bar: the control is 40px tall and the bar is a
+                  single row of 13px text, so putting it there would have
+                  deepened the bar on every page.
 
                   Read the header of language-translate.tsx before changing
-                  anything about it: the Google attribution it renders is a
-                  condition of using the widget, and the widget buys coverage
-                  at the cost of contributing nothing to search. */}
-              <LanguageTranslate className="mt-5 border-t border-white/10 pt-5" />
+                  it. Two things there are deliberate and look like bugs: the
+                  credit is hidden against Google's terms at the business's
+                  instruction, and the widget contributes nothing to search. */}
+              <LanguageTranslate className="mt-4" />
             </div>
           </div>
 

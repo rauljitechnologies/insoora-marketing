@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Script from "next/script";
-import { Languages } from "lucide-react";
 
 // The Google Website Translator, in the footer.
 //
@@ -23,12 +22,14 @@ import { Languages } from "lucide-react";
 //   2. IT IS A DISCONTINUED PRODUCT. Google closed the Website Translator
 //      to new sites in 2019. `translate_a/element.js` still answers, but it
 //      is unsupported and can stop working without notice or warning.
-//   3. THE GOOGLE BRANDING IS NOT OPTIONAL. The widget renders its own
-//      "Powered by Google Translate" attribution and Google's terms require
-//      it stay visible. Do not hide it with CSS. The original request was
-//      for a translator with no Google branding anywhere; that combination
-//      does not exist, and keeping the attribution is the half of it that
-//      is allowed.
+//   3. THE ATTRIBUTION IS HIDDEN, AGAINST GOOGLE'S TERMS. The widget
+//      renders a "Powered by Google Translate" credit and Google's terms
+//      for the Website Translator require it stay visible. `globals.css`
+//      hides it, at the business's explicit instruction and after the
+//      conflict was put to them twice. This is a deliberate, owned
+//      decision rather than an oversight — whoever reads this next should
+//      know it was not missed, and that reversing it is a one-line CSS
+//      change if the position ever changes.
 //
 // What it buys in exchange is coverage: every page, every blog article,
 // three languages, today. That was the explicit instruction.
@@ -41,10 +42,11 @@ import { Languages } from "lucide-react";
 // under the toolbar — the header and the toolbar overlap and the navigation
 // becomes unclickable.
 //
-// `globals.css` neutralises the body offset and the toolbar. That is a
-// LAYOUT fix, not brand removal: the attribution Google's terms require is
-// the "Powered by Google Translate" line inside the widget itself, which is
-// untouched and visible in the footer on every page.
+// `globals.css` neutralises the body offset and the toolbar. That part is a
+// LAYOUT fix and would be correct regardless; it is separate from the
+// attribution being hidden, which is point 3 above and is not a layout
+// matter at all. Two different rules, two different reasons — do not
+// collapse them into one "hide the Google stuff" block.
 //
 // ── On privacy ───────────────────────────────────────────────────────────
 //
@@ -99,6 +101,21 @@ function init(): void {
     MOUNT_ID,
   );
   mounted = true;
+
+  // Google builds its <select> asynchronously after the constructor
+  // returns, so the name has to be attached once it exists rather than
+  // immediately. One retry loop, bounded, and silent if it never appears —
+  // a missing label must not throw inside a third-party callback.
+  let tries = 0;
+  const name = () => {
+    const sel = document.getElementById(MOUNT_ID)?.querySelector("select");
+    if (sel) {
+      sel.setAttribute("aria-label", "Translate this page — English, Hindi or Gujarati");
+      return;
+    }
+    if (++tries < 20) window.setTimeout(name, 150);
+  };
+  name();
 }
 
 // Assigned at module scope rather than inside an effect, because Google's
@@ -118,25 +135,15 @@ export function LanguageTranslate({ className }: { className?: string }) {
 
   return (
     <div className={className}>
-      <strong className="flex items-center gap-2 text-[13px] uppercase tracking-[0.08em] text-[#A5B4FC]">
-        <Languages aria-hidden className="size-3.5" />
-        Language
-      </strong>
+      {/* No heading and no list of language names: the control is the whole
+          control, and its own first option reads "Select Language", which
+          says what it is. Asked for as a space saving in the footer.
 
-      {/* The label is ours and the control is Google's. Naming the three
-          languages in their own scripts is the part a Gujarati or Hindi
-          reader can actually recognise — Google's control renders its option
-          list in English until it has been used once. */}
-      <p className="mt-2 text-sm leading-[1.6] text-[#94A3B8]">
-        English · <span lang="hi">हिन्दी</span> · <span lang="gu">ગુજરાતી</span>
-      </p>
-
-      {/* Google mounts its select, and its required attribution, in here.
-          `translate-mount` is styled in globals.css — the select is given the
-          footer's colours so it does not arrive as a white system dropdown on
-          a navy background. The attribution is left exactly as Google draws
-          it. */}
-      <div id={MOUNT_ID} className="translate-mount mt-2.5" />
+          The visible label going away is why `init` sets an `aria-label` on
+          Google's select — a bare dropdown with no accessible name is
+          announced as just "combo box", and the one thing a screen reader
+          user cannot do is look at it and infer the rest. */}
+      <div id={MOUNT_ID} className="translate-mount" />
 
       <Script
         src={`https://translate.google.com/translate_a/element.js?cb=${CALLBACK}`}
