@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Inter } from "next/font/google";
-import { ArrowRight, Download, FileText, Lock, MapPin, Phone, Users } from "lucide-react";
+import { ArrowRight, MapPin, Phone } from "lucide-react";
 import { buttonVariants } from "@/components/ui";
 import { Container } from "@/components/marketing/section";
 import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
@@ -193,27 +193,50 @@ const NAV: SiteNavItem[] = [
 
 // ── The footer ───────────────────────────────────────────────────────────
 //
-// Five columns: the brand and the office, then four link lists.
+// Five columns: the brand, then Product, Solutions, Resources and Legal.
 //
-// It was four link columns, plus a tall brand band above them with its own
-// pair of buttons, plus a two-row "long tail" band below them for the twelve
-// pages that had nowhere else to go, plus a trust strip, plus a closing bar.
-// Six stacked bands, each padded as if it were a section of the page, which
-// on a wide screen read as several strips of empty navy with some links
-// floating in them — and the links themselves occupied maybe half the width
-// available to them.
+// ── What changed, and why ────────────────────────────────────────────────
 //
-// Now there is one grid. The brand, the description, the two calls to action
-// and the office are column one; the twelve pages that needed a home are
-// distributed across columns two to four instead of getting a band of their
-// own. Nothing below the grid but a compact trust row and the closing bar.
+// It was brand + Product + Solutions + Portals + "Resources & company", with
+// a trust strip under the grid and a closing bar carrying the operating
+// company's name. Three things were wrong with that shape.
 //
-// Three columns are generated from `lib/solutions`, so a page cannot be
-// published without a crawlable link to it — which matters more here than
-// anywhere, because every one of those URLs is a child of a header dropdown
-// whose trigger is a BUTTON, and a button is not a link a crawler can follow.
-// `footerColumn` on each page decides which column it lands in, and
-// `lib/solutions` fails the build if a page declares none.
+//   1. "Resources & company" was a drawer. Seven links — Blog, FAQ, About,
+//      Contact and all three legal documents — in one column headed with a
+//      conjunction, which is what a column gets called when nobody decided
+//      what it was for. Legal is its own column now, and it is the column a
+//      reader actually goes to the footer to find.
+//   2. "Portals" was a column of three for a distinction the reader does not
+//      have. Someone scanning a footer asks "is there something here for an
+//      agency like mine", not "is this page a portal tour". The three tours
+//      now sit under Solutions beside the two pages about the kinds of
+//      business that use them.
+//   3. The grid was followed by two more bands. The trust strip repeated
+//      four claims the home page already makes in a section of its own, and
+//      the closing bar ran the copyright, the operating company and the
+//      build location together into one grey paragraph. Both are gone; the
+//      bar is a copyright and three links.
+//
+// ── On the operating company ─────────────────────────────────────────────
+//
+// The "Managed by Raulji Technologies Private Limited" attribution has been
+// removed from the footer at the business's instruction. It is NOT removed
+// anywhere else, and that is a decision rather than an oversight: the
+// Privacy Policy, the Terms, the About page and the Contact page all still
+// name the company, because those are the pages a visitor goes to in order
+// to find out who they are contracting with, and the answer has to be there.
+// `CONTACT.legalEntity` and `CONTACT.companyUrl` in lib/contact remain the
+// one definition those pages read.
+//
+// ── Why the columns are still generated ──────────────────────────────────
+//
+// Product and Solutions are read from `lib/solutions`, so a page cannot be
+// published without a crawlable link to it. That matters more here than
+// anywhere else on the site, because every one of those URLs is a child of
+// a header dropdown whose trigger is a BUTTON — and a button is not a link
+// a crawler can follow. `footerColumn` decides which of the two a solution
+// page lands in, and `lib/solutions` fails the build if a page declares
+// neither.
 //
 // Three links from the original design are still absent — Help centre,
 // Getting started guide, Pricing. A footer link that 404s is worse than a
@@ -230,59 +253,85 @@ interface FooterLink {
 
 const FOOTER_COLUMNS: { t: string; tone: string; links: FooterLink[] }[] = [
   {
+    // The capabilities: six generated pages, then the three that describe
+    // the product as a whole. `solutionsInColumn` carries the editorial rule
+    // for which side of the line a page falls on — see lib/solutions/types.
     t: "Product",
     tone: "text-[#93C5FD]",
     links: [
-      { href: "/features", label: "Features" },
-      // These were `/#how-it-works` and `/#product` — anchors a third of the
-      // way down the home page. Both are pages of their own now.
-      { href: "/how-it-works", label: "How it works" },
-      { href: "/product-in-action", label: "Product in action" },
       ...solutionsInColumn("product").map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/features", label: "Features" },
+      // Kept although it is not among the eight the brief lists. It is a real
+      // page and the footer is its only site-wide crawlable link — the header
+      // entry sits inside a dropdown whose trigger is a button, so dropping it
+      // here would cut its inbound links from thirty-four to the three portal
+      // breadcrumbs that name it as their parent.
+      { href: "/product-in-action", label: "Product in action" },
     ],
   },
   {
+    // Who is using it: the two pages about a kind of business, then the three
+    // portal tours. A reader who recognises themselves in "agency management"
+    // wants the agency portal next, and making them cross to a fourth column
+    // to find it was the old shape's mistake.
+    //
+    // Three portals and no more. The admin tour is retired — the back office
+    // is operated by this company rather than by an agency, so a public page
+    // for it marketed a portal no visitor can ever sign into. See the note in
+    // lib/solutions and the 308 in next.config.ts.
     t: "Solutions",
     tone: "text-[#7DD3FC]",
-    links: solutionsInColumn("solutions").map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
-  },
-  {
-    // Three, not four. The admin tour is retired — see the note in
-    // lib/solutions and the redirect in next.config.
-    t: "Portals",
-    tone: "text-[#FDE68A]",
     links: [
+      ...solutionsInColumn("solutions").map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
       ...PORTAL_PAGES.map((p) => ({ href: `/${p.slug}`, label: p.nav.label })),
-      { href: appHref("/agent/login"), label: "Sign in", external: true },
     ],
   },
   {
-    t: "Resources & company",
+    t: "Resources",
     tone: "text-[#C4B5FD]",
     links: [
       { href: "/blog", label: "Blog" },
-      { href: "/faq", label: "FAQ" },
+      { href: "/faq", label: "FAQs" },
       { href: "/about-us", label: "About Us" },
       { href: "/contact-us", label: "Contact Us" },
+      { href: appHref("/agent/register"), label: "Get Started", external: true },
+    ],
+  },
+  {
+    // Its own column rather than the tail of a mixed one.
+    t: "Legal",
+    tone: "text-[#FDE68A]",
+    links: [
       { href: "/privacy-policy", label: "Privacy Policy" },
       { href: "/terms-and-conditions", label: "Terms & Conditions" },
-      { href: "/refund-and-cancellation", label: "Refund & Cancellation" },
+      { href: "/refund-and-cancellation", label: "Refund & Cancellation Policy" },
     ],
   },
 ];
 
 /** One footer column link. See the note at the call site for why the height
- *  floor is here rather than left to the line box. */
+ *  floor is here rather than left to the line box.
+ *
+ *  `w-max max-w-full` rather than `w-max` alone. `w-max` sizes the target to
+ *  the label instead of the whole column, which is what keeps the gap
+ *  between two stacked links from becoming part of either one — but on its
+ *  own it also refuses to shrink, and "Refund & Cancellation Policy" is
+ *  190px against a 157px column at 360px. It ran 22px past the viewport
+ *  edge. `max-w-full` caps it at the track and lets it wrap onto a second
+ *  line, which costs nothing on a wide screen (where it already fits) and
+ *  is the general fix rather than one for this label: the next long one
+ *  wraps too instead of hanging off the side.
+ *  */
 const FOOTER_LINK =
-  "inline-flex min-h-6 w-max items-center text-sm text-[#CBD5E1] transition-colors hover:text-white";
+  "inline-flex min-h-6 w-max max-w-full items-center text-sm text-[#CBD5E1] transition-colors hover:text-white";
 
-/** The four controls the footer vouches for. Each one is implemented — this
- *  row is not a badge wall of certifications we do not hold. */
-const TRUST: { icon: typeof Lock; t: string; tone: string }[] = [
-  { icon: Lock, t: "HTTPS encrypted", tone: "text-[#4ADE80]" },
-  { icon: Users, t: "Role-based access", tone: "text-[#93C5FD]" },
-  { icon: FileText, t: "Private PDF storage", tone: "text-[#FCA5A5]" },
-  { icon: Download, t: "Export anytime", tone: "text-[#C4B5FD]" },
+/** The three the closing bar repeats, for a reader who has scrolled past the
+ *  grid and still expects to find them at the very bottom. */
+const BAR_LINKS: { href: string; label: string }[] = [
+  { href: "/privacy-policy", label: "Privacy Policy" },
+  { href: "/terms-and-conditions", label: "Terms & Conditions" },
+  { href: "/contact-us", label: "Contact Us" },
 ];
 
 /**
@@ -378,62 +427,67 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(500px 280px at 100% 0%,rgba(220,38,38,.18),transparent 70%),radial-gradient(500px 300px at 0% 100%,rgba(37,99,235,.22),transparent 70%)",
+              "radial-gradient(520px 300px at 100% 0%,rgba(220,38,38,.16),transparent 70%),radial-gradient(520px 320px at 0% 100%,rgba(37,99,235,.20),transparent 70%)",
           }}
         />
-        {/* The bands were each padded as if they were a section of the page
-            — 48/40/44/44/20/24px of vertical chrome before a single line of
-            text — which on a wide screen read as four strips of empty navy
-            with some links floating in them. Every value below is one step
-            down the scale; nothing moved and nothing was removed, the footer
-            is just ~60px shorter and the rules sit closer to what they
-            separate. */}
-        <Container className="relative py-10 shell:py-11">
-          {/* ONE grid, not six stacked bands.
 
-              Column one is the brand, the description, the two calls to
-              action and the office. Columns two to five are link lists. On a
-              wide screen the brand column is 1.5 tracks and the lists are one
-              each, which is what lets "Refund & Cancellation" sit on one line
-              in the last column while the description keeps a readable
-              measure in the first.
+        <Container className="relative py-10 sm:py-11 shell:py-12">
+          {/* ── The grid ──
 
-              Below `shell` it becomes two columns, and below `sm` one — the
-              brand column spans the full width at both, because a 150px-wide
-              address is unreadable and the two buttons under it would stack
-              into a strip. */}
-          <div className="grid grid-cols-1 gap-x-8 gap-y-9 pb-9 sm:grid-cols-2 shell:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] shell:gap-x-10">
-            {/* ── Column one: who this is, and where ── */}
-            <div className="flex min-w-0 flex-col gap-4 sm:col-span-2 shell:col-span-1">
+              Five tracks on a wide screen: the brand, then four link lists.
+              The brand track is 1.6fr so its description keeps a readable
+              measure while the four lists stay equal — "Refund & Cancellation
+              Policy" is the longest label and sets the floor for the others.
+
+              Below `shell` it is THREE columns, not two. Two gave the four
+              lists a 2x2 block under a full-width brand, which on an iPad left
+              a column of dead navy down the right of the brand paragraph — the
+              exact "uncovered footer space" this redesign is for. At three the
+              brand takes two tracks beside Product, and Solutions / Resources
+              / Legal fill the row beneath with nothing left over.
+
+              Below `sm` it is two columns with the brand spanning both: four
+              link lists stacked one per row is a very tall footer on a phone,
+              and these labels are short enough to sit two-up. */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-9 md:grid-cols-3 md:gap-y-10 shell:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))] shell:gap-x-10">
+            {/* ── Column one: who this is ── */}
+            {/* `col-span-2` up to `shell`, then back to one track.
+                Without the reset the brand kept two of the five columns at
+                desktop width, which filled row one with brand+Product+
+                Solutions+Resources and pushed Legal onto a row of its own
+                under the brand — three empty tracks beside it. */}
+            <div className="col-span-2 flex min-w-0 flex-col gap-4 shell:col-span-1">
+              {/* The stacked lockup already carries the tagline ("Your
+                  insurance, always with you") under the wordmark — see
+                  components/brand.tsx. It is deliberately not repeated as a
+                  separate line of copy here. */}
               <BrandLogo tone="dark" variant="stacked" />
-              <p className="max-w-sm text-sm leading-[1.65] text-[#94A3B8]">
-                Insurance policy management made simple. Turn policy PDFs into organized, searchable
-                records and never miss a renewal.
-              </p>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <a
-                  href={appHref("/agent/register")}
-                  className="flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold text-white shadow-[0_8px_18px_-8px_rgba(124,58,237,.8)] transition-transform hover:-translate-y-px"
-                  style={{ backgroundImage: "var(--gradient-brand)" }}
-                >
-                  Get Started
-                </a>
-                <Link
-                  href="/contact-us"
-                  className="flex h-10 items-center gap-1.5 rounded-md border border-white/15 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                >
-                  Contact Us
-                  <ArrowRight aria-hidden className="size-3.5" />
-                </Link>
-              </div>
 
-              {/* The office moved out of a column of its own and in under the
-                  brand, which is where it belongs: it is part of saying who
-                  this is, not a fifth navigation list. It also has to stay
-                  visible somewhere — it is the address the Organization
-                  schema publishes, and markup that claims a postal address
-                  the page does not show is markup the page does not back up. */}
-              <address className="mt-1 flex flex-col gap-2 not-italic">
+              <p className="max-w-sm text-sm leading-[1.7] text-[#94A3B8]">
+                Insoora helps insurance agents and agencies organize policy documents, manage
+                customer-wise insurance records and track important policy expiry information
+                in one place.
+              </p>
+
+              {/* The official site, as the brief asks for it — but as a
+                  relative link to "/" rather than the absolute
+                  https://www.insoora.com/. The two resolve to the same place
+                  on the production host, and an absolute one would send a
+                  visitor on a preview deployment, or on any host that is not
+                  www, across to production mid-session. The domain is still
+                  what is printed, which is the point of showing it. */}
+              <Link
+                href="/"
+                className="inline-flex w-max min-h-6 items-center text-sm font-semibold text-[#93C5FD] transition-colors hover:text-white"
+              >
+                www.insoora.com
+              </Link>
+
+              {/* The office. It stays in the footer because the Organization
+                  schema publishes this postal address on every page that
+                  carries it, and markup claiming an address the page does not
+                  show is markup the page does not back up. */}
+              <address className="flex flex-col gap-2 not-italic">
                 <span className="flex items-start gap-2 text-sm leading-[1.6] text-[#94A3B8]">
                   <MapPin aria-hidden className="mt-0.5 size-3.5 flex-none text-[#FDBA74]" />
                   <span className="flex flex-col">
@@ -464,9 +518,23 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
                   </a>
                 </span>
               </address>
+
+              {/* The profiles the Organization schema lists in `sameAs`. Both
+                  read lib/contact, so the markup cannot claim a profile the
+                  footer does not link to. They moved up out of the closing bar
+                  because that bar is now three links and a copyright, and a
+                  row of icons in it unbalanced the one thing it has to say. */}
+              <SocialLinks
+                className="mt-0.5 gap-2"
+                linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:border-white/30 hover:bg-white/10 hover:text-white"
+              />
             </div>
 
-            {/* ── Columns two to five: the link lists ── */}
+            {/* ── Columns two to five: the link lists ──
+
+                `aria-label` on each `nav` is what keeps four navigation
+                landmarks in one footer distinguishable: a screen reader
+                announces "Product navigation", not four identical ones. */}
             {FOOTER_COLUMNS.map((c) => (
               <nav key={c.t} aria-label={c.t} className="flex min-w-0 flex-col gap-2.5">
                 <strong className={cn("text-[13px] uppercase tracking-[0.08em]", c.tone)}>{c.t}</strong>
@@ -497,95 +565,33 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             ))}
           </div>
 
-          {/* The four controls as one rule-to-rule strip: spread across the
-              full width, they close the grid instead of clustering left. */}
-          <ul className="grid gap-x-6 gap-y-2.5 border-y border-white/10 py-3.5 min-[420px]:grid-cols-2 shell:grid-cols-4">
-            {TRUST.map((t) => (
-              <li key={t.t} className="flex items-center gap-2.5 text-[13px] font-medium text-[#E2E8F0]">
-                <span aria-hidden className="grid size-7 flex-none place-items-center rounded-md bg-white/[0.06]">
-                  <t.icon className={cn("size-3.5", t.tone)} />
-                </span>
-                {t.t}
-              </li>
-            ))}
-          </ul>
+          {/* ── The closing bar ──
 
-          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-4 text-[13px] leading-relaxed text-[#94A3B8]">
-            {/* The company attribution belongs on every page, not only in the
-                legal documents: "Insoora" is a product name and a visitor is
-                entitled to know which company stands behind it — and to be
-                able to go and check. The name is read from lib/contact and
-                shared with the Privacy Policy and the Terms, so the three
-                cannot disagree, and it links to the company's own site.
+              A copyright and three links. No operating-company attribution,
+              no build location, no trust badges and no icon row — see the
+              note above FOOTER_COLUMNS for what went and why.
 
-                Three sentences on their own line each below `sm`, because at
-                phone width they ran together into one grey paragraph in
-                which the one piece of information a reader is looking for —
-                who is behind this — was the middle clause of the second
-                sentence.
-
-                `rel="noopener noreferrer"` on the outbound link: `noopener`
-                because a `target="_blank"` tab can otherwise reach back
-                through `window.opener`. Insoora stays the dominant name —
-                this is an attribution line, not a second brand. */}
-            <span className="flex flex-col gap-0.5 sm:block">
-              <span>© {new Date().getFullYear()} Insoora. All rights reserved.</span>{" "}
-              <span>
-                Managed by{" "}
-                <a
-                  href={CONTACT.companyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-[#CBD5E1] underline decoration-white/25 underline-offset-2 transition-colors hover:text-white hover:decoration-white/60"
+              `justify-between` with both children allowed to wrap: at 360px
+              the copyright takes one line and the links wrap to the next,
+              which is the only arrangement that does not overflow. */}
+          <div className="mt-9 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-[13px] shell:mt-10 text-[#94A3B8]">
+            <span>© {new Date().getFullYear()} Insoora. All rights reserved.</span>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {BAR_LINKS.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="inline-flex min-h-6 items-center transition-colors hover:text-white"
                 >
-                  {CONTACT.legalEntity}
-                </a>
-                .
-              </span>{" "}
-              <span>Made in Godhra, Gujarat, India.</span>
-            </span>
-            <div className="flex flex-wrap items-center gap-4">
-              {/* The social profiles sit in the closing bar, beside Privacy
-                  and Terms, because that row already exists and has spare
-                  width — under the brand lockup they added 56px to the
-                  tallest column of the top band, and since that band is
-                  `items-end`, every pixel of it came back as empty space
-                  above the two buttons on the opposite side.
-
-                  These are the URLs the Organization schema lists in
-                  `sameAs`; both read lib/contact, so the markup cannot
-                  claim a profile the footer does not link to. */}
-              <SocialLinks
-                className="gap-2"
-                linkClassName="size-9 border-white/15 text-[#CBD5E1] hover:bg-white/10 hover:text-white"
-              />
-              <Link
-                href="/privacy-policy"
-                className="inline-flex min-h-6 items-center transition-colors hover:text-white"
-              >
-                Privacy
-              </Link>
-              <Link
-                href="/terms-and-conditions"
-                className="inline-flex min-h-6 items-center transition-colors hover:text-white"
-              >
-                Terms
-              </Link>
-              {/* Reopens the consent banner. Consent has to be as easy to
+                  {l.label}
+                </Link>
+              ))}
+              {/* Reopens the consent banner. Kept although the brief's bar
+                  lists only three links: consent has to be as easy to
                   withdraw as it was to give, and without this the only way
-                  back from "Accept" would be clearing site data. Renders
-                  nothing outside production, where there is no banner. */}
+                  back from "Accept" is clearing site data. Renders nothing
+                  outside production, where there is no banner. */}
               <CookieSettingsButton className="inline-flex min-h-6 items-center transition-colors hover:text-white" />
-              {/* `#main` rather than `#top`: `#top` is the home page's hero
-                  and does not exist on the six inner pages, where this
-                  control silently did nothing. Every page has `#main`. */}
-              <a
-                href="#main"
-                className="flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-2 font-semibold text-white transition-colors hover:bg-white/20"
-              >
-                <ArrowRight className="size-3.5 -rotate-90" />
-                Back to top
-              </a>
             </div>
           </div>
         </Container>

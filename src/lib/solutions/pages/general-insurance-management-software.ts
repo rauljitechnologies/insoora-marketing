@@ -37,7 +37,7 @@ export const page: SolutionPage = {
     label: "General insurance",
     hint: "What each line of business actually carries",
   },
-  footerColumn: "solutions",
+  footerColumn: "product",
   primaryKeyword: "General Insurance Management Software",
   secondaryKeywords: [
     "General Insurance Software",
