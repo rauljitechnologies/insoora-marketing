@@ -4,7 +4,7 @@ import { Card, Eyebrow, GradientText, H2, PageHead, Section } from "@/components
 import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
+import { breadcrumbSchema, contactPageSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
 import { CONTACT, addressLines, addressOneLine, mapsSearchHref } from "@/lib/contact";
 import { EnquiryForm } from "@/components/marketing/enquiry-form";
 import { SocialLinkList } from "@/components/marketing/social-links";
@@ -22,9 +22,15 @@ export default function ContactPage() {
     <>
       {/* Organization schema with the telephone and postal address belongs on
           the page that shows them: the markup and the visible details have to
-          agree, and this is where a reader sees both. */}
+          agree, and this is where a reader sees both.
+
+          `ContactPage` is what says that THIS page is the place to use those
+          details, rather than merely that the business has them. It points at
+          the Organization node by `@id` instead of restating the phone
+          number, so there is one description of it in the document. */}
       <JsonLd
         data={jsonLdGraph(
+          contactPageSchema(),
           organizationSchema(),
           breadcrumbSchema([{ name: "Contact Us", path: "/contact-us" }]),
         )}
@@ -36,10 +42,10 @@ export default function ContactPage() {
         badge="We reply to every enquiry by email"
         title={
           <>
-            Let&apos;s talk about <GradientText>your policies.</GradientText>
+            Let&apos;s talk about your <GradientText>insurance workflow.</GradientText>
           </>
         }
-        lede="Questions about features, or about getting your agency set up? Call us, or send a message and we'll reply by email."
+        lede="Have questions about Insoora, need help getting your agency started, or want to understand how policy document management works? Send us a message. Our team will get back to you."
       />
 
       <Section>
@@ -118,72 +124,114 @@ export default function ContactPage() {
               <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.teal)}>
                 <Clock className="size-5" />
               </span>
-              <p className="text-sm font-semibold text-foreground">Response</p>
-              <p className="text-sm leading-relaxed text-muted">We reply to every enquiry by email.</p>
-            </Card>
+              <p className="text-sm font-semibold text-foreground">What to expect</p>
+              {/* Three statements, and each one is checkable.
 
-            {/* The social profiles, with their handles printed: this is the
-                page someone opens looking for a way to reach us, and the
-                footer's icon row alone does not tell them which account is
-                ours. Same list as the footer and the `sameAs` in the schema
-                above — all three read lib/contact. */}
-            {/* Privacy and data requests.
-                
-                This card exists because the Privacy Policy promises a route
-                for access, correction, deletion and withdrawal of consent,
-                and a promise with no visible door is not a route. It points
-                at the enquiry form's "Account support" option, which is the
-                only intake that actually reaches staff — there is no
-                dedicated privacy queue in the product, and inventing a
-                second address for one would mean publishing a mailbox nobody
-                reads. */}
-            <Card className="card-hover flex flex-col gap-2">
-              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.teal)}>
-                <ShieldCheck className="size-5" />
-              </span>
-              <p className="text-sm font-semibold text-foreground">Privacy & data requests</p>
-              <p className="text-sm leading-relaxed text-muted">
-                To ask for a copy of your data, a correction, deletion, or to withdraw a consent, send the
-                form above with <span className="font-medium text-foreground">Account support</span>{" "}
-                selected, or call us. We will ask a few questions to confirm it is really you before we act.
-              </p>
-              <Link
-                href="/privacy-policy#14-your-choices-and-requests"
-                className="mt-1 inline-flex min-h-9 items-center self-start rounded-md text-sm font-semibold text-primary hover:underline"
-              >
-                What you can ask for
-              </Link>
-            </Card>
+                  Deliberately NO committed turnaround: "within 24 hours" is a
+                  promise the business has not made, and a contact page that
+                  makes one on its behalf is a contact page that breaks it.
+                  Deliberately no office hours either — none has been
+                  confirmed, and inventing "Monday to Saturday" to fill the
+                  third line would be exactly the fabricated detail the rest
+                  of this site refuses.
 
-            <Card className="card-hover flex flex-col gap-2">
-              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.purple)}>
-                <AtSign className="size-5" />
-              </span>
-              <p className="text-sm font-semibold text-foreground">Follow us</p>
-              <p className="text-sm leading-relaxed text-muted">
-                Product updates and renewal reminders, as we ship them.
-              </p>
-              <SocialLinkList className="mt-1" />
-            </Card>
-
-            <Card className="card-hover flex flex-col gap-2 border-warning/30 bg-warning-soft">
-              <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.orange)}>
-                <UserRound className="size-5" />
-              </span>
-              <p className="text-sm font-semibold text-foreground">Already a customer?</p>
-              <p className="text-sm leading-relaxed text-foreground/80">
-                For corrections to a policy, contact your insurance agent directly — they hold the record
-                and are the only one who can change it.
-              </p>
-              {/* The customer portal is on the product's origin. */}
-              <a
-                href={appHref("/customer/login")}
-                className="mt-1 inline-flex min-h-9 items-center self-start rounded-md text-sm font-semibold text-primary hover:underline"
-              >
-                Sign in to your portal
-              </a>
+                  Deliberately nothing about a confirmation EMAIL. Whether one
+                  is sent depends on the mail provider being configured and on
+                  the send being accepted, neither of which this static page
+                  can know. The form's own success panel says it, at the one
+                  moment it is actually true — see `confirmationSent` in
+                  enquiry-form.tsx. */}
+              <ul className="flex flex-col gap-2 text-sm leading-relaxed text-muted">
+                <li>Every enquiry gets a reply by email, to the address you give us.</li>
+                <li>Each one is given a reference number, shown as soon as it reaches us.</li>
+                <li>Call instead if it is urgent — the number is above.</li>
+              </ul>
             </Card>
           </div>
+        </div>
+
+        {/* ── The three supporting cards, below the two columns ──
+
+            They were the bottom half of the right-hand rail, and that rail
+            ran roughly 950px past the foot of the form on a desktop
+            viewport: six stacked cards beside one, with the difference
+            showing as a column of empty white under the form. The fix is
+            not to pad the form out to meet them — it is to stop asking one
+            narrow column to carry six cards.
+
+            So the rail keeps the three a visitor came to this page for —
+            the number, the address, and what happens after they press send
+            — which together stand about as tall as the form beside them.
+            These three are the supporting ones, and full width they read
+            better than they did at 20rem: each gets a real line length
+            instead of six words a line.
+
+            `sm:grid-cols-2` before `rail:grid-cols-3` so the middle widths
+            get two sensible columns rather than jumping from one to three.
+            They stretch to the tallest of the row, which is what the grid
+            does by default and what keeps the three bottoms on one line. */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 rail:mt-6 rail:grid-cols-3">
+          {/* Privacy and data requests.
+
+              This card exists because the Privacy Policy promises a route
+              for access, correction, deletion and withdrawal of consent,
+              and a promise with no visible door is not a route. It points
+              at the enquiry form's "Account support" option, which is the
+              only intake that actually reaches staff — there is no
+              dedicated privacy queue in the product, and inventing a
+              second address for one would mean publishing a mailbox nobody
+              reads. */}
+          <Card className="card-hover flex flex-col gap-2">
+            <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.teal)}>
+              <ShieldCheck className="size-5" />
+            </span>
+            <p className="text-sm font-semibold text-foreground">Privacy & data requests</p>
+            <p className="text-sm leading-relaxed text-muted">
+              To ask for a copy of your data, a correction, deletion, or to withdraw a consent, send the
+              form above with <span className="font-medium text-foreground">Account support</span>{" "}
+              selected, or call us. We will ask a few questions to confirm it is really you before we act.
+            </p>
+            <Link
+              href="/privacy-policy#14-your-choices-and-requests"
+              className="mt-1 inline-flex min-h-9 items-center self-start rounded-md text-sm font-semibold text-primary hover:underline"
+            >
+              What you can ask for
+            </Link>
+          </Card>
+
+          {/* The social profiles, with their handles printed: this is the
+              page someone opens looking for a way to reach us, and the
+              footer's icon row alone does not tell them which account is
+              ours. Same list as the footer and the `sameAs` in the schema
+              above — all three read lib/contact. */}
+          <Card className="card-hover flex flex-col gap-2">
+            <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.purple)}>
+              <AtSign className="size-5" />
+            </span>
+            <p className="text-sm font-semibold text-foreground">Follow us</p>
+            <p className="text-sm leading-relaxed text-muted">
+              Product updates and renewal reminders, as we ship them.
+            </p>
+            <SocialLinkList className="mt-1" />
+          </Card>
+
+          <Card className="card-hover flex flex-col gap-2 border-warning/30 bg-warning-soft">
+            <span aria-hidden className={cn("grid size-11 place-items-center rounded-xl", ACCENT_TILE.orange)}>
+              <UserRound className="size-5" />
+            </span>
+            <p className="text-sm font-semibold text-foreground">Already a customer?</p>
+            <p className="text-sm leading-relaxed text-foreground/80">
+              For corrections to a policy, contact your insurance agent directly — they hold the record
+              and are the only one who can change it.
+            </p>
+            {/* The customer portal is on the product's origin. */}
+            <a
+              href={appHref("/customer/login")}
+              className="mt-1 inline-flex min-h-9 items-center self-start rounded-md text-sm font-semibold text-primary hover:underline"
+            >
+              Sign in to your portal
+            </a>
+          </Card>
         </div>
       </Section>
 
