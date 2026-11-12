@@ -42,6 +42,45 @@ export const metadata: Metadata = {
   title: { default: `${PRODUCT.name} — ${PRODUCT.tagline.replace(/\.$/, "")}`, template: "%s · Insoora" },
   description: PRODUCT.summary,
   applicationName: PRODUCT.name,
+
+  // ── Search engine ownership verification ──────────────────────────────
+  //
+  // `other` rather than a named key because Next only spells out Google,
+  // Yandex and Yahoo; anything else is emitted verbatim as
+  // `<meta name="<key>" content="<value>">`, which is exactly the tag Bing
+  // Webmaster Tools asks to be pasted into the home page's <head>.
+  //
+  // ── Why it lives in the ROOT LAYOUT and not on the home page ──────────
+  //
+  // Bing only reads it at the site root, so page.tsx would be enough and is
+  // where the instructions point. It goes here anyway, for two reasons.
+  //
+  // The first is that metadata is merged SHALLOWLY, per top-level key (see
+  // the long note on `OG_IMAGE` in lib/seo for what that rule has already
+  // cost this codebase once). No page sets `verification`, so every page
+  // inherits this one — whereas a key set on the home page lives inside an
+  // object that is spread from `pageMetadata` and then overridden, which is
+  // precisely the shape someone refactors without noticing what fell out.
+  //
+  // The second is the failure mode. A verification tag that silently stops
+  // being emitted does not break a build, a test or a page — Bing simply
+  // un-verifies the property weeks later, and nobody connects the two. The
+  // durable place is the file that cannot stop rendering.
+  //
+  // This is an OWNERSHIP TOKEN, not a secret and not a ranking signal. It
+  // proves whoever controls this deployment also controls the Bing property;
+  // it is public by design, visible in the HTML of every page, and safe in
+  // the repository. It is also unrelated to the indexing gate above: this
+  // tag ships whether or not `NEXT_PUBLIC_SITE_URL` has made the site
+  // indexable, which is correct, because a property has to be verifiable
+  // before there is anything to report on.
+  verification: {
+    other: {
+      // Bing Webmaster Tools. Paired with this deployment's own property —
+      // regenerating it in the Bing dashboard invalidates this string.
+      "msvalidate.01": "7FA8F2D2D9F45DC784FCB4160C97BEB1",
+    },
+  },
 };
 
 // Next injects `width=device-width, initial-scale=1` on its own; what it does
