@@ -21,6 +21,9 @@ export const post: Post = {
   category: "choosing",
   art: "lines",
   audience: "General insurance agencies",
+  // This article carries /general-insurance-management-software's own primary keyword in
+  // its H1, so it has to point at it — see `productLinks` in lib/blog/types.
+  productLinks: ["general-insurance-management-software"],
   related: [
     "best-insurance-management-software-india",
     "manage-multiple-insurance-policies-one-dashboard",

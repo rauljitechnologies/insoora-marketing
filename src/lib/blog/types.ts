@@ -111,6 +111,31 @@ export interface Post {
   /** Slugs of genuinely related articles. Validated at build time by
    *  `relatedPosts`, which throws rather than rendering a dead link. */
   related: string[];
+  /**
+   * Product pages this article should link to, ON TOP OF the ones its
+   * category already supplies. Slugs, resolved in `explore-links`.
+   *
+   * ── Why this exists, when the category mapping was deliberate ────────
+   *
+   * It is additive, not a replacement. The category mapping is still what
+   * gives every article its product links, for the reason recorded in
+   * `explore-links`: a per-post list on all thirteen would be thirteen
+   * places to forget when a page is renamed.
+   *
+   * What the category alone cannot express is CANNIBALISATION. Two
+   * articles carry a product page's own primary keyword in their H1 —
+   * "Insurance Policy Entry Software: How to Reduce Manual Data Entry" and
+   * "General Insurance Management Software: Features Every Agency Needs" —
+   * and neither sits in the category that links to the page it competes
+   * with. An article competing with a landing page for one query while not
+   * linking to it is the worst of both: the two split the signal and
+   * nothing tells a crawler which is the commercial answer.
+   *
+   * So the rule for using this field is narrow: name the page this article
+   * would otherwise compete with. It is not a place to add links an
+   * article merely touches on.
+   */
+  productLinks?: string[];
 }
 
 /** The shelves.
