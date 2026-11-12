@@ -167,7 +167,7 @@ const badgeVariants = cva(
         blue: "bg-primary-soft text-primary ring-1 ring-inset ring-primary/15",
         green: "bg-success-soft text-success ring-1 ring-inset ring-success/15",
         orange: "bg-warning-soft text-warning ring-1 ring-inset ring-warning/15",
-        red: "bg-danger-soft text-danger ring-1 ring-inset ring-danger/15",
+        red: "bg-danger-soft text-danger-ink ring-1 ring-inset ring-danger/15",
       },
     },
     defaultVariants: { tone: "neutral" },

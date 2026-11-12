@@ -23,7 +23,7 @@ const MESSY: { x: string; y: string; r: string; t: string; f: string }[] = [
 const SHEET: { n: string; d: string; cls: string }[] = [
   { n: "Rahul Mehta", d: "10/01/27", cls: "text-foreground/80" },
   { n: "Priya S.", d: "??", cls: "bg-warning-soft font-semibold text-warning" },
-  { n: "Amit Patel", d: "Expired", cls: "bg-danger-soft font-semibold text-danger" },
+  { n: "Amit Patel", d: "Expired", cls: "bg-danger-soft font-semibold text-danger-ink" },
   { n: "Neha D", d: "18-4-27", cls: "text-foreground/80" },
 ];
 
@@ -67,7 +67,7 @@ export function MessyScene() {
       </div>
 
       <div className="absolute bottom-[8%] left-[8%] flex items-center gap-2.5 rounded-xl border border-danger/30 bg-background px-3.5 py-2.5 shadow-[0_16px_30px_-16px_rgba(220,38,38,.45)]">
-        <span className="grid size-[30px] place-items-center rounded-[9px] bg-danger-soft text-danger">
+        <span className="grid size-[30px] place-items-center rounded-[9px] bg-danger-soft text-danger-ink">
           <Calendar className="size-4" />
         </span>
         <span className="flex flex-col">
@@ -196,7 +196,7 @@ export function ManualChainScene() {
 
       {/* The break. The point of the whole illustration. */}
       <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-danger/35 bg-background px-3.5 py-3 shadow-[0_14px_28px_-16px_rgba(220,38,38,.4)]">
-        <span className="grid size-7 flex-none place-items-center rounded-lg bg-danger-soft text-danger">
+        <span className="grid size-7 flex-none place-items-center rounded-lg bg-danger-soft text-danger-ink">
           <Calendar className="size-3.5" />
         </span>
         <span className="flex flex-col">
