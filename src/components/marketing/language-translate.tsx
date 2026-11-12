@@ -145,9 +145,33 @@ export function LanguageTranslate({ className }: { className?: string }) {
           user cannot do is look at it and infer the rest. */}
       <div id={MOUNT_ID} className="translate-mount" />
 
+      {/* `lazyOnload`, not `afterInteractive`, and the difference is
+          measured rather than assumed.
+
+          This widget is the most expensive thing on the site by some
+          distance: 127 KB over the wire, 72 KB of it never executed, and
+          the only reason the Lighthouse best-practices score is not 100
+          (it sets a third-party cookie). On `afterInteractive` it loaded
+          straight after hydration — inside the window the page is still
+          painting — and a mobile run of the home page measured it at
+          0.5s of LCP and 20ms of blocking time.
+
+          `lazyOnload` waits for the load event and the browser going idle,
+          which takes the whole of that cost out of the paint path. It is
+          safe to defer because of where this sits: a language picker in
+          the footer, below the fold on every page, which nobody reaches in
+          the first second.
+
+          The cost of deferring, stated plainly: a returning visitor who
+          has already chosen Hindi or Gujarati has a `googtrans` cookie,
+          and Google re-applies the translation when this script runs. So
+          they see English for about a second longer than they did before.
+          That happened on `afterInteractive` too — this makes the gap
+          wider, not new. If that second matters more than the paint, move
+          this back; nothing else has to change. */}
       <Script
         src={`https://translate.google.com/translate_a/element.js?cb=${CALLBACK}`}
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
     </div>
   );
