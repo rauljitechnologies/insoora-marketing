@@ -17,6 +17,12 @@ import {
   validate,
 } from "@/lib/enquiry";
 import { cn } from "@/lib/utils";
+import {
+  trackFormError,
+  trackFormStart,
+  trackFormSubmit,
+  trackFormSuccess,
+} from "@/lib/analytics";
 
 // The Contact Us form.
 //
@@ -117,6 +123,21 @@ export function EnquiryForm() {
   // no business in `EnquiryFields`. Read on submit so its value can actually
   // be sent; see the note at the field itself.
   const honeypot = React.useRef<HTMLInputElement>(null);
+
+  // `contact_form_start`, fired once and only once per mounted form.
+  //
+  // A ref rather than state on purpose: this must not cause a render, and it
+  // must not reset when one does. It is also why the flag is checked and set
+  // in the same breath inside `set` below — two keystrokes a few milliseconds
+  // apart would otherwise both see `false` if this were state waiting on a
+  // re-render, and send the event twice.
+  //
+  // Deliberately keyed on the first EDIT rather than the first focus: tabbing
+  // through a page, or a browser autofilling a field it has seen before, is
+  // not somebody starting to fill in a contact form, and counting it as one
+  // makes the start-to-submit rate meaningless in the direction that flatters
+  // us.
+  const started = React.useRef(false);
   // The success panel replaces the form, so focus would otherwise be left on
   // a button that no longer exists and fall back to <body>. Moved to the
   // confirmation heading instead, which is also what announces it.
@@ -137,6 +158,10 @@ export function EnquiryForm() {
           : k === "message"
             ? e.target.value.slice(0, MAX_MESSAGE)
             : e.target.value;
+      if (!started.current) {
+        started.current = true;
+        trackFormStart();
+      }
       setF((prev) => ({ ...prev, [k]: value }));
       // A field the server complained about stops being marked as soon as it
       // is edited. Leaving the mark in place makes a corrected field look
@@ -152,9 +177,17 @@ export function EnquiryForm() {
     if (Object.keys(found).length > 0) {
       const first = FIELD_ORDER.find((k) => found[k]);
       if (first) document.getElementById(`f-${first}`)?.focus();
+      // A refused submit is a real failure for the visitor, so it is
+      // reported — but as an error and NOT as a `contact_form_submit`.
+      // "Submit" means the enquiry reached the server; counting a form that
+      // never left the browser would inflate the denominator and make the
+      // success rate read worse than it is. Field NAMES only, never values.
+      trackFormError("validation", FIELD_ORDER.filter((k) => found[k]));
       return;
     }
 
+    // Past client validation, so this one is genuinely on its way.
+    trackFormSubmit(f.type);
     setStatus("sending");
     try {
       const res = await api<EnquiryResult>("/api/enquiries", {
@@ -183,6 +216,11 @@ export function EnquiryForm() {
         confirmationSent: res.data.confirmationSent === true,
       });
       setStatus("success");
+      // The conversion. Read `f.type` BEFORE the reset below, which is why
+      // this sits here rather than in the effect that moves focus — by the
+      // time that runs the field is "" and every conversion would be
+      // attributed to an empty enquiry type.
+      trackFormSuccess(f.type);
       setF(EMPTY_ENQUIRY);
       setTouched(false);
     } catch (err) {
@@ -191,6 +229,11 @@ export function EnquiryForm() {
       setStatus("error");
       if (err instanceof ClientApiError) {
         setFailure(err.message);
+        // The route's own code — VALIDATION_FAILED, RATE_LIMITED,
+        // NOT_DELIVERED — which is exactly the distinction worth having in a
+        // report, and carries nothing the visitor typed. Falls back to the
+        // status when the body had no code.
+        trackFormError(err.code ?? `http_${err.status}`);
         // 422 carries the server's own per-field verdict.
         if (err.status === 422 && err.details && typeof err.details === "object") {
           setServerErrors(err.details as EnquiryErrors);
@@ -199,6 +242,7 @@ export function EnquiryForm() {
         }
       } else {
         setFailure("Please check your connection and try again. Nothing was lost — your details are still here.");
+        trackFormError("network");
       }
     }
   };

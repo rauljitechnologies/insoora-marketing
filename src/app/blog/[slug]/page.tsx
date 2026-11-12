@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Clock } from "lucide-react";
 import { Breadcrumb, Container } from "@/components/marketing/section";
 import { BandPrimaryAction, BandSecondaryAction, ChipLink, CtaBand } from "@/components/marketing/cta";
+import { ArticleView } from "@/components/marketing/article-view";
 import { ExploreLinks, productLinksForPost } from "@/components/marketing/explore-links";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { ART_ALT, BlogArt } from "@/components/marketing/blog-art";
@@ -110,6 +111,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           }),
         )}
       />
+
+      {/* Renders nothing; raises `blog_article_view` in the browser with
+          this article's own slug and shelf. See the note in the component
+          for why that is separate from `page_view`. */}
+      <ArticleView slug={post.slug} category={post.category} />
 
       <article>
         <header

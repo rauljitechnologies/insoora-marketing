@@ -7,6 +7,8 @@ import { Cookie } from "lucide-react";
 import { Container } from "./section";
 import { ACCENT_TILE } from "@/lib/accents";
 import { cn } from "@/lib/utils";
+import { APP_URL } from "@/lib/site-config";
+import { trackCtaClick } from "@/lib/analytics";
 import {
   CONSENT_REOPEN,
   readConsent,
@@ -125,6 +127,54 @@ export function Analytics() {
     return () => window.removeEventListener(CONSENT_REOPEN, onReopen);
   }, []);
 
+  // ── CTA clicks, by delegation ──────────────────────────────────────────
+  //
+  // One listener on the document, rather than an `onClick` on each button.
+  //
+  // The reason is architectural, not stylistic. `PrimaryAction`,
+  // `BandPrimaryAction`, `ChipLink` and the rest in components/marketing/cta
+  // are SERVER components, and they are used on every page. Giving them a
+  // click handler would make each one a client component, which would ship
+  // their JavaScript to the browser on all 35 pages — a real cost on every
+  // page, to measure a press that happens on a few. Delegation keeps the
+  // whole thing inside this component, which is already a client component
+  // and already loaded.
+  //
+  // It also means a CTA added later is tracked with no wiring at all: the
+  // classifier below keys on the DESTINATION, which is the thing that makes
+  // a control a conversion step in the first place. A new "Get Started"
+  // button is counted because of where it goes, not because somebody
+  // remembered to annotate it.
+  //
+  // Attached only once consent is granted. `track` would no-op anyway, but
+  // a visitor who declined should not have a listener running for a purpose
+  // they refused.
+  React.useEffect(() => {
+    if (!ENABLED || choice !== "granted") return;
+
+    const onClick = (e: MouseEvent) => {
+      const anchor = (e.target as Element | null)?.closest?.("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+
+      let url: URL;
+      try {
+        url = new URL(anchor.href, window.location.origin);
+      } catch {
+        return;
+      }
+
+      const event = classify(url);
+      if (event) trackCtaClick(event, placeOf(anchor));
+    };
+
+    // Capture phase, so the event is seen before any handler that calls
+    // `stopPropagation`, and before a navigation begins tearing the page
+    // down. `passive` because this never calls `preventDefault` — it must
+    // not be able to interfere with the link it is measuring.
+    document.addEventListener("click", onClick, { capture: true, passive: true });
+    return () => document.removeEventListener("click", onClick, { capture: true });
+  }, [choice]);
+
   if (!ENABLED) return null;
 
   const granted = choice === "granted";
@@ -169,6 +219,63 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
       {asking && <ConsentBanner onChoose={choose} />}
     </>
   );
+}
+
+/**
+ * Which conversion event, if any, a destination represents.
+ *
+ * Keyed on where the link GOES. Returning `undefined` is the common case and
+ * the correct one: most links on this site are navigation, and an event for
+ * every anchor press would be a dataset nobody can read.
+ *
+ * Deliberately NOT counted as conversions:
+ *
+ *   * `/agent/login` and `/customer/login` — those are EXISTING customers
+ *     coming back, which is retention and not acquisition. Mixing them into
+ *     a signup number is the easiest way to make a funnel look healthy while
+ *     nobody new arrives.
+ *   * every internal page link, including the ones in the footer that happen
+ *     to point at product pages.
+ */
+function classify(url: URL): "demo_cta_click" | "signup_cta_click" | undefined {
+  // The product's origin — a different deployment, so these are plain <a>
+  // elements and a full navigation away from this site.
+  if (APP_URL && url.href.startsWith(APP_URL)) {
+    return url.pathname.startsWith("/agent/register") ? "signup_cta_click" : undefined;
+  }
+
+  // The contact form is the closest thing this site has to "book a demo":
+  // there is no /demo route, and "Product Demo" is one of the nine options
+  // on the enquiry form. So a press of anything that leads to that page is
+  // the demo intent, and the event is named for the intent rather than for
+  // the URL. `contact_form_start` is what says they actually began.
+  if (url.origin === window.location.origin && url.pathname === "/contact-us") {
+    return "demo_cta_click";
+  }
+
+  return undefined;
+}
+
+/**
+ * A short label for WHERE on the page the control was.
+ *
+ * Without it every conversion collapses into one number and there is no way
+ * to tell the hero button from the one in the footer — which is the first
+ * question anybody asks of this data.
+ *
+ * Read from the DOM rather than passed in, because the call site is a
+ * delegated listener that never sees the component. The landmarks are
+ * checked before the section id so that a link inside the header or footer
+ * is reported as such wherever it sits in the document.
+ */
+function placeOf(anchor: HTMLAnchorElement): string {
+  if (anchor.closest("header")) return "header";
+  if (anchor.closest("footer")) return "footer";
+  const section = anchor.closest("section[id]");
+  // Capped, because a GA4 parameter value is truncated at 100 characters and
+  // a silently cut label is worse than a short one.
+  if (section?.id) return section.id.slice(0, 40);
+  return "page";
 }
 
 /**
