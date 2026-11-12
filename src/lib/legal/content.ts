@@ -313,7 +313,16 @@ export const TERMS: LegalDocument = {
         // this business publishes for correspondence; the registered office,
         // the CIN and the GSTIN are unverified here and stay in the review
         // note below rather than being asserted in the body.
-        `You can reach that company for anything to do with these Terms at ${addressOneLine()}, or on ${CONTACT.phone}. Its own website is ${CONTACT.companyUrl.replace(/^https:\/\/|\/$/g, "")}, and the Contact Us page on this site carries the same details alongside an enquiry form.`,
+        // The trailing clause used to say the Contact Us page "carries the
+        // same details". It no longer does: the business asked for the
+        // company block to come off that page, so the address and the phone
+        // number are still there but the operating company's name and
+        // website are not. A legal document pointing a reader at a page for
+        // information that page does not hold is the kind of small
+        // inaccuracy that costs the whole document credibility, so the claim
+        // is narrowed to what is actually on it rather than deleted — the
+        // enquiry form is still the route this section wants to offer.
+        `You can reach that company for anything to do with these Terms at ${addressOneLine()}, or on ${CONTACT.phone}. Its own website is ${CONTACT.companyUrl.replace(/^https:\/\/|\/$/g, "")}. The Contact Us page on this site carries that address and phone number alongside an enquiry form.`,
         "That address is the office published for correspondence. It is not stated here as the company's registered office, and no company identification number or tax registration is asserted anywhere in this document — see the note on this section.",
       ],
       review:
