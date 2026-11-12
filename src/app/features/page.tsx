@@ -14,16 +14,22 @@ import {
   UploadQueueShot,
 } from "@/components/marketing/product-shots";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema } from "@/lib/seo";
+import { breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema, webPageSchema } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` for the <title> and the meta
+// description, and by `webPageSchema` for the WebPage node's `name` and
+// `description`. Writing them out twice is how the markup ends up describing
+// the page differently from the way the page describes itself in a result.
+const SEO = {
   title: "Features — Insurance PDF Extraction, Records, Renewals",
   description:
     "Every Insoora feature in detail: insurance PDF extraction, bulk upload, policy search, customer histories, renewal tracking, role-based access and export.",
   path: "/features",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 const TRAIL = [{ name: "Features", href: "/features" }];
 
@@ -195,7 +201,13 @@ const SHOTS = {
 export default function FeaturesPage() {
   return (
     <>
-      <JsonLd data={jsonLdGraph(softwareSchema(), breadcrumbSchema([{ name: "Features", path: "/features" }]))} />
+      <JsonLd
+        data={jsonLdGraph(
+          webPageSchema(SEO),
+          softwareSchema(),
+          breadcrumbSchema([{ name: "Features", path: "/features" }]),
+        )}
+      />
 
       <PageHead
         trail={TRAIL}

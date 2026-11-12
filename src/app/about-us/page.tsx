@@ -12,18 +12,26 @@ import {
   AgentDashboardShot, CustomerMobileShot, RoleAccessShot,
 } from "@/components/marketing/product-shots";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata } from "@/lib/seo";
+import {
+  breadcrumbSchema, jsonLdGraph, organizationSchema, pageMetadata, webPageSchema,
+} from "@/lib/seo";
 import { CONTACT, addressLines, mapsSearchHref } from "@/lib/contact";
 import { ACCENT_TILE, type Accent } from "@/lib/accents";
 import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` for the <title> and the meta
+// description, and by `webPageSchema` for the WebPage node's `name` and
+// `description`. Writing them out twice is how the markup ends up describing
+// the page differently from the way the page describes itself in a result.
+const SEO = {
   title: "About Us",
   description:
     "Insoora is insurance policy management software for Indian agents, built in Godhra, Gujarat by Raulji Technologies Private Limited.",
   path: "/about-us",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 // /about-us
 //
@@ -215,6 +223,7 @@ export default function AboutPage() {
           crawler should be able to read it from. */}
       <JsonLd
         data={jsonLdGraph(
+          webPageSchema(SEO),
           organizationSchema(),
           breadcrumbSchema([{ name: "About Us", path: "/about-us" }]),
         )}

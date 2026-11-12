@@ -315,6 +315,133 @@ export function softwareSchema() {
   };
 }
 
+/**
+ * The Contact page, as `ContactPage`.
+ *
+ * ── Why this is its own node and not just the Organization ───────────────
+ *
+ * The Organization node (with the telephone, the postal address and the
+ * `contactPoint`) was already emitted here, which tells an engine what the
+ * business's contact details ARE. It does not tell it that THIS page is where
+ * a human goes to use them — and "where can I contact Insoora" is one of the
+ * eight questions the site is meant to answer unambiguously.
+ *
+ * `mainEntity` points at the Organization rather than repeating its fields, so
+ * there is exactly one description of the business's phone number in the
+ * document and the two nodes cannot disagree.
+ *
+ * No `openingHoursSpecification` and no email address: neither has been
+ * confirmed by the business, and the visible page publishes neither. Schema
+ * that describes something the page does not show is the one kind of
+ * structured data that is actively worse than none.
+ */
+export function contactPageSchema() {
+  const url = absolute("/contact-us");
+  return {
+    "@type": "ContactPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: "Contact Insoora",
+    description:
+      "Contact Insoora about insurance policy management for your agency — by phone, or using the enquiry form.",
+    isPartOf: { "@id": `${siteUrl()}/#website` },
+    mainEntity: { "@id": `${siteUrl()}/#organization` },
+    inLanguage: "en-IN",
+  };
+}
+
+/**
+ * A plain `WebPage` node, for a page whose type has no more specific class.
+ *
+ * Emitted so that every indexable page has one node describing the page
+ * ITSELF — not the product, not the organisation, not a breadcrumb trail. The
+ * landing pages carried `SoftwareApplication` plus `FAQPage` plus
+ * `BreadcrumbList`, all of which describe things ON the page while nothing
+ * described the page; the blog articles already had one via
+ * `mainEntityOfPage`, which is how the gap became visible.
+ *
+ * `isPartOf` ties it to the WebSite node and `primaryImageOfPage` to the
+ * card the page actually serves, so an engine resolving the graph lands on
+ * one connected document rather than four loose assertions.
+ */
+export function webPageSchema({
+  path,
+  title,
+  description,
+  image,
+  faqs,
+}: {
+  path: string;
+  title: string;
+  description: string;
+  /**
+   * This page's own card, replacing the site-wide one in
+   * `primaryImageOfPage`.
+   *
+   * Needed by the articles, which each generate a card of their own. Without
+   * it every article's page node pointed at `/opengraph-image` — the site
+   * card — while its `BlogPosting.image` and its Open Graph tags pointed at
+   * the article's. Three descriptions of one page's image, two of them
+   * agreeing and one not, is exactly the inconsistency the rest of this
+   * module exists to prevent.
+   */
+  image?: string;
+  /**
+   * The questions this page VISIBLY renders, which promotes the node to
+   * `["WebPage", "FAQPage"]`.
+   *
+   * ── Why the FAQ markup lives on this node and not beside it ──────────
+   *
+   * It used to be a second, separate node from `faqSchema` — so thirteen
+   * pages emitted a `WebPage` describing the page and an anonymous
+   * `FAQPage` describing the same page, with nothing tying the two
+   * together. Two blank-node assertions about one URL is not richer
+   * markup, it is the same page described twice and left to a crawler to
+   * reconcile.
+   *
+   * `FAQPage` is a subtype of `WebPage`, so the honest shape is one node
+   * carrying both types. The `@id` stays `#webpage`, which means the
+   * breadcrumb, the WebSite and the Organization all still resolve to the
+   * one page node.
+   *
+   * The invariant that governed `faqSchema` is unchanged and is the reason
+   * this is a parameter rather than a flag: the entries are always the
+   * array the page itself renders. Google requires every question and
+   * answer to be visible on the page carrying the markup, and the
+   * accordion keeps all of them in the server-rendered HTML whether or not
+   * a panel is open (see `faq-accordion.tsx`). A page that wants this
+   * schema has to show the questions.
+   *
+   * Note that Google now restricts FAQ RICH RESULTS to a narrow set of
+   * authoritative sites, so this is unlikely to produce an expandable
+   * result. It is emitted because answer engines read it and because it is
+   * a truthful machine-readable description of what the page contains —
+   * not as a ranking tactic.
+   */
+  faqs?: { q: string; a: string }[];
+}) {
+  const url = absolute(path);
+  return {
+    "@type": faqs && faqs.length > 0 ? ["WebPage", "FAQPage"] : "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: title,
+    description,
+    isPartOf: { "@id": `${siteUrl()}/#website` },
+    primaryImageOfPage: absolute(image ?? "/opengraph-image"),
+    inLanguage: "en-IN",
+    ...(faqs && faqs.length > 0
+      ? {
+          mainEntity: faqs.map((e) => ({
+            "@type": "Question",
+            name: e.q,
+            acceptedAnswer: { "@type": "Answer", text: e.a },
+          })),
+        }
+      : {}),
+  };
+}
+
 /** Breadcrumbs, from the trail the page renders. Home is always first. */
 export function breadcrumbSchema(trail: { name: string; path: string }[]) {
   return {
@@ -324,37 +451,6 @@ export function breadcrumbSchema(trail: { name: string; path: string }[]) {
       position: i + 1,
       name: item.name,
       item: absolute(item.path),
-    })),
-  };
-}
-
-/**
- * FAQPage, for any page that visibly renders its own questions.
- *
- * It was the FAQ page alone until the twelve landing pages were added, and
- * the rule that governed that has not changed — it is just satisfied in more
- * places now. The markup is only valid when every question and answer is
- * visible on the page carrying it, and all thirteen pages render theirs in
- * the same accordion, which keeps the text in the server-rendered HTML
- * whether or not a panel is open (see `faq-accordion.tsx`).
- *
- * So the one invariant is the argument of this function: it is always built
- * from the same array the page renders, never from a separate list that could
- * drift. A page that wants this schema has to show the questions.
- *
- * Note that Google now restricts FAQ RICH RESULTS to a narrow set of
- * authoritative sites, so this is unlikely to produce stars in a result page.
- * It is emitted because it is read by answer engines and because it is a
- * truthful machine-readable description of what the page contains — not as a
- * ranking tactic.
- */
-export function faqSchema(entries: { q: string; a: string }[]) {
-  return {
-    "@type": "FAQPage",
-    mainEntity: entries.map((e) => ({
-      "@type": "Question",
-      name: e.q,
-      acceptedAnswer: { "@type": "Answer", text: e.a },
     })),
   };
 }
@@ -406,7 +502,11 @@ export function blogPostingSchema(post: {
     headline: post.title,
     description: post.description,
     url,
-    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    // Points at the node `webPageSchema` emits on the same page, by the
+    // same `#webpage` id every other page uses. It used to assert a stub of
+    // its own (`{"@type":"WebPage","@id": url}`) — a second, fragment-less
+    // description of the page that nothing else in the graph referenced.
+    mainEntityOfPage: { "@id": `${url}#webpage` },
     datePublished: post.published,
     dateModified: post.updated,
     author: { "@id": `${siteUrl()}/#organization` },

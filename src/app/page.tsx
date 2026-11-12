@@ -23,19 +23,29 @@ import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { HOME_FAQS } from "@/lib/faq";
 import {
-  jsonLdGraph, organizationSchema, pageMetadata, softwareSchema, webSiteSchema,
+  jsonLdGraph, organizationSchema, pageMetadata, softwareSchema, webPageSchema, webSiteSchema,
 } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { appHref } from "@/lib/site-config";
 
+// One definition, read twice: by `pageMetadata` and by `webPageSchema`.
+//
+// `title` here is the templated form, which is what the meta description's
+// sibling <title> would have been; the home page escapes the layout's
+// `"%s · Insoora"` template with `title.absolute` below, and the page node's
+// `name` uses that absolute string instead — it should say what the tab says.
+const SEO = {
+  title: "Insurance Policy Management Software for Agents",
+  description:
+    "Insurance policy management software that reads your policy PDFs into organized records, customer histories and a renewals list built from the policy's own expiry.",
+  path: "/",
+};
+
+const TITLE_ABSOLUTE = "Insoora — Insurance Policy Management Software for Agents";
+
 export const metadata = {
-  ...pageMetadata({
-    title: "Insurance Policy Management Software for Agents",
-    description:
-      "Insurance policy management software that reads your policy PDFs into organized records, customer histories and a renewals list built from the policy's own expiry.",
-    path: "/",
-  }),
-  title: { absolute: "Insoora — Insurance Policy Management Software for Agents" },
+  ...pageMetadata(SEO),
+  title: { absolute: TITLE_ABSOLUTE },
 };
 
 // ── Content ─────────────────────────────────────────────
@@ -95,7 +105,25 @@ export default function HomePage() {
 
   return (
     <>
-      <JsonLd data={jsonLdGraph(organizationSchema(), webSiteSchema(), softwareSchema())} />
+      {/* The page node comes first, then the three nodes describing things
+          that are not this page: the company, the site and the product.
+
+          Deliberately NOT typed `["WebPage", "FAQPage"]`, even though the
+          section near the foot of this page renders its questions and
+          answers into the HTML and would therefore be eligible. `HOME_FAQS`
+          is a SUBSET of the /faq page's own array (see lib/faq), so marking
+          it up here would publish the same questions and answers as FAQ
+          markup on two URLs — which Google's guidelines specifically ask
+          sites not to do. /faq is where that markup belongs, and it carries
+          it. */}
+      <JsonLd
+        data={jsonLdGraph(
+          webPageSchema({ ...SEO, title: TITLE_ABSOLUTE }),
+          organizationSchema(),
+          webSiteSchema(),
+          softwareSchema(),
+        )}
+      />
 
       {/* ── Hero ── */}
       <section
@@ -259,7 +287,11 @@ export default function HomePage() {
                         <div key={m.n} className="grid grid-cols-[1.2fr_1fr_1fr] border-t border-border/60 px-0.5 py-[7px] text-xs">
                           <span className="font-semibold text-foreground">{m.n}</span>
                           <span className="text-foreground/70">{m.i}</span>
-                          <span className="text-right font-semibold text-accent-orange">{m.d}</span>
+                          {/* The `-ink` shade, not the bright fill. #ea580c is 3.55:1 on white
+                              and this is 12px, which WCAG does not treat as large text —
+                              an axe pass flagged it on twelve pages. See the note beside
+                              the `-ink` tokens in globals.css. */}
+                          <span className="text-right font-semibold text-accent-orange-ink">{m.d}</span>
                         </div>
                       ))}
                     </div>

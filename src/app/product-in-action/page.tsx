@@ -16,17 +16,23 @@ import {
 import { ProductTabs } from "@/components/marketing/product-tabs";
 import { ExploreLinks, portalLinks } from "@/components/marketing/explore-links";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema } from "@/lib/seo";
+import { breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema, webPageSchema } from "@/lib/seo";
 import { ACCENT_TILE, type Accent } from "@/lib/accents";
 import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` for the <title> and the meta
+// description, and by `webPageSchema` for the WebPage node's `name` and
+// `description`. Writing them out twice is how the markup ends up describing
+// the page differently from the way the page describes itself in a result.
+const SEO = {
   title: "Product in Action — Every Screen, with Sample Data",
   description:
     "Every Insoora screen drawn with sample data: the agent dashboard, bulk PDF upload, extracted policy details, the review queue, renewals and the customer portal.",
   path: "/product-in-action",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 // /product-in-action
 //
@@ -239,6 +245,7 @@ export default function ProductInActionPage() {
     <>
       <JsonLd
         data={jsonLdGraph(
+          webPageSchema(SEO),
           softwareSchema(),
           breadcrumbSchema([{ name: "Product in Action", path: "/product-in-action" }]),
         )}

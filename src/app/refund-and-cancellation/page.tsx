@@ -1,7 +1,7 @@
 import { LegalPage } from "@/components/marketing/legal-page";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { REFUND_POLICY } from "@/lib/legal/content";
-import { breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
+import { breadcrumbSchema, jsonLdGraph, pageMetadata, webPageSchema } from "@/lib/seo";
 
 // The Refund & Cancellation page.
 //
@@ -16,21 +16,26 @@ import { breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
 // within what window — are the business's to set, and every section that
 // depends on one carries a review callout instead of an invented rule.
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` and by `webPageSchema`.
+const SEO = {
   title: "Refund & Cancellation Policy",
   description:
     "How cancellation and refunds work for Insoora's paid plans and policy credits, including duplicate charges and failed payments. A draft awaiting approval.",
   path: "/refund-and-cancellation",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 export default function RefundPage() {
   return (
     <>
-      {/* Breadcrumbs only — the same reasoning as the other two legal pages.
-          This document is an unapproved draft, and marking it up as a
-          published article would overstate what it is. */}
+      {/* `WebPage` and the trail, not `Article` — the same reasoning as the
+          other two legal pages, set out in full on /privacy-policy. This
+          document is an unapproved draft; naming the page is true of a
+          draft, calling it a published article is not. */}
       <JsonLd
         data={jsonLdGraph(
+          webPageSchema(SEO),
           breadcrumbSchema([{ name: "Refund & Cancellation Policy", path: "/refund-and-cancellation" }]),
         )}
       />
