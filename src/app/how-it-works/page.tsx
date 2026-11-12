@@ -15,15 +15,23 @@ import {
   RenewalTimelineShot, ReviewFlagShot, UploadQueueShot,
 } from "@/components/marketing/product-shots";
 import { JsonLd } from "@/components/marketing/json-ld";
-import { absolute, breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema } from "@/lib/seo";
+import {
+  absolute, breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema, webPageSchema,
+} from "@/lib/seo";
 import { appHref } from "@/lib/site-config";
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` for the <title> and the meta
+// description, and by `webPageSchema` for the WebPage node's `name` and
+// `description`. Writing them out twice is how the markup ends up describing
+// the page differently from the way the page describes itself in a result.
+const SEO = {
   title: "How It Works — From Policy PDF to Organized Record",
   description:
     "The seven steps an insurance policy takes through Insoora: upload, extract, flag what is unclear, file it under the customer, share it, and track the expiry date.",
   path: "/how-it-works",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 // /how-it-works
 //
@@ -171,6 +179,7 @@ export default function HowItWorksPage() {
     <>
       <JsonLd
         data={jsonLdGraph(
+          webPageSchema(SEO),
           softwareSchema(),
           breadcrumbSchema([{ name: "How It Works", path: "/how-it-works" }]),
           // HowTo markup, from the same seven steps the page renders. Each

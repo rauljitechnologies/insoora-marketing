@@ -22,6 +22,9 @@ export const post: Post = {
   category: "agent-workflow",
   art: "keyboard",
   audience: "Agents entering policies by hand",
+  // This article carries /insurance-policy-entry-software's own primary keyword in
+  // its H1, so it has to point at it — see `productLinks` in lib/blog/types.
+  productLinks: ["insurance-policy-entry-software"],
   related: [
     "what-is-insurance-policy-management-software",
     "ocr-in-insurance-how-digital-policy-extraction-works",

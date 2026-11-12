@@ -84,11 +84,33 @@ const BY_CATEGORY: Record<PostCategory, string[]> = {
   ],
 };
 
-export function productLinksForCategory(category: PostCategory): ExploreLink[] {
+/**
+ * The product pages one article should link to.
+ *
+ * The article's own `productLinks` come FIRST and the category's follow,
+ * deduplicated. First because an override is only ever set to name the page
+ * the article competes with for a query (see `productLinks` in lib/blog/
+ * types), and that is the link that should lead.
+ *
+ * Capped at three. The band is a row of cards under an article, and a reader
+ * who is offered six "related product" links follows none of them; three is
+ * also what the internal-linking brief asks for. The cap bites only on an
+ * article that sets an override, which is the trade: its most relevant page
+ * displaces its category's third.
+ *
+ * Slugs are resolved against the live collection, so a mapping naming a page
+ * that no longer exists yields nothing rather than a dead link.
+ */
+export function productLinksForPost(post: {
+  category: PostCategory;
+  productLinks?: string[];
+}): ExploreLink[] {
   const all = [...SOLUTION_PAGES, ...PORTAL_PAGES];
-  return BY_CATEGORY[category]
+  const slugs = [...new Set([...(post.productLinks ?? []), ...BY_CATEGORY[post.category]])];
+  return slugs
     .map((slug) => all.find((p) => p.slug === slug))
     .filter((p) => p !== undefined)
+    .slice(0, 3)
     .map((p) => ({ href: `/${p.slug}`, label: p.nav.label, hint: p.nav.hint }));
 }
 

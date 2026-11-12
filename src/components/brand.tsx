@@ -226,7 +226,17 @@ function Wordmark({
         Insoora
       </span>
       {tagline && (
+        // `aria-hidden` so the slogan is not announced as a second line
+        // every time the logo is reached.
+        //
+        // Note what this does NOT fix, because it is easy to assume it does:
+        // WCAG 2.5.3 (Label in Name) compares a control's accessible name
+        // with what a SIGHTED user sees, and `aria-hidden` text is still
+        // visible on screen. Hiding the tagline here left the rule failing
+        // on all 35 pages. What fixes it is the link below naming itself
+        // from its own content — see `BrandLogo`.
         <span
+          aria-hidden
           className={cn(
             "font-semibold uppercase leading-none",
             TAGLINE_COLOUR[tone],
@@ -272,9 +282,9 @@ function Wordmark({
  * The stacked lockup always shows it: it sits in the footer with a column of
  * its own and no neighbour to crowd.
  *
- * `aria-label` on the link names the brand, so neither line is announced
- * separately — a screen reader hears "Insoora — home" and not the wordmark
- * followed by a slogan on every page.
+ * The link is named by its own content plus a visually-hidden "Home", NOT
+ * by an `aria-label`. See the note at that span for why the obvious version
+ * of this was a WCAG 2.5.3 failure on all 35 pages.
  */
 export function BrandLogo({
   tone = "light",
@@ -295,7 +305,6 @@ export function BrandLogo({
   return (
     <Link
       href={href}
-      aria-label="Insoora — home"
       className={cn(
         "flex shrink-0 rounded-lg transition-opacity hover:opacity-85",
         stacked ? "flex-col items-start gap-2.5" : "items-center gap-2.5",
@@ -303,6 +312,26 @@ export function BrandLogo({
       )}
     >
       <BrandMark className={stacked ? "size-12" : "size-10"} />
+      {/* Visually hidden, and deliberately INSIDE the link.
+       *
+       *  The link carried `aria-label="Insoora — home"`. That is the usual
+       *  way to name a logo link, and it failed WCAG 2.5.3 (Label in Name)
+       *  on every page of the site: the rule asks that a control's
+       *  accessible name contain its visible text, an `aria-label` REPLACES
+       *  the content rather than extending it, and the visible text here
+       *  includes the tagline. Marking the tagline `aria-hidden` does not
+       *  help — the rule compares against what a sighted user sees, and
+       *  hidden-from-assistive-tech text is still on the screen. That
+       *  matters for a real person: someone driving the browser by voice
+       *  says the words they can see, and the name has to contain them.
+       *
+       *  So the link names itself from its own content, and this adds the
+       *  one thing the content does not say. A screen reader hears
+       *  "Insoora Your insurance, always with you Home, link"; a speech
+       *  user can still say "Insoora". `sr-only` is clipped rather than
+       *  display:none, so it joins the accessible name without joining the
+       *  visible text, which is exactly the asymmetry the rule needs. */}
+      <span className="sr-only">Home</span>
       <Wordmark
         tone={tone}
         tagline={tagline}

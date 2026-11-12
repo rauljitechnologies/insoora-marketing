@@ -6,28 +6,35 @@ import { cn } from "@/lib/utils";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { FAQS, faqsByCategory } from "@/lib/faq";
-import { breadcrumbSchema, faqSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
+import { breadcrumbSchema, jsonLdGraph, pageMetadata, webPageSchema } from "@/lib/seo";
 import { appHref } from "@/lib/site-config";
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` for the <title> and the meta
+// description, and by `webPageSchema` for the page node's `name` and
+// `description`.
+const SEO = {
   title: "Frequently Asked Questions",
   description:
     "How Insoora reads insurance policy PDFs, which documents it supports, and how bulk upload, search, renewal tracking, customer access and document security work.",
   path: "/faq",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 export default function FaqPage() {
   const GROUPS = faqsByCategory();
 
   return (
     <>
-      {/* FAQPage markup built from the same array the page renders. Google's
-          guidelines require every question and answer to be visible on the
-          page carrying the schema — the accordion renders all of them into the
-          HTML and hides the closed ones with CSS, so that holds. */}
+      {/* One node, typed `["WebPage", "FAQPage"]`: this page IS the FAQ, so
+          the questions belong on the node describing it rather than on a
+          second anonymous one beside it. Built from the same array the page
+          renders — Google's guidelines require every question and answer to
+          be visible on the page carrying the schema, and the accordion keeps
+          all of them in the HTML, hiding the closed ones with CSS. */}
       <JsonLd
         data={jsonLdGraph(
-          faqSchema(FAQS.map((f) => ({ q: f.q, a: f.a }))),
+          webPageSchema({ ...SEO, faqs: FAQS.map((f) => ({ q: f.q, a: f.a })) }),
           breadcrumbSchema([{ name: "FAQ", path: "/faq" }]),
         )}
       />

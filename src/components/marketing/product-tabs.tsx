@@ -48,6 +48,17 @@ const STATUS: Record<Status, string> = {
 
 /** Per-tab accent, matching the design's tab bar.
  *
+ *  ── Why `idle` text is a different hex from `active` and `bg` ──
+ *
+ *  Because one is TEXT and the others are fills. An unselected trigger is
+ *  13px bold type on white, which WCAG does not count as large, so it needs
+ *  4.5:1 — and orange (3.55:1), teal (3.68:1) and green (3.29:1) do not
+ *  clear that. An axe pass caught all three. The `idle` colour is therefore
+ *  the matching `-ink` shade from globals.css, while `active` and `bg` keep
+ *  the bright hue: a filled chip is a graphic with white text on it, judged
+ *  against a different bar. Blue, red and violet already passed and are
+ *  unchanged.
+ *
  *  Every class is written out in full. Tailwind scans source text for complete
  *  class names, so a value built at runtime (`bg-[${hex}]`, or
  *  `data-[state=active]:${tone.bg}`) produces no CSS at all — the tab would
@@ -56,9 +67,9 @@ const TONE = [
   { idle: "border-[#2563EB]/25 text-[#2563EB]", active: "data-[state=active]:border-[#2563EB] data-[state=active]:bg-[#2563EB]", bg: "bg-[#2563EB]" },
   { idle: "border-[#DC2626]/25 text-[#DC2626]", active: "data-[state=active]:border-[#DC2626] data-[state=active]:bg-[#DC2626]", bg: "bg-[#DC2626]" },
   { idle: "border-[#7C3AED]/25 text-[#7C3AED]", active: "data-[state=active]:border-[#7C3AED] data-[state=active]:bg-[#7C3AED]", bg: "bg-[#7C3AED]" },
-  { idle: "border-[#EA580C]/25 text-[#EA580C]", active: "data-[state=active]:border-[#EA580C] data-[state=active]:bg-[#EA580C]", bg: "bg-[#EA580C]" },
-  { idle: "border-[#0891B2]/25 text-[#0891B2]", active: "data-[state=active]:border-[#0891B2] data-[state=active]:bg-[#0891B2]", bg: "bg-[#0891B2]" },
-  { idle: "border-[#16A34A]/25 text-[#16A34A]", active: "data-[state=active]:border-[#16A34A] data-[state=active]:bg-[#16A34A]", bg: "bg-[#16A34A]" },
+  { idle: "border-[#EA580C]/25 text-[#C2410C]", active: "data-[state=active]:border-[#EA580C] data-[state=active]:bg-[#EA580C]", bg: "bg-[#EA580C]" },
+  { idle: "border-[#0891B2]/25 text-[#0E7490]", active: "data-[state=active]:border-[#0891B2] data-[state=active]:bg-[#0891B2]", bg: "bg-[#0891B2]" },
+  { idle: "border-[#16A34A]/25 text-[#15803D]", active: "data-[state=active]:border-[#16A34A] data-[state=active]:bg-[#16A34A]", bg: "bg-[#16A34A]" },
 ];
 
 interface Panel {
@@ -219,7 +230,26 @@ export function ProductTabs() {
                 <Search className="size-3.5" />
                 {p.search}
               </div>
-              <div className="overflow-x-auto">
+              {/* `role`, a name and `tabIndex={0}` — the same treatment the
+                  comparison tables in solution-sections.tsx already carry,
+                  and for the same reason. This table is `min-w-[39rem]`
+                  inside a container narrower than that on every phone, so it
+                  genuinely scrolls; a div with `overflow-x-auto` is not
+                  focusable by default, which left a keyboard-only reader
+                  able to see a clipped column with no way to reach it. An
+                  axe pass found this as the one scrollable region on the
+                  site still missing it.
+
+                  Named from the panel's own title rather than a literal, so
+                  a screen reader announces "Policies, region" instead of an
+                  unlabelled region — and so the name cannot drift from the
+                  tab it belongs to. */}
+              <div
+                role="region"
+                aria-label={p.title}
+                tabIndex={0}
+                className="overflow-x-auto rounded-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+              >
                 <table className="w-full min-w-[39rem] border-collapse text-[13px]">
                   <thead>
                     <tr className="bg-surface text-left text-muted">

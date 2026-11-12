@@ -14,10 +14,23 @@ import { cn } from "@/lib/utils";
 // and the panel framing both make that plain, and no number on this page is
 // presented as a statistic about the business.
 
+// The four initials in the agency panel. White 15px type sits on each of
+// these, so every one has to clear 4.5:1 against white — these are circles
+// with text in them, not decorative dots.
+//
+// #0EA5E9 (2.77:1) and #16A34A (3.29:1) did not, and an axe pass found both.
+// They are replaced by shades the site already carries as its readable ones:
+// --accent-teal-ink (#0E7490, 5.36:1) and --accent-green-ink (#15803D,
+// 5.09:1). The circles read as the same two hues; the initials on them are
+// now legible.
+//
+// Note the first attempt at this used --secondary (#0284C7) and was still
+// 4.09:1 — close enough to look fixed and not be. Both values here were
+// re-measured after the change rather than assumed.
 const TEAM = [
   { i: "AK", bg: "bg-[#2563EB]" },
-  { i: "SP", bg: "bg-[#0EA5E9]" },
-  { i: "RJ", bg: "bg-[#16A34A]" },
+  { i: "SP", bg: "bg-[#0E7490]" },
+  { i: "RJ", bg: "bg-[#15803D]" },
   { i: "+3", bg: "bg-[#64748B]" },
 ];
 

@@ -63,7 +63,10 @@ export function ExtractionPreview() {
                 key={t}
                 className={cn(
                   "truncate rounded-md px-1.5 py-1 text-[10px]",
-                  i === 2 ? "bg-primary-soft font-semibold text-primary" : "text-muted",
+                  // `-ink` on the inactive rows: 10px `--muted` on
+                  // `--surface` measures 4.48:1, which misses AA by 0.02 —
+                  // the kind of gap only a measurement finds.
+                  i === 2 ? "bg-primary-soft font-semibold text-primary" : "text-muted-ink",
                 )}
               >
                 {t}
@@ -119,7 +122,8 @@ export function ExtractionPreview() {
             </span>
             <span className="min-w-0 flex-1 truncate font-semibold text-foreground">{r.t}</span>
             <span className="shrink-0 text-muted">{r.n}</span>
-            <span className="shrink-0 font-semibold text-accent-orange">{r.d}</span>
+            {/* `-ink`, not the bright fill: 11px at 3.55:1 fails AA. */}
+            <span className="shrink-0 font-semibold text-accent-orange-ink">{r.d}</span>
           </div>
         ))}
       </div>

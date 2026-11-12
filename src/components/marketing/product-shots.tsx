@@ -77,7 +77,7 @@ const POLICY_ROWS: { customer: string; insurer: string; number: string; expiry: 
 const STATE_LABEL: Record<"ok" | "review" | "soon", { text: string; cls: string }> = {
   ok: { text: "Read", cls: "bg-success-soft text-success" },
   review: { text: "Needs review", cls: "bg-warning-soft text-warning" },
-  soon: { text: "Expiring", cls: "bg-danger-soft text-danger" },
+  soon: { text: "Expiring", cls: "bg-danger-soft text-danger-ink" },
 };
 
 /** Agent policy management: the working list an agent lands on. */
@@ -141,7 +141,7 @@ export function ExtractedDetailsShot() {
       <div className="grid sm:grid-cols-2">
         <div className="border-b border-border p-4 sm:border-b-0 sm:border-r">
           <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-lg bg-danger-soft text-[10px] font-bold text-danger">
+            <span className="grid size-8 place-items-center rounded-lg bg-danger-soft text-[10px] font-bold text-danger-ink">
               PDF
             </span>
             <span className="min-w-0">
@@ -218,7 +218,9 @@ export function CustomerVaultShot() {
               <span className={cn("block text-[11px] font-bold tabular-nums", y.current ? "text-primary" : "text-muted")}>
                 {y.year}
               </span>
-              <span className="mt-0.5 block text-[10px] text-muted">{y.count}</span>
+              {/* `-ink`: this label sits on `bg-primary-soft` in the current
+                  year's tile, where plain `--muted` is 4.37:1. */}
+              <span className="mt-0.5 block text-[10px] text-muted-ink">{y.count}</span>
             </div>
           ))}
         </div>
@@ -411,7 +413,7 @@ const QUEUE_STATE: Record<"done" | "working" | "review" | "failed", { text: stri
   done: { text: "Read", chip: "bg-success-soft text-success", bar: "bg-[#16A34A]" },
   working: { text: "Reading…", chip: "bg-primary-soft text-primary", bar: "bg-[#2563EB]" },
   review: { text: "Needs review", chip: "bg-warning-soft text-warning", bar: "bg-[#EA580C]" },
-  failed: { text: "Failed", chip: "bg-danger-soft text-danger", bar: "bg-[#DC2626]" },
+  failed: { text: "Failed", chip: "bg-danger-soft text-danger-ink", bar: "bg-[#DC2626]" },
 };
 
 /**
@@ -445,7 +447,7 @@ export function UploadQueueShot() {
             return (
               <li key={q.file} className="rounded-lg border border-border px-2.5 py-2">
                 <span className="flex items-center gap-2">
-                  <span className="grid size-5 shrink-0 place-items-center rounded bg-danger-soft text-[7px] font-bold text-danger">
+                  <span className="grid size-5 shrink-0 place-items-center rounded bg-danger-soft text-[7px] font-bold text-danger-ink">
                     PDF
                   </span>
                   <span className="min-w-0 flex-1 truncate text-[10px] font-medium text-foreground">{q.file}</span>
@@ -627,10 +629,12 @@ export function PolicyHistoryShot() {
               className={cn("flex items-center gap-2.5 rounded-lg border px-2.5 py-2", h.tone)}
             >
               <strong className="w-8 shrink-0 text-[11px] tabular-nums text-foreground">{h.year}</strong>
-              <span className="min-w-0 flex-1 truncate text-[10px] text-muted">{h.insurer}</span>
+              {/* `-ink` on both: `h.tone` paints some of these rows with a
+                  tinted ground, where plain `--muted` falls under 4.5:1. */}
+              <span className="min-w-0 flex-1 truncate text-[10px] text-muted-ink">{h.insurer}</span>
               <span className="shrink-0 text-[10px] font-semibold tabular-nums text-foreground">{h.premium}</span>
-              <span className="hidden shrink-0 text-[9px] text-muted min-[26rem]:inline">{h.note}</span>
-              <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-danger-soft px-1 py-0.5 text-[7px] font-bold text-danger">
+              <span className="hidden shrink-0 text-[9px] text-muted-ink min-[26rem]:inline">{h.note}</span>
+              <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-danger-soft px-1 py-0.5 text-[7px] font-bold text-danger-ink">
                 PDF
               </span>
             </li>
@@ -989,7 +993,7 @@ export function SubAgentTeamShot() {
 }
 
 const CUSTOMER_ALERTS: { t: string; sub: string; chip: string; cls: string; bar: string; pct: number }[] = [
-  { t: "Car · Bajaj Allianz", sub: "GJ06KQ9835 · expires 19 Dec 2026", chip: "45 days", cls: "bg-danger-soft text-danger", bar: "bg-[#DC2626]", pct: 88 },
+  { t: "Car · Bajaj Allianz", sub: "GJ06KQ9835 · expires 19 Dec 2026", chip: "45 days", cls: "bg-danger-soft text-danger-ink", bar: "bg-[#DC2626]", pct: 88 },
   { t: "Health · Niva Bupa", sub: "Family floater · expires 14 Jul 2027", chip: "252 days", cls: "bg-success-soft text-success", bar: "bg-[#16A34A]", pct: 31 },
   { t: "Term · HDFC Life", sub: "Annual · expires 10 Jan 2027", chip: "67 days", cls: "bg-warning-soft text-warning", bar: "bg-[#EA580C]", pct: 72 },
 ];

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Clock } from "lucide-react";
 import { Breadcrumb, Container } from "@/components/marketing/section";
 import { BandPrimaryAction, BandSecondaryAction, ChipLink, CtaBand } from "@/components/marketing/cta";
-import { ExploreLinks, productLinksForCategory } from "@/components/marketing/explore-links";
+import { ExploreLinks, productLinksForPost } from "@/components/marketing/explore-links";
 import { JsonLd } from "@/components/marketing/json-ld";
 import { ART_ALT, BlogArt } from "@/components/marketing/blog-art";
 import { BlogProse, inline, sectionId } from "@/components/marketing/blog-prose";
@@ -19,9 +19,9 @@ import {
 import {
   blogPostingSchema,
   breadcrumbSchema,
-  faqSchema,
   jsonLdGraph,
   pageMetadata,
+  webPageSchema,
 } from "@/lib/seo";
 import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
@@ -91,10 +91,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             { name: "Blog", path: "/blog" },
             { name: post.title, path: `/blog/${post.slug}` },
           ]),
-          // Only when the article actually carries a Q&A block. The markup is
-          // valid only if every question and answer is visible on the page,
-          // and it is built from the same array rendered below.
-          ...(post.faqs?.length ? [faqSchema(post.faqs)] : []),
+          // The node describing the PAGE, which the BlogPosting above points
+          // at by `@id` through its `mainEntityOfPage`. The article's Q&A
+          // block rides on it — promoting it to `["WebPage", "FAQPage"]` —
+          // rather than being a separate anonymous node beside it, which is
+          // what it was. Only when the article actually carries one: the
+          // markup is valid only if every question and answer is visible on
+          // the page, and this is the same array rendered below.
+          webPageSchema({
+            path: `/blog/${post.slug}`,
+            title: post.metaTitle ?? post.title,
+            description: post.description,
+            // The article's own generated card — the same URL
+            // `generateMetadata` puts in the Open Graph tags and
+            // `blogPostingSchema` puts in `image`, so all three agree.
+            image: `/blog/${post.slug}/opengraph-image`,
+            faqs: post.faqs,
+          }),
         )}
       />
 
@@ -293,7 +306,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </p>
           <ExploreLinks
             className="mt-6"
-            items={productLinksForCategory(post.category)}
+            items={productLinksForPost(post)}
             columns={3}
           />
           <p className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">

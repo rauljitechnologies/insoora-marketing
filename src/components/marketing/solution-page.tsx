@@ -10,7 +10,9 @@ import { JsonLd } from "@/components/marketing/json-ld";
 import { Shot, SolutionBand } from "@/components/marketing/solution-sections";
 import { ACCENT_CHIP } from "@/lib/accents";
 import type { SolutionPage } from "@/lib/solutions/types";
-import { breadcrumbSchema, faqSchema, jsonLdGraph, pageMetadata, softwareSchema } from "@/lib/seo";
+import {
+  breadcrumbSchema, jsonLdGraph, pageMetadata, softwareSchema, webPageSchema,
+} from "@/lib/seo";
 import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -66,18 +68,37 @@ export function SolutionRoute({ page }: { page: SolutionPage }) {
 
   return (
     <>
-      {/* `faqSchema` on a page other than /faq is correct here and was not
-          before: the markup is only valid when every question and answer is
-          visible on the page carrying it, and these pages render all of
-          theirs in the same accordion the FAQ page uses — which keeps the
-          text in the server-rendered HTML whether or not a panel is open.
-          The schema is built from the same array the accordion renders, so
-          the two cannot disagree. */}
+      {/* `webPageSchema` is the node describing THIS PAGE.
+
+          Without it these pages carried three nodes — the product, a trail
+          and a list of questions — all of which describe things ON the page
+          while nothing described the page. The blog articles already had one
+          through `mainEntityOfPage`, which is how the gap became visible.
+          It ties itself to the WebSite node by `@id`, so the graph resolves
+          to one connected document rather than four loose assertions.
+
+          The FAQ entries ride on that same node, which promotes it to
+          `["WebPage", "FAQPage"]`. They were a separate `faqSchema` node,
+          and a separate node meant each of these pages described itself
+          twice — once as a WebPage and once as an anonymous FAQPage — with
+          nothing joining the two. The validity rule is unchanged and is why
+          the array is the one the accordion renders: the markup only holds
+          when every question and answer is visible on the page carrying it,
+          and the accordion keeps all of them in the server-rendered HTML
+          whether or not a panel is open. */}
       <JsonLd
         data={jsonLdGraph(
+          webPageSchema({
+            path: `/${page.slug}`,
+            // The same two strings the <title> and meta description use, so
+            // the markup cannot describe the page differently from the way
+            // the page describes itself in a result.
+            title: page.metaTitle,
+            description: page.description,
+            faqs: page.faqs,
+          }),
           softwareSchema(),
           breadcrumbSchema(trail),
-          faqSchema(page.faqs),
         )}
       />
 

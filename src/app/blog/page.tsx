@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/marketing/json-ld";
 import { ART_ALT, BlogArt } from "@/components/marketing/blog-art";
 import { ACCENT_CHIP, type Accent } from "@/lib/accents";
 import { CATEGORIES, POSTS, type PostCategory, formatPostDate, postsByCategory, readingMinutes } from "@/lib/blog";
-import { blogSchema, breadcrumbSchema, jsonLdGraph, pageMetadata } from "@/lib/seo";
+import { blogSchema, breadcrumbSchema, jsonLdGraph, pageMetadata, webPageSchema } from "@/lib/seo";
 import { appHref } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +16,18 @@ import { cn } from "@/lib/utils";
 // (see lib/blog), so there is nothing to fetch and nothing to revalidate. A
 // new post is a deploy, which is also what puts it in the sitemap.
 
-export const metadata = pageMetadata({
+// One definition, read twice: by `pageMetadata` for the <title> and the meta
+// description, and by `webPageSchema` for the WebPage node's `name` and
+// `description`. Writing them out twice is how the markup ends up describing
+// the page differently from the way the page describes itself in a result.
+const SEO = {
   title: "Insurance Software Guides for Agents and Agencies",
   description:
     "Guides for insurance agents and policyholders: organizing policy documents, running an agency, tracking renewals, choosing software, and how policy extraction works.",
   path: "/blog",
-});
+};
+
+export const metadata = pageMetadata(SEO);
 
 /** Each shelf's hue, so a group heading and its chip are the same colour —
  *  the one-hue-per-chapter rule the rest of the site follows. */
@@ -55,6 +61,11 @@ export default function BlogIndexPage() {
     <>
       <JsonLd
         data={jsonLdGraph(
+          // The page, the collection it shows, and the trail to it. The
+          // `Blog` node is the collection — a CreativeWork, not a page — so
+          // it does not describe /blog itself and never did; `webPageSchema`
+          // is what names the page a reader actually landed on.
+          webPageSchema(SEO),
           blogSchema(POSTS.map((p) => ({ slug: p.slug, title: p.title, published: p.published }))),
           breadcrumbSchema([{ name: "Blog", path: "/blog" }]),
         )}

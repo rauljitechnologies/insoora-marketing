@@ -575,6 +575,34 @@ html {
   --accent-green-ink: #15803d;  /* was #16a34a at 3.30:1 */
   --accent-pink-ink: #be185d;   /* was #db2777 at 4.35:1 on the panel */
 
+  /* Red text on the SOFT RED ground, which is a different sum from red text
+     on white.
+
+     `--danger` (#dc2626) is 4.83:1 on #ffffff and passes, which is why it is
+     not among the `-ink` overrides above. On `--danger-soft` (#fef2f2) the
+     same red is 4.41:1 — under the bar, and that is the pairing every
+     "Expiring" / "Expired" / "Failed" chip on this site actually uses. An
+     axe pass found it on 30 of the 35 pages.
+
+     #b91c1c is 5.92:1 on that ground, and is already the shade the product
+     tabs' own `Due` chip uses, so this makes the two agree rather than
+     introducing a colour. The bright `--danger` is unchanged for borders,
+     bars and fills, where the 3:1 graphics bar applies instead. */
+  --danger-ink: #b91c1c;
+
+  /* Secondary text at 9-10px on a TINTED ground.
+
+     Same shape of problem as `--danger-ink` above, one token along.
+     `--muted` (#64748b) is 4.76:1 on white and fine; on `--primary-soft`
+     (#eff6ff) it is 4.37:1, and the drawn product mockups put 9px and 10px
+     secondary labels on exactly that ground. #475569 is 6.89:1 there and
+     5.98:1 on white, so it is safe on both and needs no conditional.
+
+     Used only for the small labels inside those mockups. Body copy keeps
+     `--muted`: darkening every piece of secondary text on the site to solve
+     a 9px case would flatten the type hierarchy everywhere else. */
+  --muted-ink: #475569;
+
   /* The footer's own ground — deeper and bluer than the portal sidebar. */
   --footer: #0b1431;
 }
@@ -639,6 +667,8 @@ html {
   --color-accent-blue-ink: var(--accent-blue-ink);
   --color-accent-purple-ink: var(--accent-purple-ink);
   --color-accent-red-ink: var(--accent-red-ink);
+  --color-danger-ink: var(--danger-ink);
+  --color-muted-ink: var(--muted-ink);
   --color-accent-orange-ink: var(--accent-orange-ink);
   --color-accent-teal-ink: var(--accent-teal-ink);
   --color-accent-green-ink: var(--accent-green-ink);

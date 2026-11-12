@@ -313,3 +313,35 @@ function validate(pages: SolutionPage[]): void {
 }
 
 validate(ALL_LANDING_PAGES);
+
+/**
+ * Every article's `productLinks` names a landing page that exists.
+ *
+ * Checked HERE rather than in lib/blog's own validator, and the direction of
+ * the dependency is the reason: this module already imports `POSTS` (see
+ * `linkableRoutes`), so lib/blog importing this one back would be a cycle.
+ * This is also the module that knows which slugs exist, which is the fact
+ * being checked.
+ *
+ * It matters because the resolver cannot complain. `productLinksForPost` in
+ * explore-links maps slugs to pages and filters out anything it cannot
+ * resolve — correct behaviour at render time, since a dead link is worse than
+ * a missing one, but it means a typo costs an article its most important
+ * internal link and nothing anywhere says so. The band simply renders one
+ * card fewer. So it fails the build instead.
+ */
+function validateArticleProductLinks(): void {
+  const slugs = new Set(ALL_LANDING_PAGES.map((p) => p.slug));
+  for (const post of POSTS) {
+    for (const slug of post.productLinks ?? []) {
+      if (!slugs.has(slug)) {
+        fail(
+          `the article "${post.slug}" lists a productLink for "${slug}", which is not a landing page. ` +
+            `Valid slugs: ${[...slugs].sort().join(", ")}.`,
+        );
+      }
+    }
+  }
+}
+
+validateArticleProductLinks();
